@@ -1,0 +1,19 @@
+# OS / junk
+.DS_Store
+Thumbs.db
+AppData/
+**/AppData/
+*.log
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+*.apk
+*.aab
+
+# EAS
+eas-build/
