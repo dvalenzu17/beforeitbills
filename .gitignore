@@ -17,3 +17,6 @@ web-build/
 
 # EAS
 eas-build/
+
+.env.local
+.env
