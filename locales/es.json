@@ -503,5 +503,53 @@
     "allDismissedBody": "Verificaremos de nuevo en el próximo análisis.",
     "addManuallyHint": "También puedes agregar suscripciones manualmente.",
     "privacyNote": "BeforeItBills solo analiza correos de suscripción.\nNunca almacenamos datos de pago."
+  },
+  "upgrade": {
+    "title": "Mejorar plan",
+    "goPro": "Hazte Pro",
+    "youArePro": "Eres Pro ✓",
+    "proBody": "Recibe avisos 3 días antes de cada cargo. Análisis ilimitados, tendencias de gastos, alertas de aumento de precio y atajos de cancelación.",
+    "proUnlocked": "Desbloqueado. A seguir.",
+    "seePlans": "Ver planes",
+    "checkingStatus": "Verificando estado…",
+    "tierFree": "Gratis",
+    "tierPro": "Pro",
+    "tierFreeTagline": "Suficiente para empezar",
+    "tierProTagline": "Modo potencia total",
+    "colFeature": "Función",
+    "colFree": "Gratis",
+    "colPro": "Pro",
+    "disclaimer": "Cancela cuando quieras · restaura cuando quieras · acceso de solo lectura · sin anuncios.",
+    "rows": {
+      "recurringItems": "Elementos recurrentes",
+      "mailScanDepth": "Profundidad de análisis",
+      "preChargeAlerts": "Alertas previas al cobro",
+      "priceIncreaseAlerts": "Alertas de aumento de precio",
+      "cancellationShortcuts": "Atajos de cancelación",
+      "renewalHistory": "Historial de renovaciones",
+      "spendAnalytics": "Análisis de gastos",
+      "gmailAccounts": "Cuentas de Gmail",
+      "csvExport": "Exportar CSV",
+      "imapConnect": "Conectar correo (IMAP)"
+    }
+  },
+  "export": {
+    "title": "Exportar datos",
+    "subtitle": "Descarga tus suscripciones",
+    "csvTitle": "Exportar CSV",
+    "csvDesc": "Exporta todas las suscripciones y facturas en formato CSV.",
+    "jsonTitle": "Copia de seguridad JSON",
+    "jsonDesc": "Copia completa de todos tus datos. Útil para transferir a otro dispositivo.",
+    "exportCsv": "Exportar CSV",
+    "exportJson": "Exportar JSON",
+    "exporting": "Exportando…",
+    "proLocked": "Función Pro — mejora para desbloquear"
+  },
+  "insights": {
+    "addManually": "Agregar manualmente",
+    "scanInbox": "Analizar bandeja"
+  },
+  "home": {
+    "fromManualEntries": "de entradas manuales"
   }
 }

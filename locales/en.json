@@ -502,5 +502,53 @@
     "allDismissedBody": "We'll check again the next time your inbox is scanned.",
     "addManuallyHint": "You can also add subscriptions manually anytime.",
     "privacyNote": "BeforeItBills only scans subscription emails.\nWe never store payment details."
+  },
+  "upgrade": {
+    "title": "Upgrade",
+    "goPro": "Go Pro",
+    "youArePro": "You're Pro ✓",
+    "proBody": "Get warned 3 days before every charge — not 24 hours. Plus unlimited scans, spend trends, price increase alerts, and cancellation shortcuts.",
+    "proUnlocked": "Unlocked. Keep it moving.",
+    "seePlans": "See plans",
+    "checkingStatus": "Checking status…",
+    "tierFree": "Free",
+    "tierPro": "Pro",
+    "tierFreeTagline": "Good enough to start",
+    "tierProTagline": "Full power mode",
+    "colFeature": "Feature",
+    "colFree": "Free",
+    "colPro": "Pro",
+    "disclaimer": "Cancel anytime · restore anytime · mail access is read-only · no ads, ever.",
+    "rows": {
+      "recurringItems": "Recurring items",
+      "mailScanDepth": "Mail scan depth",
+      "preChargeAlerts": "Pre-charge alerts",
+      "priceIncreaseAlerts": "Price increase alerts",
+      "cancellationShortcuts": "Cancellation shortcuts",
+      "renewalHistory": "Renewal history",
+      "spendAnalytics": "Spend analytics",
+      "gmailAccounts": "Gmail accounts",
+      "csvExport": "CSV export",
+      "imapConnect": "Connect email (IMAP)"
+    }
+  },
+  "export": {
+    "title": "Export data",
+    "subtitle": "Download your subscriptions",
+    "csvTitle": "CSV export",
+    "csvDesc": "Export all subscriptions and bills as a spreadsheet-compatible CSV file.",
+    "jsonTitle": "JSON backup",
+    "jsonDesc": "Full data backup including all fields. Useful for transferring to another device.",
+    "exportCsv": "Export CSV",
+    "exportJson": "Export JSON",
+    "exporting": "Exporting…",
+    "proLocked": "Pro feature — upgrade to unlock"
+  },
+  "insights": {
+    "addManually": "Add manually",
+    "scanInbox": "Scan inbox"
+  },
+  "home": {
+    "fromManualEntries": "from manual entries"
   }
 }

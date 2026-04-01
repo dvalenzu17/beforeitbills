@@ -294,5 +294,53 @@
     "allDismissedBody": "Verificaremos novamente na próxima varredura.",
     "addManuallyHint": "Você também pode adicionar assinaturas manualmente.",
     "privacyNote": "BeforeItBills verifica apenas e-mails de assinatura.\nNunca armazenamos dados de pagamento."
+  },
+  "upgrade": {
+    "title": "Fazer upgrade",
+    "goPro": "Ir para Pro",
+    "youArePro": "Você é Pro ✓",
+    "proBody": "Seja avisado 3 dias antes de cada cobrança. Varreduras ilimitadas, tendências de gastos, alertas de aumento de preço e atalhos de cancelamento.",
+    "proUnlocked": "Desbloqueado. Siga em frente.",
+    "seePlans": "Ver planos",
+    "checkingStatus": "Verificando…",
+    "tierFree": "Grátis",
+    "tierPro": "Pro",
+    "tierFreeTagline": "Suficiente para começar",
+    "tierProTagline": "Modo completo",
+    "colFeature": "Recurso",
+    "colFree": "Grátis",
+    "colPro": "Pro",
+    "disclaimer": "Cancele quando quiser · acesso somente leitura · sem anúncios.",
+    "rows": {
+      "recurringItems": "Itens recorrentes",
+      "mailScanDepth": "Profundidade de varredura",
+      "preChargeAlerts": "Alertas antes da cobrança",
+      "priceIncreaseAlerts": "Alertas de aumento de preço",
+      "cancellationShortcuts": "Atalhos de cancelamento",
+      "renewalHistory": "Histórico de renovações",
+      "spendAnalytics": "Análise de gastos",
+      "gmailAccounts": "Contas do Gmail",
+      "csvExport": "Exportar CSV",
+      "imapConnect": "Conectar e-mail (IMAP)"
+    }
+  },
+  "export": {
+    "title": "Exportar dados",
+    "subtitle": "Baixe suas assinaturas",
+    "csvTitle": "Exportar CSV",
+    "csvDesc": "Exporte todas as assinaturas e contas em formato CSV.",
+    "jsonTitle": "Backup JSON",
+    "jsonDesc": "Backup completo de todos os seus dados. Útil para transferir para outro dispositivo.",
+    "exportCsv": "Exportar CSV",
+    "exportJson": "Exportar JSON",
+    "exporting": "Exportando…",
+    "proLocked": "Recurso Pro — faça upgrade para desbloquear"
+  },
+  "insights": {
+    "addManually": "Adicionar manualmente",
+    "scanInbox": "Verificar caixa"
+  },
+  "home": {
+    "fromManualEntries": "de entradas manuais"
   }
 }

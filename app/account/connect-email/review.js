@@ -101,7 +101,9 @@ export default function ReviewQueue() {
     if (undo.createdKind && undo.createdId) {
       try {
         await deleteRecurring?.(undo.createdKind, undo.createdId);
-      } catch {}
+      } catch (e) {
+        if (__DEV__) console.warn("[review] undo deleteRecurring failed:", e?.message);
+      }
     }
 
     await restoreCandidate?.(undo.candidate);

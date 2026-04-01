@@ -294,5 +294,53 @@
     "allDismissedBody": "Nous vérifierons à nouveau lors de la prochaine analyse.",
     "addManuallyHint": "Vous pouvez aussi ajouter des abonnements manuellement.",
     "privacyNote": "BeforeItBills analyse uniquement les e-mails d'abonnement.\nNous ne stockons jamais vos données de paiement."
+  },
+  "upgrade": {
+    "title": "Passer à Pro",
+    "goPro": "Devenir Pro",
+    "youArePro": "Vous êtes Pro ✓",
+    "proBody": "Soyez prévenu 3 jours avant chaque prélèvement. Analyses illimitées, tendances de dépenses, alertes de hausse de prix et raccourcis d'annulation.",
+    "proUnlocked": "Débloqué. Continuez.",
+    "seePlans": "Voir les offres",
+    "checkingStatus": "Vérification…",
+    "tierFree": "Gratuit",
+    "tierPro": "Pro",
+    "tierFreeTagline": "Pour commencer",
+    "tierProTagline": "Pleine puissance",
+    "colFeature": "Fonctionnalité",
+    "colFree": "Gratuit",
+    "colPro": "Pro",
+    "disclaimer": "Annulez à tout moment · accès lecture seule · sans publicité.",
+    "rows": {
+      "recurringItems": "Éléments récurrents",
+      "mailScanDepth": "Profondeur d'analyse",
+      "preChargeAlerts": "Alertes avant prélèvement",
+      "priceIncreaseAlerts": "Alertes de hausse de prix",
+      "cancellationShortcuts": "Raccourcis d'annulation",
+      "renewalHistory": "Historique des renouvellements",
+      "spendAnalytics": "Analyse des dépenses",
+      "gmailAccounts": "Comptes Gmail",
+      "csvExport": "Export CSV",
+      "imapConnect": "Connexion e-mail (IMAP)"
+    }
+  },
+  "export": {
+    "title": "Exporter les données",
+    "subtitle": "Téléchargez vos abonnements",
+    "csvTitle": "Export CSV",
+    "csvDesc": "Exportez tous vos abonnements et factures en fichier CSV.",
+    "jsonTitle": "Sauvegarde JSON",
+    "jsonDesc": "Sauvegarde complète de toutes vos données. Utile pour changer d'appareil.",
+    "exportCsv": "Exporter CSV",
+    "exportJson": "Exporter JSON",
+    "exporting": "Export en cours…",
+    "proLocked": "Fonctionnalité Pro — passez à Pro pour débloquer"
+  },
+  "insights": {
+    "addManually": "Ajouter manuellement",
+    "scanInbox": "Analyser la boîte"
+  },
+  "home": {
+    "fromManualEntries": "depuis les entrées manuelles"
   }
 }
