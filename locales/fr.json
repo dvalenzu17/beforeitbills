@@ -1,0 +1,298 @@
+{
+  "common": {
+    "user": "Utilisateur",
+    "continue": "Continuer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "v1Label": "V1 stub",
+    "v1Body": "This is a basic placeholder UI so we can iterate fast. Real logic + backend wiring comes next.",
+    "backToFeatures": "Back to Features"
+  },
+  "tabs": {
+    "home": "Accueil",
+    "insights": "Analyses",
+    "account": "Compte"
+  },
+  "auth": {
+    "title": "Bon retour",
+    "subtitle": "Connectez-vous pour synchroniser. Vous pouvez ignorer pour l’instant.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "toi@domaine.com",
+    "emailTitle": "Email",
+    "emailInvalid": "Cet email semble incorrect.",
+    "errorTitle": "Error",
+    "skip": "Ignorer pour l’instant"
+  },
+  "features": {
+    "title": "Hub Fonctionnalités",
+    "subtitle": "Toutes les pages V1 sont ici.",
+    "noteTitle": "How to use this",
+    "noteBody": "Each page is a thin UI slice. We’ll implement real data + actions one by one.",
+    "v1Chip": "V1 UI"
+  },
+  "onboarding": {
+    "title": "Onboarding",
+    "body": "Sets expectations: scan time, privacy, what you’ll see first, and next steps."
+  },
+  "scan": {
+    "title": "Progressive scanning",
+    "body": "Live progress, partial results, and a clear 'what’s happening' timeline."
+  },
+  "subs": {
+    "title": "Subscriptions + Logos",
+    "body": "Subscription list that uses real brand logos/colors (Brandfetch/Logo.dev + favicon fallback)."
+  },
+  "proof": {
+    "title": "Tap-to-proof",
+    "body": "Every item can show the exact email snippet/receipt that created it."
+  },
+  "trial": {
+    "title": "Trial radar",
+    "body": "Trials ending soon with big actions: Cancel / Remind me / Keep."
+  },
+  "price": {
+    "title": "Price increase alerts",
+    "body": "Before/after price, effective date, and suggested next action."
+  },
+  "optimize": {
+    "title": "Optimize",
+    "body": "Duplicates, downgrades, and annual-switch savings suggestions."
+  },
+  "digest": {
+    "title": "Weekly digest (in-app)",
+    "body": "You saved / you’ll pay / what changed + shareable highlights."
+  },
+  "search": {
+    "title": "Smart search + filters",
+    "body": "Filter by category, cost, renewal date, trial, provider, confidence."
+  },
+  "manual": {
+    "title": "Manual add + upload receipt/PDF",
+    "body": "Camera → confirm fields → done. Native feel, zero friction."
+  },
+  "brand": {
+    "title": "Brand pages",
+    "body": "Logo, plan history, last charge, cancel/manage buttons + related emails."
+  },
+  "empty": {
+    "title": "Empty states",
+    "body": "If 0 found: try broader scan, connect other inbox, upload receipt, or add manually."
+  },
+  "home": {
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "monthlyTotal": "Monthly total",
+    "perMonth": "/mo",
+    "namePromptTitle": "What should we call you?",
+    "namePromptBody": "This shows up in your greeting and account profile.",
+    "namePlaceholder": "Your name",
+    "nameAlertTitle": "Name",
+    "nameAlertBody": "Type your name.",
+    "addRecurring": "Add recurring expense",
+    "viewAll": "View all",
+    "nextActions": "Next actions",
+    "noActions": "You’re clear. Add more recurring items to unlock smarter prompts.",
+    "upcoming": "Upcoming",
+    "noUpcoming": "No upcoming payments yet.",
+    "billSubtitle": "bill · {{date}}",
+    "subSubtitle": "{{cadence}} · {{date}}"
+  },
+  "insights": {
+    "subtitle": "Your recurring burn rate, in plain English.",
+    "connectTitle": "Connect Gmail (read-only)",
+    "connectBody": "Optional, but it unlocks auto-detection. You can disconnect any time.",
+    "connectCta": "Connect mail",
+    "noData": "No data",
+    "monthly": "Monthly",
+    "burnRateNote": "Monthly burn rate (your share)",
+    "calendarLabel": "Calendar view",
+    "calendarTitle": "See every renewal on a timeline",
+    "calendarBody": "Tap a day → see what’s charging. No guessing.",
+    "calendarCta": "Open calendar",
+    "recapLabel": "Monthly recap",
+    "recapDone": "Recap completed",
+    "recapTodo": "Do the recap",
+    "recapMeta": "{{count}} subscriptions · {{month}}",
+    "recapLocked": "Add subscriptions to unlock recap recommendations.",
+    "recapView": "View recap",
+    "recapStart": "Start recap",
+    "topRecs": "Top recommendations",
+    "annualLabel": "Projected annual spend",
+    "next30Label": "Next 30 days",
+    "next30Body": "Expected renewals and bills in the next 30 days (your share).",
+    "suggestionsLabel": "Suggestions",
+    "suggestionsEmpty": "Add recurring expenses to unlock better insights.",
+    "tip1": "• Use Recap monthly to trim low-value spend.",
+    "tip2": "• Flag shared expenses — your totals become reality-based.",
+    "tip3": "• Keep next due dates clean: the calendar is your profit center.",
+    "defaultSubCategory": "Subscriptions",
+    "defaultBillCategory": "Bills"
+  },
+  "account": {
+    "freePill": "FREE",
+    "proActiveTitle": "Pro active",
+    "goProTitle": "Go Pro",
+    "proActiveBody": "Unlimited recurring items + premium tools unlocked.",
+    "goProBody": "Unlimited recurring items, export, advanced scan, IMAP import, and the insights heatmap.",
+    "viewPro": "View Pro",
+    "upgrade": "Upgrade",
+    "adsNote": "Ads stay subtle on Free. No popups, no chaos.",
+    "cameraTitle": "Camera",
+    "cameraPerm": "We need camera permission to take a photo.",
+    "photosTitle": "Photos",
+    "photosPerm": "We need photo library permission to upload an image.",
+    "photoTitle": "Photo",
+    "photoMenuTitle": "Profile photo",
+    "photoMenuBody": "Choose an option",
+    "takePhoto": "Take a photo",
+    "uploadImage": "Upload image",
+    "removeImage": "Remove image",
+    "items": {
+      "features": {
+        "label": "Hub Fonctionnalités",
+        "subtext": "Toutes les pages V1"
+      },
+      "upgrade": {
+        "label": "Upgrade",
+        "subtextPro": "You’re already Pro",
+        "subtextFree": "Unlock premium features"
+      },
+      "personal": {
+        "label": "Personal Information",
+        "subtext": "Name, email, username"
+      },
+      "security": {
+        "label": "Login & Security",
+        "subtext": "Password, sessions, 2FA"
+      },
+      "notifications": {
+        "label": "Notifications",
+        "subtext": "Renewals + reminders"
+      },
+      "connected": {
+        "label": "Connected Accounts",
+        "subtext": "Mail scan settings"
+      },
+      "help": {
+        "label": "Help",
+        "subtext": "FAQs + contact"
+      },
+      "legals": {
+        "label": "Legals",
+        "subtext": "Privacy + terms"
+      },
+      "export": {
+        "label": "Export Data",
+        "subtext": "Download your data"
+      },
+      "about": {
+        "label": "About",
+        "subtext": "Version + credits"
+      }
+    }
+  },
+  "ob": {
+    "langTitle": "Choisissez votre langue",
+    "langBody": "Vous pourrez la changer à tout moment dans Compte.",
+    "promiseTitle": "Suivez chaque abonnement.",
+    "promiseBody": "Annulez l’inutile. Gardez le bon.",
+    "b1Title": "Connectez votre boîte mail → on trouve les reçus",
+    "b1Body": "On analyse confirmations et renouvellements pour détecter les abonnements.",
+    "b2Title": "Une preuve pour chaque élément",
+    "b2Body": "Touchez un abonnement pour voir l’email exact qui l’a créé.",
+    "b3Title": "Vous gardez le contrôle",
+    "b3Body": "Accès en lecture seule. Déconnexion à tout moment.",
+    "getStarted": "Commencer",
+    "tryWithout": "Essayer sans connecter",
+  
+    "privacyTitle": "Confidentialité & confiance",
+    "privacyBody": "Simple : reçus uniquement, lecture seule, vos règles.",
+    "p1Title": "Analyse en lecture seule",
+    "p1Body": "Nous n’envoyons pas d’emails. Nous lisons uniquement pour trouver des reçus.",
+    "p2Title": "Reçus & confirmations",
+    "p2Body": "On cible les signaux de facturation/renouvellement, pas vos messages personnels.",
+    "p3Title": "Supprimer & déconnecter quand vous voulez",
+    "p3Body": "Vous pouvez déconnecter et supprimer vos données à tout moment.",
+  
+    "connectTitle": "Connectez votre messagerie",
+    "connectBody": "Optionnel — mais ça débloque la détection automatique.",
+    "connectHint": "Environ 1–3 min. Vous pouvez utiliser l’app pendant l’analyse.",
+    "connectGmail": "Connecter Gmail",
+    "connectOutlook": "Connecter Outlook",
+    "skipForNow": "Ignorer pour l’instant",
+  
+    "scanSetupTitle": "Réglages d’analyse",
+    "scanSetupBody": "Choisissez une période. Plus large = plus d’abonnements trouvés.",
+    "range90": "90 derniers jours",
+    "range90Sub": "Le plus rapide. Peut rater les anciens abonnements.",
+    "rangeYear": "Dernière année (recommandé)",
+    "rangeYearSub": "Le meilleur équilibre vitesse/couverture.",
+    "rangeAll": "Tout l’historique",
+    "rangeAllSub": "Le plus lent. Le plus complet.",
+    "includePromos": "Inclure promotions/marketing",
+    "includePromosSub": "Peut trouver plus, mais ajoute du bruit.",
+    "startScan": "Démarrer l’analyse",
+  
+    "scanningTitle": "Analyse en cours…",
+    "scanningSub": "Période : {{range}}",
+    "emailsScanned": "Emails analysés : {{n}}",
+    "receiptsFound": "Reçus trouvés : {{n}}",
+    "subsDetected": "Abonnements détectés : {{n}}",
+    "scanningHint": "Vous pouvez voir les résultats dès le premier trouvé.",
+    "viewResults": "Voir les résultats",
+    "keepScanning": "Continuer l’analyse",
+    "stop": "Arrêter",
+  
+    "resultsTitle": "Premiers résultats",
+    "resultsBody": "Vérifiez ce qu’on a trouvé, puis confirmez pour améliorer la précision.",
+    "resultsMeta": "Renouvelle le {{renewal}} · Confiance : {{conf}}",
+    "confirmItems": "Confirmer",
+  
+    "confirmTitle": "Confirmer les abonnements",
+    "confirmSub": "{{n}} sur {{total}}",
+    "tapToProof": "Preuve (extrait d’email) :",
+    "yesSub": "Oui, abonnement",
+    "notSub": "Pas un abonnement",
+  
+    "goalsTitle": "Que voulez-vous faire ?",
+    "goalsBody": "Cela personnalise votre tableau de bord.",
+    "goalCut": "Réduire la dépense mensuelle",
+    "goalCutSub": "Trouver les abonnements inutiles et les doublons.",
+    "goalTrials": "Suivre les essais",
+    "goalTrialsSub": "Rappels avant les prélèvements.",
+    "goalHikes": "Éviter les hausses de prix",
+    "goalHikesSub": "Détecter les augmentations et proposer une action.",
+  
+    "notifTitle": "Activer les alertes",
+    "notifBody": "Rappels d’essais + renouvellements (sans spam).",
+    "notifB1": "Essais qui se terminent",
+    "notifB2": "Renouvellements et changements de prix",
+    "enableAlerts": "Activer les alertes",
+    "notNow": "Pas maintenant"
+  },
+  "scanActivity": {
+    "title": "Activité des analyses",
+    "subtitle": "Historique de vos analyses",
+    "noScansTitle": "Aucune analyse",
+    "noScansBody": "Lancez une analyse depuis la page de numérisation et elle apparaîtra ici.",
+    "provider": "Fournisseur",
+    "mode": "Mode",
+    "emailsScanned": "E-mails analysés",
+    "subsFound": "Abonnements trouvés",
+    "scanRange": "Plage d'analyse",
+    "days": "{{n}}j"
+  },
+  "reviewQueue": {
+    "title": "Vérifier les abonnements",
+    "subtitle": "Confirmez les abonnements avant facturation",
+    "swipeHint": "Glisser → confirmer • Glisser ← rejeter",
+    "rejectLabel": "← Rejeter",
+    "confirmLabel": "Confirmer →",
+    "detectedSummary": "{{count}} abonnements détectés • {{monthly}} $/mois si approuvé",
+    "allDismissedTitle": "Tout ignoré",
+    "allDismissedBody": "Nous vérifierons à nouveau lors de la prochaine analyse.",
+    "addManuallyHint": "Vous pouvez aussi ajouter des abonnements manuellement.",
+    "privacyNote": "BeforeItBills analyse uniquement les e-mails d'abonnement.\nNous ne stockons jamais vos données de paiement."
+  }
+}
