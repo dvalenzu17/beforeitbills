@@ -21,7 +21,18 @@
     "emailTitle": "Correo electrónico",
     "emailInvalid": "Ese correo se ve raro.",
     "errorTitle": "Error",
-    "skip": "Omitir por ahora"
+    "skip": "Omitir por ahora",
+    "signInFailed": "Error al iniciar sesión",
+    "signInFailedBody": "Verifica tu correo y contraseña e inténtalo de nuevo.",
+    "signUpFailed": "Error al registrarse",
+    "signUpFailedBody": "No se pudo crear la cuenta. Inténtalo de nuevo.",
+    "accountSetupError": "Error de configuración",
+    "accountSetupErrorBody": "Tu cuenta fue creada pero falló la configuración del perfil. Contacta a soporte — el error es de nuestra parte.",
+    "resetSent": "Correo enviado",
+    "resetSentBody": "Revisa tu bandeja de entrada.",
+    "resetFailed": "Error al enviar",
+    "resetFailedBody": "Inténtalo de nuevo.",
+    "enterEmailFirst": "Ingresa tu correo primero"
   },
   "features": {
     "title": "Centro de funciones",
@@ -107,7 +118,10 @@
     "addManually": "Agregar manualmente",
     "reviewDetections": "Revisar {{n}} nueva detección",
     "reviewDetectionsPlural": "Revisar {{n}} nuevas detecciones",
-    "fromInboxScan": "de tu escaneo de bandeja"
+    "fromInboxScan": "de tu escaneo de bandeja",
+    "fromManualEntries": "de entradas manuales",
+    "urgentCount": "{{n}} urgente",
+    "newFromInbox": "{{n}} nuevo de la bandeja"
   },
   "insights": {
     "subtitle": "Tu gasto recurrente, en palabras simples.",
@@ -175,7 +189,9 @@
     "day": "Día {{n}}",
     "today": "Hoy",
     "projected": "{{amount}} proyectado",
-    "noDataYet": "Agrega una suscripción para ver las gráficas"
+    "noDataYet": "Agrega una suscripción para ver las gráficas",
+    "addManually": "Agregar manualmente",
+    "scanInbox": "Analizar bandeja"
   },
   "account": {
     "freePill": "GRATIS",
@@ -367,7 +383,10 @@
     "bullet3": "Desconecta cuando quieras desde Configuración de cuenta",
     "footnote": "Compatible con Gmail. Outlook, Yahoo e iCloud próximamente.",
     "ctaConnect": "Conectar bandeja",
-    "ctaManual": "Agregar manualmente"
+    "ctaManual": "Agregar manualmente",
+    "errorTitle": "Error de conexión",
+    "errorBody": "No se pudo conectar. Inténtalo de nuevo.",
+    "gmailConnectFailed": "No se pudo conectar Gmail. Inténtalo de nuevo."
   },
   "done": {
     "title": "Agregar manualmente",
@@ -445,7 +464,59 @@
     "connectInbox": "Conectar bandeja",
     "noMatches": "Sin resultados",
     "noMatchesBody": "Intenta limpiar filtros o buscar por dominio.",
-    "clearFilters": "Limpiar filtros"
+    "clearFilters": "Limpiar filtros",
+    "saveErrorTitle": "No se pudo guardar",
+    "saveErrorBody": "Algo salió mal. Inténtalo de nuevo.",
+    "saveFailedTitle": "Error al guardar",
+    "saveFailedBody": "Algo salió mal. Inténtalo de nuevo.",
+    "actionFailedTitle": "Acción fallida",
+    "actionFailedBody": "Algo salió mal. Inténtalo de nuevo.",
+    "notFound": "Gasto recurrente no encontrado.",
+    "notFoundSub": "Es posible que haya sido eliminado.",
+    "goBack": "Volver",
+    "deleteTitle": "Eliminar",
+    "archiveTitle": "Archivar",
+    "deleteBody": "Se eliminará permanentemente.",
+    "archiveBody": "Esto lo marcará como inactivo.",
+    "cancelLabel": "Cancelar",
+    "billFormTitle": "Factura",
+    "subFormTitle": "Suscripción"
+  },
+  "help": {
+    "title": "Ayuda",
+    "subtitle": "Soporte y respuestas rápidas",
+    "quickAnswers": "Respuestas rápidas",
+    "troubleshooting": "Solución de problemas",
+    "contact": "Contacto",
+    "contactBody": "¿Encontraste un error o tienes una idea? Envía comentarios con los detalles del diagnóstico.",
+    "sendFeedback": "Enviar comentarios / reportar un error",
+    "diagnosticsTitle": "Diagnóstico",
+    "refreshedTitle": "Sistema actualizado",
+    "refreshedBody": "Suscripciones, recordatorios y sincronización fueron actualizados.",
+    "rebuildFailedTitle": "Error de reconstrucción",
+    "rebuildFailedBody": "Algo salió mal. Inténtalo de nuevo.",
+    "faq1Title": "¿Por qué no se puede probar el escaneo de correo aquí?",
+    "faq1Sub": "Restricciones de autenticación explicadas",
+    "faq1Body": "Algunos flujos de autenticación requieren el entorno completo de la app. Intenta de nuevo con la versión instalada.",
+    "faq2Title": "¿Cómo funcionan los recordatorios?",
+    "faq2Sub": "Notificaciones de renovación explicadas",
+    "faq2Body": "Los recordatorios se programan localmente para avisarte antes de renovaciones o fechas de vencimiento.",
+    "faq3Title": "¿Cómo exporto mis datos?",
+    "faq3Sub": "Descargar CSV o JSON",
+    "faq3Body": "Abre Cuenta → Exportar datos para descargar tus suscripciones y facturas.",
+    "diagCardTitle": "Ejecutar diagnóstico",
+    "diagCardSub": "Verificar estado del sistema",
+    "rebuildCardTitle": "Actualizar sistema",
+    "rebuildCardSub": "Reconstruir suscripciones y recordatorios"
+  },
+  "sub_screen": {
+    "notFound": "Suscripción no encontrada",
+    "savedTitle": "Guardado",
+    "savedBody": "Suscripción actualizada.",
+    "deleteTitle": "Eliminar suscripción",
+    "deleteBody": "¿Estás seguro?",
+    "cancelLabel": "Cancelar",
+    "deleteLabel": "Eliminar"
   },
   "brand_screen": {
     "subscriptions": "Suscripciones",
@@ -492,6 +563,36 @@
     "scanRange": "Rango de análisis",
     "days": "{{n}}d"
   },
+  "mailScan": {
+    "title": "Escaneo de correo",
+    "subtitle": "Tú tienes el control. Nada se importa sin tu permiso.",
+    "addAccount": "Agregar cuenta",
+    "scanAll": "Escanear todas las cuentas",
+    "scanInbox": "Escanear bandeja",
+    "scanning": "Escaneando…",
+    "lastScan": "Último escaneo",
+    "notYet": "Aún no escaneado",
+    "scanFailed": "Falló el escaneo. Toca 'Escanear bandeja' para reintentar.",
+    "disconnect": "Desconectar",
+    "disconnectConfirmTitle": "¿Desconectar {{provider}}?",
+    "disconnectConfirmBody": "Detendrás la detección automática. Tus elementos guardados se mantienen.",
+    "disconnected": "Desconectado",
+    "clearResults": "Borrar resultados",
+    "clearConfirmTitle": "¿Borrar resultados?",
+    "clearConfirmBody": "Esto elimina los resultados detectados. Tu correo no se modifica.",
+    "resultsCleared": "Resultados eliminados",
+    "noAccounts": "Conectar bandeja",
+    "connectGmail": "Conectar Gmail",
+    "otherProvider": "Otro proveedor de correo",
+    "gmailConnecting": "Gmail conectado — escaneando bandeja…",
+    "reviewDetected": "Revisar suscripciones detectadas ({{count}})",
+    "manageGoogle": "Gestionar permisos de Google",
+    "scanHowFarTitle": "Escanear bandeja",
+    "scanHowFarBody": "¿Hasta qué fecha anterior debemos buscar?",
+    "scan6m": "6 meses",
+    "scan1y": "1 año",
+    "scan2y": "2 años"
+  },
   "reviewQueue": {
     "title": "Revisar suscripciones",
     "subtitle": "Confirma las suscripciones antes de que se cobren",
@@ -531,6 +632,18 @@
       "gmailAccounts": "Cuentas de Gmail",
       "csvExport": "Exportar CSV",
       "imapConnect": "Conectar correo (IMAP)"
+    },
+    "values": {
+      "upTo": "Hasta {{n}}",
+      "unlimited": "Ilimitado",
+      "nEmails": "{{n}} correos",
+      "alertFree": "24h antes (×1)",
+      "alertPro": "3 días + 24h + 1h",
+      "nDays": "{{n}} días",
+      "nMonths": "{{n}} meses",
+      "monthlyTotal": "Total mensual",
+      "trendsAndCategories": "Tendencias + categorías",
+      "unlocked": "Desbloqueado"
     }
   },
   "export": {
@@ -543,13 +656,45 @@
     "exportCsv": "Exportar CSV",
     "exportJson": "Exportar JSON",
     "exporting": "Exportando…",
-    "proLocked": "Función Pro — mejora para desbloquear"
+    "proLocked": "Función Pro — mejora para desbloquear",
+    "errorTitle": "Error de exportación",
+    "errorBody": "Inténtalo de nuevo.",
+    "shareDialogCsv": "Exportar suscripciones",
+    "shareDialogJson": "Exportar copia de seguridad"
   },
-  "insights": {
-    "addManually": "Agregar manualmente",
-    "scanInbox": "Analizar bandeja"
-  },
-  "home": {
-    "fromManualEntries": "de entradas manuales"
+  "personal": {
+    "title": "Información personal",
+    "subtitle": "Nombre y usuario se guardan localmente. Los cambios de correo requieren inicio de sesión.",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Tu nombre",
+    "usernameLabel": "Usuario",
+    "usernameHint": "Solo letras, números y guiones bajos. Debe ser único.",
+    "emailLabel": "Correo",
+    "emailHint": "Atención: puede que debas confirmar los cambios de correo.",
+    "signInHint": "Inicia sesión para cambiar el correo.",
+    "saveBtn": "Guardar cambios",
+    "saving": "Guardando…",
+    "usernameTitle": "Usuario",
+    "usernameEmpty": "El nombre de usuario no puede estar vacío.",
+    "usernameTooShort": "Debe tener al menos 3 caracteres.",
+    "usernameInvalidChars": "Solo letras, números y guiones bajos.",
+    "usernameTakenTitle": "Usuario no disponible",
+    "usernameTakenBody": "@{{username}} ya está en uso. Prueba otro.",
+    "savedLocalTitle": "Guardado",
+    "savedLocalBody": "Guardado en este dispositivo. Inicia sesión para sincronizar.",
+    "savedTitle": "Guardado",
+    "savedBody": "Información personal actualizada.",
+    "saveFailedTitle": "Error al guardar",
+    "saveFailedBody": "Algo salió mal. Inténtalo de nuevo.",
+    "pendingTitle": "Confirmación pendiente",
+    "pendingBody": "Enviamos una confirmación a {{email}}. Revisa tu bandeja.",
+    "resendLink": "Reenviar correo de confirmación",
+    "resending": "Enviando…",
+    "resendSentTitle": "Correo enviado",
+    "resendSentBody": "Revisa tu bandeja de entrada.",
+    "resendFailedTitle": "Error al reenviar",
+    "resendFailedBody": "Inténtalo en un momento.",
+    "uploadFailedTitle": "Error al subir",
+    "uploadFailedBody": "Tu foto se guardó localmente pero no se pudo sincronizar."
   }
 }

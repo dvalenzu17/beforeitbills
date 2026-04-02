@@ -12,9 +12,9 @@ import ScanProgressCard from "../../../components/ScanProgressCard";
 
 import { useTheme } from "../../../lib/theme";
 import { useToast } from "../../../components/ToastProvider";
+import { useTranslation } from "react-i18next";
 import { useEmailImportStore } from "../../../lib/emailImportStore";
 import { connectGoogleGmail } from "../../../lib/auth/googleGmailOAuth";
-import { EMAIL_PROVIDERS } from "../../../lib/emailImportClient";
 import { timeAgo } from "../../../lib/timeAgo";
 import { track } from "../../../lib/analytics";
 
@@ -26,27 +26,87 @@ const PROVIDER_LABELS = {
   other: "Email",
 };
 
+function AccountCard({ account, onScan, onDisconnect, isLoading, t, tt }) {
+  const label = PROVIDER_LABELS[account.provider] ?? "Email";
+  const isGmail = account.provider === "gmail";
+
+  const lastScanText = useMemo(() => {
+    if (!account.lastScanAt) return tt("mailScan.notYet");
+    try {
+      return timeAgo(account.lastScanAt) || tt("mailScan.notYet");
+    } catch {
+      return tt("mailScan.notYet");
+    }
+  }, [account.lastScanAt]);
+
+  return (
+    <Card>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: t.text, fontWeight: "900", fontSize: 16 }}>{label}</Text>
+          {account.email ? (
+            <Text style={{ color: t.subtext, marginTop: 2, fontSize: 13 }}>{account.email}</Text>
+          ) : null}
+        </View>
+
+        {isGmail ? (
+          <Pressable
+            onPress={() => Linking.openURL("https://myaccount.google.com/permissions")}
+            accessibilityRole="link"
+            accessibilityLabel={tt("mailScan.manageGoogle")}
+          >
+            <Text style={{ color: t.subtext, fontSize: 12, fontWeight: "700" }}>Permissions →</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      <View style={{ height: 10 }} />
+
+      <Text style={{ color: t.subtext, fontSize: 12 }}>{tt("mailScan.lastScan")}</Text>
+      <Text style={{ color: t.text, fontWeight: "900", marginTop: 2 }}>{lastScanText}</Text>
+
+      <View style={{ height: 14 }} />
+
+      <Button
+        title={isLoading ? tt("mailScan.scanning") : tt("mailScan.scanInbox")}
+        onPress={() => onScan(account)}
+        disabled={isLoading}
+      />
+
+      <View style={{ height: 8 }} />
+
+      <Button
+        title={tt("mailScan.disconnect")}
+        variant="danger"
+        onPress={() => onDisconnect(account)}
+        disabled={isLoading}
+      />
+    </Card>
+  );
+}
+
 export default function ConnectedEmail() {
   const router = useRouter();
   const t = useTheme();
   const toast = useToast();
+  const { t: tt } = useTranslation();
 
-  const hydrate = useEmailImportStore((x) => x.hydrate);
-  const disconnect = useEmailImportStore((x) => x.disconnect);
-  const clearImported = useEmailImportStore((x) => x.clearImported);
+  const hydrate          = useEmailImportStore((x) => x.hydrate);
+  const addAccount       = useEmailImportStore((x) => x.addAccount);
+  const removeAccount    = useEmailImportStore((x) => x.removeAccount);
+  const clearImported    = useEmailImportStore((x) => x.clearImported);
   const runGmailFastPass = useEmailImportStore((x) => x.runGmailFastPass);
-  const runScan = useEmailImportStore((x) => x.runScan);
-  const connectedProvider = useEmailImportStore((x) => x.connectedProvider);
-  const connectedEmail = useEmailImportStore((x) => x.connectedEmail);
-  const lastScanAt = useEmailImportStore((x) => x.lastScanAt);
-  const candidates = useEmailImportStore((x) => x.candidates);
-  const isLoading = useEmailImportStore((x) => x.isLoading);
-  const hasHydrated = useEmailImportStore((x) => x.hasHydrated);
-  const scanProgress = useEmailImportStore((x) => x.scanProgress);
-  const didFastPass = useEmailImportStore((x) => x.didFastPass);
+  const scanAccount      = useEmailImportStore((x) => x.scanAccount);
+  const scanAllAccounts  = useEmailImportStore((x) => x.scanAllAccounts);
+  const connectedAccounts = useEmailImportStore((x) => x.connectedAccounts);
+  const candidates       = useEmailImportStore((x) => x.candidates);
+  const isLoading        = useEmailImportStore((x) => x.isLoading);
+  const hasHydrated      = useEmailImportStore((x) => x.hasHydrated);
+  const scanProgress     = useEmailImportStore((x) => x.scanProgress);
+  const didFastPass      = useEmailImportStore((x) => x.didFastPass);
+  const resetFastPass    = useEmailImportStore((x) => x.resetFastPass);
 
-  const providerLabel = PROVIDER_LABELS[connectedProvider] ?? "Email";
-  const isGmail = connectedProvider === "gmail";
+  const hasGmail = connectedAccounts.some((a) => a.provider === "gmail");
 
   useEffect(() => {
     const sub = supabase.auth.onAuthStateChange(() => {
@@ -55,68 +115,79 @@ export default function ConnectedEmail() {
     return () => sub.data.subscription.unsubscribe();
   }, []);
 
+  // Auto-scan Gmail on first connect (FastPass)
   useEffect(() => {
-    if (!isGmail) return;
+    if (!hasGmail) return;
     if (didFastPass) return;
     runGmailFastPass?.().catch((err) => {
       if (__DEV__) console.warn("[FastPass] scan failed:", err?.message);
-      toast.show({ message: __DEV__ ? (err?.message || "Scan failed") : "Scan failed. Tap 'Scan inbox' to retry." });
+      toast.show({ message: __DEV__ ? (err?.message || "Scan failed") : tt("mailScan.scanFailed") });
     });
-  }, [isGmail, didFastPass]);
+  }, [hasGmail, didFastPass]);
 
-  const lastScan = useMemo(() => {
-    if (!lastScanAt) return "Not scanned yet";
-    try {
-      return timeAgo(lastScanAt) || "Not scanned yet";
-    } catch (e) {
-      if (__DEV__) console.warn("[connected] timeAgo failed:", e?.message);
-      return "Not scanned yet";
-    }
-  }, [lastScanAt]);
-
-  function onScanInbox() {
+  function onScan(account) {
     Alert.alert(
-      "Scan inbox",
-      "How far back should we look?",
+      tt("mailScan.scanHowFarTitle"),
+      tt("mailScan.scanHowFarBody"),
       [
         {
-          text: "6 months",
-          onPress: () => runScan({ provider: connectedProvider, daysBack: 180 }).catch((e) => {
+          text: tt("mailScan.scan6m"),
+          onPress: () => scanAccount(account.id, { daysBack: 180 }).catch((e) => {
             if (__DEV__) console.warn("[connected] scan failed:", e?.message);
           }),
         },
         {
-          text: "1 year",
-          onPress: () => runScan({ provider: connectedProvider, daysBack: 365 }).catch((e) => {
+          text: tt("mailScan.scan1y"),
+          onPress: () => scanAccount(account.id, { daysBack: 365 }).catch((e) => {
             if (__DEV__) console.warn("[connected] scan failed:", e?.message);
           }),
         },
         {
-          text: "2 years",
-          onPress: () => runScan({ provider: connectedProvider, daysBack: 730 }).catch((e) => {
+          text: tt("mailScan.scan2y"),
+          onPress: () => scanAccount(account.id, { daysBack: 730 }).catch((e) => {
             if (__DEV__) console.warn("[connected] scan failed:", e?.message);
           }),
         },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: tt("common.cancel"), style: "cancel" },
       ]
     );
   }
 
-  function onDisconnect() {
+  function onScanAll() {
     Alert.alert(
-      `Disconnect ${providerLabel}?`,
-      "You'll stop auto-detection. Your saved recurring items stay.",
+      tt("mailScan.scanHowFarTitle"),
+      tt("mailScan.scanHowFarBody"),
       [
-        { text: "Cancel", style: "cancel" },
         {
-          text: "Disconnect",
+          text: tt("mailScan.scan6m"),
+          onPress: () => scanAllAccounts({ daysBack: 180 }).catch((e) => {
+            if (__DEV__) console.warn("[connected] scanAll failed:", e?.message);
+          }),
+        },
+        {
+          text: tt("mailScan.scan1y"),
+          onPress: () => scanAllAccounts({ daysBack: 365 }).catch((e) => {
+            if (__DEV__) console.warn("[connected] scanAll failed:", e?.message);
+          }),
+        },
+        { text: tt("common.cancel"), style: "cancel" },
+      ]
+    );
+  }
+
+  function onDisconnect(account) {
+    const label = PROVIDER_LABELS[account.provider] ?? "Email";
+    Alert.alert(
+      tt("mailScan.disconnectConfirmTitle", { provider: label }),
+      tt("mailScan.disconnectConfirmBody"),
+      [
+        { text: tt("common.cancel"), style: "cancel" },
+        {
+          text: tt("mailScan.disconnect"),
           style: "destructive",
           onPress: async () => {
-            await disconnect();
-            toast.show({ message: "Disconnected" });
+            await removeAccount(account.id);
+            toast.show({ message: tt("mailScan.disconnected") });
           },
         },
       ]
@@ -125,27 +196,44 @@ export default function ConnectedEmail() {
 
   function onClear() {
     Alert.alert(
-      "Clear scan results?",
-      "This removes detected results from BeforeItBills. Your email stays untouched.",
+      tt("mailScan.clearConfirmTitle"),
+      tt("mailScan.clearConfirmBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: tt("common.cancel"), style: "cancel" },
         {
-          text: "Clear",
+          text: tt("mailScan.clearResults"),
           style: "destructive",
           onPress: async () => {
             await clearImported();
-            toast.show({ message: "Results cleared" });
+            toast.show({ message: tt("mailScan.resultsCleared") });
           },
         },
       ]
     );
   }
 
+  async function onConnectGmail() {
+    try {
+      const result = await connectGoogleGmail();
+      if (result?.ok) {
+        resetFastPass?.();
+        addAccount({ provider: "gmail", email: result?.email ?? null });
+        track("gmail_connected", { provider: "gmail" });
+        toast.show({ message: tt("mailScan.gmailConnecting") });
+      }
+    } catch (e) {
+      if (__DEV__) console.warn("[connected] gmail connect failed:", e?.message);
+      if (e?.message !== "not_authenticated") {
+        toast.show({ message: tt("connect.gmailConnectFailed") });
+      }
+    }
+  }
+
   if (!hasHydrated) {
     return (
       <Screen>
         <NavHeader
-          title="Mail scan"
+          title={tt("mailScan.title")}
           onBack={() =>
             router.canGoBack?.() ? router.back() : router.replace("/(tabs)")
           }
@@ -157,138 +245,105 @@ export default function ConnectedEmail() {
   return (
     <Screen>
       <NavHeader
-        title="Mail scan"
-        subtitle="You're in control. Nothing imports without you."
+        title={tt("mailScan.title")}
+        subtitle={tt("mailScan.subtitle")}
         onBack={() =>
           router.canGoBack?.() ? router.back() : router.replace("/(tabs)")
         }
       />
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}>
-        <View style={{ alignItems: "center" }}>
-        </View>
 
         {scanProgress ? <ScanProgressCard progress={scanProgress} /> : null}
 
-        {!!connectedProvider ? (
+        {/* Connected accounts */}
+        {connectedAccounts.map((account) => (
+          <AccountCard
+            key={account.id}
+            account={account}
+            onScan={onScan}
+            onDisconnect={onDisconnect}
+            isLoading={isLoading}
+            t={t}
+            tt={tt}
+          />
+        ))}
+
+        {/* Scan all — only shown when multiple accounts */}
+        {connectedAccounts.length > 1 ? (
+          <Button
+            title={tt("mailScan.scanAll")}
+            onPress={onScanAll}
+            disabled={isLoading}
+          />
+        ) : null}
+
+        {/* Add another account */}
+        {connectedAccounts.length > 0 ? (
+          <Pressable
+            onPress={() => router.push("/account/connect-email")}
+            style={{ paddingVertical: 14, alignItems: "center" }}
+            accessibilityRole="button"
+            accessibilityLabel={tt("mailScan.addAccount")}
+          >
+            <Text style={{ color: t.accent, fontWeight: "800", fontSize: 16 }}>
+              + {tt("mailScan.addAccount")}
+            </Text>
+          </Pressable>
+        ) : null}
+
+        {/* No accounts: show connect options */}
+        {connectedAccounts.length === 0 ? (
           <Card>
             <Text style={{ color: t.text, fontWeight: "900", fontSize: 16 }}>
-              {providerLabel}
-            </Text>
-
-            <Text style={{ color: t.subtext, marginTop: 4 }}>
-              {connectedEmail || "—"}
-            </Text>
-
-            <View style={{ height: 10 }} />
-
-            <Text style={{ color: t.subtext, fontSize: 12 }}>
-              Last scan
-            </Text>
-
-            <Text style={{ color: t.text, fontWeight: "900" }}>
-              {lastScan}
-            </Text>
-
-            <View style={{ height: 14 }} />
-
-            <Button
-              title={isLoading ? "Scanning…" : "Scan inbox"}
-              onPress={onScanInbox}
-              disabled={isLoading}
-            />
-          </Card>
-        ) : (
-          <Card>
-            <Text style={{ color: t.text, fontWeight: "900", fontSize: 16 }}>
-              Connect inbox
+              {tt("mailScan.noAccounts")}
             </Text>
 
             <View style={{ height: 12 }} />
 
             <Button
-              title="Connect Gmail"
-              onPress={async () => {
-                try {
-                  const result = await connectGoogleGmail();
-                  if (result?.ok) {
-                    const store = useEmailImportStore.getState();
-                    store.resetFastPass?.();
-                    store.setConnectedProvider({
-                      provider: "gmail",
-                      email: result.email ?? null,
-                    });
-                    track("gmail_connected", { provider: "gmail" });
-                    toast.show({ message: "Gmail connected — scanning inbox…" });
-                  }
-                } catch (e) {
-                  if (e?.message !== "not_authenticated") {
-                    toast.show({ message: e?.message || "Could not connect Gmail. Try again." });
-                  }
-                }
-              }}
+              title={tt("mailScan.connectGmail")}
+              onPress={onConnectGmail}
             />
 
             <Pressable
               onPress={() => router.push("/account/connect-email")}
               style={{ marginTop: 12, alignItems: "center" }}
+              accessibilityRole="button"
             >
               <Text style={{ color: t.accent, fontWeight: "800" }}>
-                Other email provider
+                {tt("mailScan.otherProvider")}
               </Text>
             </Pressable>
           </Card>
-        )}
+        ) : null}
 
+        {/* Review detected subscriptions */}
         {candidates?.length ? (
           <Pressable
-            onPress={() =>
-              router.push("/account/connect-email/review")
-            }
-            style={{ alignItems: "center" }}
+            onPress={() => router.push("/account/connect-email/review")}
+            style={{ paddingVertical: 10, alignItems: "center" }}
+            accessibilityRole="button"
+            accessibilityLabel={tt("mailScan.reviewDetected", { count: candidates.length })}
           >
             <Text style={{ color: t.accent, fontWeight: "800" }}>
-              Review detected subscriptions ({candidates.length})
+              {tt("mailScan.reviewDetected", { count: candidates.length })}
             </Text>
           </Pressable>
         ) : null}
 
-        {connectedProvider ? (
+        {/* Clear results */}
+        {connectedAccounts.length > 0 && candidates?.length ? (
           <Card>
             <Button
-              title={`Disconnect ${providerLabel}`}
-              variant="danger"
-              onPress={onDisconnect}
+              title={tt("mailScan.clearResults")}
+              variant="secondary"
+              onPress={onClear}
               disabled={isLoading}
             />
-
-            {candidates?.length ? (
-              <>
-                <View style={{ height: 8 }} />
-
-                <Button
-                  title="Clear scan results"
-                  variant="secondary"
-                  onPress={onClear}
-                  disabled={isLoading}
-                />
-              </>
-            ) : null}
           </Card>
         ) : null}
 
-        {isGmail ? (
-          <Pressable
-            onPress={() =>
-              Linking.openURL("https://myaccount.google.com/permissions")
-            }
-            style={{ paddingVertical: 10, alignItems: "center" }}
-          >
-            <Text style={{ color: t.subtext, fontWeight: "800" }}>
-              Manage Google permissions →
-            </Text>
-          </Pressable>
-        ) : null}
       </ScrollView>
     </Screen>
   );

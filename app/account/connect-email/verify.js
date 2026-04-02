@@ -25,8 +25,9 @@ export default function ConnectEmailVerify() {
   );
 
   const verifyCredentials = useEmailImportStore((x) => x.verifyCredentials);
-  const runScan = useEmailImportStore((x) => x.runScan);
-  const setConnectedProvider = useEmailImportStore((x) => x.setConnectedProvider);
+  const addAccount = useEmailImportStore((x) => x.addAccount);
+  const saveImapCredentials = useEmailImportStore((x) => x.saveImapCredentials);
+  const scanAccount = useEmailImportStore((x) => x.scanAccount);
   const isLoading = useEmailImportStore((x) => x.isLoading);
   const error = useEmailImportStore((x) => x.error);
   const clearError = useEmailImportStore((x) => x.clearError);
@@ -49,15 +50,13 @@ export default function ConnectEmailVerify() {
         pass,
       });
 
-      setConnectedProvider({
-        provider: providerKey,
-        email: email.trim(),
-      });
+      const accountId = `${providerKey}:${email.trim()}`;
+      addAccount({ provider: providerKey, email: email.trim() });
+      await saveImapCredentials(accountId, email.trim(), pass);
 
       router.replace("/account/connect-email/connected");
 
-      runScan({
-        provider: providerKey,
+      scanAccount(accountId, {
         user: email.trim(),
         pass,
         daysBack: 365,

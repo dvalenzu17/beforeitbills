@@ -21,7 +21,18 @@
     "emailTitle": "Email",
     "emailInvalid": "That email looks off.",
     "errorTitle": "Error",
-    "skip": "Skip for now"
+    "skip": "Skip for now",
+    "signInFailed": "Sign in failed",
+    "signInFailedBody": "Check your email and password and try again.",
+    "signUpFailed": "Sign up failed",
+    "signUpFailedBody": "Could not create account. Please try again.",
+    "accountSetupError": "Account setup error",
+    "accountSetupErrorBody": "Your account was created but profile setup failed. Please contact support — this is on our end.",
+    "resetSent": "Reset sent",
+    "resetSentBody": "Check your inbox.",
+    "resetFailed": "Reset failed",
+    "resetFailedBody": "Try again.",
+    "enterEmailFirst": "Enter your email first"
   },
   "features": {
     "title": "Feature Hub",
@@ -107,7 +118,10 @@
     "addManually": "Add manually",
     "reviewDetections": "Review {{n}} new email detection",
     "reviewDetectionsPlural": "Review {{n}} new email detections",
-    "fromInboxScan": "from your inbox scan"
+    "fromInboxScan": "from your inbox scan",
+    "fromManualEntries": "from manual entries",
+    "urgentCount": "{{n}} urgent",
+    "newFromInbox": "{{n}} new from inbox"
   },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
@@ -175,7 +189,9 @@
     "day": "Day {{n}}",
     "today": "Today",
     "projected": "{{amount}} projected",
-    "noDataYet": "Add a subscription to see charts"
+    "noDataYet": "Add a subscription to see charts",
+    "addManually": "Add manually",
+    "scanInbox": "Scan inbox"
   },
   "account": {
     "freePill": "FREE",
@@ -366,7 +382,10 @@
     "bullet3": "Disconnect anytime from Account settings",
     "footnote": "Works with Gmail. Outlook, Yahoo, and iCloud coming soon.",
     "ctaConnect": "Connect inbox",
-    "ctaManual": "Add manually instead"
+    "ctaManual": "Add manually instead",
+    "errorTitle": "Connect failed",
+    "errorBody": "Could not connect. Please try again.",
+    "gmailConnectFailed": "Could not connect Gmail. Try again."
   },
   "done": {
     "title": "Add manually",
@@ -444,7 +463,59 @@
     "connectInbox": "Connect inbox",
     "noMatches": "No matches",
     "noMatchesBody": "Try clearing filters or searching by domain.",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "saveErrorTitle": "Could not save",
+    "saveErrorBody": "Something went wrong. Please try again.",
+    "saveFailedTitle": "Save failed",
+    "saveFailedBody": "Something went wrong. Please try again.",
+    "actionFailedTitle": "Action failed",
+    "actionFailedBody": "Something went wrong. Please try again.",
+    "notFound": "Recurring expense not found.",
+    "notFoundSub": "It may have been deleted.",
+    "goBack": "Go back",
+    "deleteTitle": "Delete",
+    "archiveTitle": "Archive",
+    "deleteBody": "This will permanently delete it.",
+    "archiveBody": "This will mark it inactive.",
+    "cancelLabel": "Cancel",
+    "billFormTitle": "Bill",
+    "subFormTitle": "Subscription"
+  },
+  "help": {
+    "title": "Help",
+    "subtitle": "Support and quick answers",
+    "quickAnswers": "Quick answers",
+    "troubleshooting": "Troubleshooting",
+    "contact": "Contact",
+    "contactBody": "Found a bug or have an idea? Send feedback with diagnostic details attached.",
+    "sendFeedback": "Send feedback / report a bug",
+    "diagnosticsTitle": "Diagnostics",
+    "refreshedTitle": "System refreshed",
+    "refreshedBody": "Subscriptions, reminders, and sync were refreshed.",
+    "rebuildFailedTitle": "Rebuild failed",
+    "rebuildFailedBody": "Something went wrong. Please try again.",
+    "faq1Title": "Why can't email scanning be tested here?",
+    "faq1Sub": "Authentication restrictions explained",
+    "faq1Body": "Some authentication flows require the full app environment. Try again using the installed app version.",
+    "faq2Title": "How do reminders work?",
+    "faq2Sub": "Renewal notifications explained",
+    "faq2Body": "Reminders are scheduled locally to alert you before renewals or bill due dates.",
+    "faq3Title": "How do I export my data?",
+    "faq3Sub": "Download CSV or JSON",
+    "faq3Body": "Open Account → Export Data to download your subscriptions and bills.",
+    "diagCardTitle": "Run diagnostics",
+    "diagCardSub": "Check system health",
+    "rebuildCardTitle": "Refresh system",
+    "rebuildCardSub": "Rebuild subscriptions and reminders"
+  },
+  "sub_screen": {
+    "notFound": "Subscription not found",
+    "savedTitle": "Saved",
+    "savedBody": "Subscription updated.",
+    "deleteTitle": "Delete subscription",
+    "deleteBody": "Are you sure?",
+    "cancelLabel": "Cancel",
+    "deleteLabel": "Delete"
   },
   "brand_screen": {
     "subscriptions": "Subscriptions",
@@ -491,6 +562,36 @@
     "scanRange": "Scan range",
     "days": "{{n}}d"
   },
+  "mailScan": {
+    "title": "Mail scan",
+    "subtitle": "You're in control. Nothing imports without you.",
+    "addAccount": "Add account",
+    "scanAll": "Scan all accounts",
+    "scanInbox": "Scan inbox",
+    "scanning": "Scanning…",
+    "lastScan": "Last scan",
+    "notYet": "Not scanned yet",
+    "scanFailed": "Scan failed. Tap 'Scan inbox' to retry.",
+    "disconnect": "Disconnect",
+    "disconnectConfirmTitle": "Disconnect {{provider}}?",
+    "disconnectConfirmBody": "You'll stop auto-detection. Your saved recurring items stay.",
+    "disconnected": "Disconnected",
+    "clearResults": "Clear scan results",
+    "clearConfirmTitle": "Clear scan results?",
+    "clearConfirmBody": "This removes detected results. Your email stays untouched.",
+    "resultsCleared": "Results cleared",
+    "noAccounts": "Connect inbox",
+    "connectGmail": "Connect Gmail",
+    "otherProvider": "Other email provider",
+    "gmailConnecting": "Gmail connected — scanning inbox…",
+    "reviewDetected": "Review detected subscriptions ({{count}})",
+    "manageGoogle": "Manage Google permissions",
+    "scanHowFarTitle": "Scan inbox",
+    "scanHowFarBody": "How far back should we look?",
+    "scan6m": "6 months",
+    "scan1y": "1 year",
+    "scan2y": "2 years"
+  },
   "reviewQueue": {
     "title": "Review subscriptions",
     "subtitle": "Confirm subscriptions before they bill",
@@ -530,6 +631,18 @@
       "gmailAccounts": "Gmail accounts",
       "csvExport": "CSV export",
       "imapConnect": "Connect email (IMAP)"
+    },
+    "values": {
+      "upTo": "Up to {{n}}",
+      "unlimited": "Unlimited",
+      "nEmails": "{{n}} emails",
+      "alertFree": "24hr before (×1)",
+      "alertPro": "3 days + 24hr + 1hr",
+      "nDays": "{{n}} days",
+      "nMonths": "{{n}} months",
+      "monthlyTotal": "Monthly total",
+      "trendsAndCategories": "Trends + categories",
+      "unlocked": "Unlocked"
     }
   },
   "export": {
@@ -542,13 +655,45 @@
     "exportCsv": "Export CSV",
     "exportJson": "Export JSON",
     "exporting": "Exporting…",
-    "proLocked": "Pro feature — upgrade to unlock"
+    "proLocked": "Pro feature — upgrade to unlock",
+    "errorTitle": "Export failed",
+    "errorBody": "Try again.",
+    "shareDialogCsv": "Export Subscriptions",
+    "shareDialogJson": "Export Backup"
   },
-  "insights": {
-    "addManually": "Add manually",
-    "scanInbox": "Scan inbox"
-  },
-  "home": {
-    "fromManualEntries": "from manual entries"
+  "personal": {
+    "title": "Personal information",
+    "subtitle": "Name and username save locally. Email changes require sign-in.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "usernameLabel": "Username",
+    "usernameHint": "Letters, numbers, underscores only. Must be unique.",
+    "emailLabel": "Email",
+    "emailHint": "Heads up: you may need to confirm email changes.",
+    "signInHint": "Sign in to change email.",
+    "saveBtn": "Save changes",
+    "saving": "Saving…",
+    "usernameTitle": "Username",
+    "usernameEmpty": "Username cannot be empty.",
+    "usernameTooShort": "Must be at least 3 characters.",
+    "usernameInvalidChars": "Only letters, numbers, and underscores.",
+    "usernameTakenTitle": "Username taken",
+    "usernameTakenBody": "@{{username}} is already in use. Try another.",
+    "savedLocalTitle": "Saved",
+    "savedLocalBody": "Saved on this device. Sign in to sync and update email.",
+    "savedTitle": "Saved",
+    "savedBody": "Personal info updated.",
+    "saveFailedTitle": "Save failed",
+    "saveFailedBody": "Something went wrong. Please try again.",
+    "pendingTitle": "Confirmation pending",
+    "pendingBody": "We sent a confirmation to {{email}}. Check your inbox.",
+    "resendLink": "Resend confirmation email",
+    "resending": "Sending…",
+    "resendSentTitle": "Email sent",
+    "resendSentBody": "Check your inbox for the confirmation link.",
+    "resendFailedTitle": "Failed to resend",
+    "resendFailedBody": "Try again in a moment.",
+    "uploadFailedTitle": "Upload failed",
+    "uploadFailedBody": "Your photo was saved locally but couldn't sync."
   }
 }

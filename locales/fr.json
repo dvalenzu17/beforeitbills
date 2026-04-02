@@ -21,7 +21,18 @@
     "emailTitle": "Email",
     "emailInvalid": "Cet email semble incorrect.",
     "errorTitle": "Error",
-    "skip": "Ignorer pour l’instant"
+    "skip": "Ignorer pour l’instant",
+    "signInFailed": "Échec de la connexion",
+    "signInFailedBody": "Vérifiez votre e-mail et mot de passe, puis réessayez.",
+    "signUpFailed": "Échec de l’inscription",
+    "signUpFailedBody": "Impossible de créer le compte. Réessayez.",
+    "accountSetupError": "Erreur de configuration",
+    "accountSetupErrorBody": "Votre compte a été créé mais la configuration du profil a échoué. Contactez le support — c’est de notre côté.",
+    "resetSent": "E-mail envoyé",
+    "resetSentBody": "Vérifiez votre boîte de réception.",
+    "resetFailed": "Échec de l’envoi",
+    "resetFailedBody": "Réessayez.",
+    "enterEmailFirst": "Entrez d’abord votre e-mail"
   },
   "features": {
     "title": "Hub Fonctionnalités",
@@ -96,7 +107,10 @@
     "upcoming": "Upcoming",
     "noUpcoming": "No upcoming payments yet.",
     "billSubtitle": "bill · {{date}}",
-    "subSubtitle": "{{cadence}} · {{date}}"
+    "subSubtitle": "{{cadence}} · {{date}}",
+    "fromManualEntries": "depuis les entrées manuelles",
+    "urgentCount": "{{n}} urgent",
+    "newFromInbox": "{{n}} nouveau de la boîte"
   },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
@@ -127,7 +141,9 @@
     "tip2": "• Flag shared expenses — your totals become reality-based.",
     "tip3": "• Keep next due dates clean: the calendar is your profit center.",
     "defaultSubCategory": "Subscriptions",
-    "defaultBillCategory": "Bills"
+    "defaultBillCategory": "Bills",
+    "addManually": "Ajouter manuellement",
+    "scanInbox": "Analyser la boîte"
   },
   "account": {
     "freePill": "FREE",
@@ -283,6 +299,36 @@
     "scanRange": "Plage d'analyse",
     "days": "{{n}}j"
   },
+  "mailScan": {
+    "title": "Analyse de courrier",
+    "subtitle": "Vous gardez le contrôle. Rien n'est importé sans vous.",
+    "addAccount": "Ajouter un compte",
+    "scanAll": "Analyser tous les comptes",
+    "scanInbox": "Analyser la boîte",
+    "scanning": "Analyse en cours…",
+    "lastScan": "Dernière analyse",
+    "notYet": "Pas encore analysé",
+    "scanFailed": "Échec de l'analyse. Appuyez sur 'Analyser la boîte' pour réessayer.",
+    "disconnect": "Déconnecter",
+    "disconnectConfirmTitle": "Déconnecter {{provider}} ?",
+    "disconnectConfirmBody": "La détection automatique s'arrêtera. Vos éléments enregistrés restent.",
+    "disconnected": "Déconnecté",
+    "clearResults": "Effacer les résultats",
+    "clearConfirmTitle": "Effacer les résultats ?",
+    "clearConfirmBody": "Cela supprime les résultats détectés. Votre courrier n'est pas modifié.",
+    "resultsCleared": "Résultats effacés",
+    "noAccounts": "Connecter la boîte",
+    "connectGmail": "Connecter Gmail",
+    "otherProvider": "Autre fournisseur de messagerie",
+    "gmailConnecting": "Gmail connecté — analyse de la boîte…",
+    "reviewDetected": "Revoir les abonnements détectés ({{count}})",
+    "manageGoogle": "Gérer les autorisations Google",
+    "scanHowFarTitle": "Analyser la boîte",
+    "scanHowFarBody": "Jusqu'où devons-nous remonter ?",
+    "scan6m": "6 mois",
+    "scan1y": "1 an",
+    "scan2y": "2 ans"
+  },
   "reviewQueue": {
     "title": "Vérifier les abonnements",
     "subtitle": "Confirmez les abonnements avant facturation",
@@ -322,6 +368,18 @@
       "gmailAccounts": "Comptes Gmail",
       "csvExport": "Export CSV",
       "imapConnect": "Connexion e-mail (IMAP)"
+    },
+    "values": {
+      "upTo": "Jusqu'à {{n}}",
+      "unlimited": "Illimité",
+      "nEmails": "{{n}} e-mails",
+      "alertFree": "24h avant (×1)",
+      "alertPro": "3 jours + 24h + 1h",
+      "nDays": "{{n}} jours",
+      "nMonths": "{{n}} mois",
+      "monthlyTotal": "Total mensuel",
+      "trendsAndCategories": "Tendances + catégories",
+      "unlocked": "Débloqué"
     }
   },
   "export": {
@@ -334,13 +392,104 @@
     "exportCsv": "Exporter CSV",
     "exportJson": "Exporter JSON",
     "exporting": "Export en cours…",
-    "proLocked": "Fonctionnalité Pro — passez à Pro pour débloquer"
+    "proLocked": "Fonctionnalité Pro — passez à Pro pour débloquer",
+    "errorTitle": "Échec de l'exportation",
+    "errorBody": "Réessayez.",
+    "shareDialogCsv": "Exporter les abonnements",
+    "shareDialogJson": "Exporter la sauvegarde"
   },
-  "insights": {
-    "addManually": "Ajouter manuellement",
-    "scanInbox": "Analyser la boîte"
+  "connect": {
+    "errorTitle": "Échec de la connexion",
+    "errorBody": "Impossible de connecter. Réessayez.",
+    "gmailConnectFailed": "Impossible de connecter Gmail. Réessayez."
   },
-  "home": {
-    "fromManualEntries": "depuis les entrées manuelles"
+  "recurring_screen": {
+    "saveErrorTitle": "Impossible d'enregistrer",
+    "saveErrorBody": "Une erreur s'est produite. Réessayez.",
+    "saveFailedTitle": "Échec de l'enregistrement",
+    "saveFailedBody": "Une erreur s'est produite. Réessayez.",
+    "actionFailedTitle": "Action échouée",
+    "actionFailedBody": "Une erreur s'est produite. Réessayez.",
+    "notFound": "Dépense récurrente introuvable.",
+    "notFoundSub": "Elle a peut-être été supprimée.",
+    "goBack": "Retour",
+    "deleteTitle": "Supprimer",
+    "archiveTitle": "Archiver",
+    "deleteBody": "Cette action est permanente.",
+    "archiveBody": "Cela marquera l'élément comme inactif.",
+    "cancelLabel": "Annuler",
+    "billFormTitle": "Facture",
+    "subFormTitle": "Abonnement"
+  },
+  "help": {
+    "title": "Aide",
+    "subtitle": "Support et réponses rapides",
+    "quickAnswers": "Réponses rapides",
+    "troubleshooting": "Dépannage",
+    "contact": "Contact",
+    "contactBody": "Un bug ou une idée ? Envoyez vos commentaires avec les détails de diagnostic.",
+    "sendFeedback": "Envoyer un commentaire / signaler un bug",
+    "diagnosticsTitle": "Diagnostics",
+    "refreshedTitle": "Système actualisé",
+    "refreshedBody": "Abonnements, rappels et synchronisation ont été actualisés.",
+    "rebuildFailedTitle": "Échec de la reconstruction",
+    "rebuildFailedBody": "Une erreur s'est produite. Réessayez.",
+    "faq1Title": "Pourquoi le scan e-mail ne peut-il pas être testé ici ?",
+    "faq1Sub": "Restrictions d'authentification expliquées",
+    "faq1Body": "Certains flux d'authentification nécessitent l'environnement complet de l'app. Réessayez avec la version installée.",
+    "faq2Title": "Comment fonctionnent les rappels ?",
+    "faq2Sub": "Notifications de renouvellement expliquées",
+    "faq2Body": "Les rappels sont planifiés localement pour vous alerter avant les renouvellements ou échéances.",
+    "faq3Title": "Comment exporter mes données ?",
+    "faq3Sub": "Télécharger CSV ou JSON",
+    "faq3Body": "Ouvrez Compte → Exporter les données pour télécharger vos abonnements et factures.",
+    "diagCardTitle": "Lancer les diagnostics",
+    "diagCardSub": "Vérifier l'état du système",
+    "rebuildCardTitle": "Actualiser le système",
+    "rebuildCardSub": "Reconstruire les abonnements et rappels"
+  },
+  "sub_screen": {
+    "notFound": "Abonnement introuvable",
+    "savedTitle": "Enregistré",
+    "savedBody": "Abonnement mis à jour.",
+    "deleteTitle": "Supprimer l'abonnement",
+    "deleteBody": "Êtes-vous sûr ?",
+    "cancelLabel": "Annuler",
+    "deleteLabel": "Supprimer"
+  },
+  "personal": {
+    "title": "Informations personnelles",
+    "subtitle": "Le nom et l'identifiant sont enregistrés localement. Les changements d'e-mail nécessitent une connexion.",
+    "nameLabel": "Nom",
+    "namePlaceholder": "Votre nom",
+    "usernameLabel": "Identifiant",
+    "usernameHint": "Lettres, chiffres et tirets bas uniquement. Doit être unique.",
+    "emailLabel": "E-mail",
+    "emailHint": "Attention : vous devrez peut-être confirmer les changements d'e-mail.",
+    "signInHint": "Connectez-vous pour modifier l'e-mail.",
+    "saveBtn": "Enregistrer les modifications",
+    "saving": "Enregistrement…",
+    "usernameTitle": "Identifiant",
+    "usernameEmpty": "L'identifiant ne peut pas être vide.",
+    "usernameTooShort": "Doit comporter au moins 3 caractères.",
+    "usernameInvalidChars": "Lettres, chiffres et tirets bas uniquement.",
+    "usernameTakenTitle": "Identifiant déjà pris",
+    "usernameTakenBody": "@{{username}} est déjà utilisé. Essayez-en un autre.",
+    "savedLocalTitle": "Enregistré",
+    "savedLocalBody": "Enregistré sur cet appareil. Connectez-vous pour synchroniser.",
+    "savedTitle": "Enregistré",
+    "savedBody": "Informations personnelles mises à jour.",
+    "saveFailedTitle": "Échec de l'enregistrement",
+    "saveFailedBody": "Une erreur s'est produite. Veuillez réessayer.",
+    "pendingTitle": "Confirmation en attente",
+    "pendingBody": "Nous avons envoyé une confirmation à {{email}}. Vérifiez votre boîte.",
+    "resendLink": "Renvoyer l'e-mail de confirmation",
+    "resending": "Envoi…",
+    "resendSentTitle": "E-mail envoyé",
+    "resendSentBody": "Vérifiez votre boîte de réception.",
+    "resendFailedTitle": "Échec du renvoi",
+    "resendFailedBody": "Réessayez dans un instant.",
+    "uploadFailedTitle": "Échec du téléchargement",
+    "uploadFailedBody": "Votre photo a été enregistrée localement mais n'a pas pu être synchronisée."
   }
 }
