@@ -23,6 +23,7 @@ module.exports = {
 
     ios: {
       bundleIdentifier: "com.beforeitbills.app",
+      buildNumber: "16",
       userInterfaceStyle: "automatic",
       supportsTablet: false,
       config: {
