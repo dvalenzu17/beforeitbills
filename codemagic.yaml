@@ -4,6 +4,9 @@ workflows:
     max_build_duration: 90
     instance_type: mac_mini_m2
 
+    integrations:
+      app_store_connect: AppStoreConnect
+
     environment:
       node: 20.18.0
       xcode: 16.1
@@ -32,13 +35,10 @@ workflows:
             com.beforeitbills.app.SubsWidget; do
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
               --type IOS_APP_STORE \
-              --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-              --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-              --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
               --create
           done
           keychain add-certificates
-          xcode-project use-profiles --project-path ios/BeforeItBills.xcodeproj
+          xcode-project use-profiles
 
       - name: Build IPA
         script: |
@@ -52,9 +52,7 @@ workflows:
 
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
