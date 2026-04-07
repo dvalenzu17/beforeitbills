@@ -50,11 +50,7 @@
       },
       "env": {
         "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "@EXPO_PUBLIC_REVENUECAT_ANDROID_KEY",
-        "EXPO_PUBLIC_SCAN_TRANSPORT": "backend",
-        "SENTRY_AUTH_TOKEN": "@SENTRY_AUTH_TOKEN",
-        "SENTRY_PROJECT": "beforeitbills",
-        "SENTRY_ORG": "beforeitbills",
-        "SENTRY_ALLOW_FAILURE": "true"
+        "EXPO_PUBLIC_SCAN_TRANSPORT": "backend"
       }
     }
   },

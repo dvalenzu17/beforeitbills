@@ -61,14 +61,6 @@ module.exports = {
       ],
       "expo-web-browser",
       [
-        "@sentry/react-native/expo",
-        {
-          url: "https://sentry.io/",
-          project: process.env.SENTRY_PROJECT || "beforeitbills",
-          organization: process.env.SENTRY_ORG || "beforeitbills",
-        },
-      ],
-      [
         "@react-native-google-signin/google-signin",
         {
           iosUrlScheme: "com.googleusercontent.apps.577544895857-igb9t8cbphcfao6idjjot8u81h3nbp4t",
