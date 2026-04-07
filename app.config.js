@@ -65,7 +65,7 @@ module.exports = {
         {
           url: "https://sentry.io/",
           project: process.env.SENTRY_PROJECT || "beforeitbills",
-          organization: process.env.SENTRY_ORG || "miraiware-studios",
+          organization: process.env.SENTRY_ORG || "beforeitbills",
         },
       ],
       [
