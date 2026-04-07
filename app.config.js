@@ -33,7 +33,7 @@ module.exports = {
         "aps-environment": "production",
         "com.apple.security.application-groups": ["group.com.beforeitbills.app"],
       },
-    }, // Fixed missing closing brace here
+    }, 
 
     android: {
       package: "com.beforeitbills.app",
