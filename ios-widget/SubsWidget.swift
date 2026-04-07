@@ -252,8 +252,12 @@ struct SubsWidget: Widget {
 
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: SubsProvider()) { entry in
-      SubsWidgetView(entry: entry)
-        .containerBackground(Color(hex: "#0E1320"), for: .widget)
+      if #available(iOSApplicationExtension 17.0, *) {
+        SubsWidgetView(entry: entry)
+          .containerBackground(Color(hex: "#0E1320"), for: .widget)
+      } else {
+        SubsWidgetView(entry: entry)
+      }
     }
     .configurationDisplayName("Upcoming Bills")
     .description("See your next subscriptions and bills at a glance.")
