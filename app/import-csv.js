@@ -82,7 +82,7 @@ export default function ImportCSVScreen() {
           <View key={i} style={{ paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: "#f0f0f0" }}>
             <Text style={{ fontWeight: "600" }}>{t.raw_merchant}</Text>
             <Text>{new Date(t.date).toDateString()} · {(t.amount_cents/100).toFixed(2)} {t.currency}</Text>
-            <Text style={{ opacity: 0.7 }}>Linked to: {t.subId ? findSubName(state.subs, t.subId) : "— (no match)"}</Text>
+            <Text style={{ opacity: 0.7 }}>Linked to: {t.subId ? findSubName(state.subs, t.subId) : "  (no match)"}</Text>
           </View>
         ))}
       </ScrollView>

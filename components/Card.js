@@ -1,26 +1,11 @@
-// app/components/Card.js
-import React from 'react';
-import { View } from 'react-native';
-import { useTheme } from '../lib/theme';
+// components/Card.js
+import React from "react";
+import CardBase from "./ui/CardBase";
 
-
-
-export default function Card({ children, style }) {
-  const t = useTheme();
+export default function Card({ children, style, variant = "default" }) {
   return (
-    <View
-      style={[
-        {
-          backgroundColor: t.surface,
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: t.border,
-          padding: 12
-        },
-        style
-      ]}
-    >
+    <CardBase variant={variant} style={style}>
       {children}
-    </View>
+    </CardBase>
   );
 }

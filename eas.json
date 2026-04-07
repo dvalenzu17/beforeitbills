@@ -6,16 +6,64 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.18.0",
+      "android": {
+        "buildType": "apk",
+        "autoIncrement": "versionCode"
+      },
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "@EXPO_PUBLIC_REVENUECAT_ANDROID_KEY",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_SCAN_TRANSPORT": "mock",
+        "SENTRY_ALLOW_FAILURE": "true"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.18.0",
+      "android": {
+        "buildType": "apk",
+        "autoIncrement": "versionCode"
+      },
+      "ios": {
+        "image": "macos-sonoma-14.6-xcode-16.1"
+      },
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "@EXPO_PUBLIC_REVENUECAT_ANDROID_KEY",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_SCAN_TRANSPORT": "backend",
+        "SENTRY_ALLOW_FAILURE": "true"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "distribution": "store",
+      "node": "20.18.0",
+      "android": {
+        "buildType": "app-bundle",
+        "autoIncrement": "versionCode"
+      },
+      "ios": {
+        "image": "macos-sonoma-14.6-xcode-16.1",
+        "autoIncrement": "buildNumber"
+      },
+      "env": {
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "@EXPO_PUBLIC_REVENUECAT_ANDROID_KEY",
+        "EXPO_PUBLIC_SCAN_TRANSPORT": "backend",
+        "SENTRY_AUTH_TOKEN": "@SENTRY_AUTH_TOKEN",
+        "SENTRY_PROJECT": "beforeitbills",
+        "SENTRY_ORG": "beforeitbills",
+        "SENTRY_ALLOW_FAILURE": "true"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "daniel.valenz@icloud.com",
+        "ascAppId": "6760515650",
+        "appleTeamId": "4RWRT2WU2H"
+      }
+    }
   }
 }

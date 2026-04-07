@@ -1,0 +1,7 @@
+{
+  "name": "widget-bridge",
+  "version": "1.0.0",
+  "description": "Native bridge to push subscription data to home-screen widgets",
+  "main": "index.js",
+  "license": "MIT"
+}

@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Sublytics",
+    "name": "BeforeItBills",
     "slug": "sublytics",
     "scheme": "sublytics",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/profile.png",
+    "icon": "/assets/BeforeItBillsLogo.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/profile.png",
+      "image": "/assets/BeforeItBillsLogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#0F1115"
     },
