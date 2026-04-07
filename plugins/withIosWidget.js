@@ -150,12 +150,19 @@ function embedExtension(project, mainProjectName, extTargetUuid) {
   if (!productRef) return;
 
   // 1. Find or Create the "Embed App Extensions" phase
-  const buildPhases = project.hash.project.objects.PBXCopyFilesBuildPhase || {};
+  // Look up via the main target's own buildPhases list to avoid cross-plugin name-match failures
+  const allCopyPhases = project.hash.project.objects.PBXCopyFilesBuildPhase || {};
+  const mainTargetPhaseUuids = (mainTarget.buildPhases || []).map(bp => bp.value || bp);
   let embedPhaseUuid = null;
 
-  for (const [uuid, phase] of Object.entries(buildPhases)) {
-    if (typeof phase === 'object' && phase.name === '"Embed App Extensions"') {
-      embedPhaseUuid = uuid;
+  for (const phaseUuid of mainTargetPhaseUuids) {
+    const phase = allCopyPhases[phaseUuid];
+    if (phase && (
+      phase.name === '"Embed App Extensions"' ||
+      phase.name === 'Embed App Extensions' ||
+      phase.dstSubfolderSpec === 13
+    )) {
+      embedPhaseUuid = phaseUuid;
       break;
     }
   }
@@ -174,12 +181,10 @@ function embedExtension(project, mainProjectName, extTargetUuid) {
   if (embedPhaseUuid) {
     const pbxBuildPhase = project.hash.project.objects.PBXCopyFilesBuildPhase[embedPhaseUuid];
 
-    // Ensure the phase is in PlugIns (13), not PrivateHeaders (16) or elsewhere
     if (pbxBuildPhase.dstSubfolderSpec !== 13) {
       pbxBuildPhase.dstSubfolderSpec = 13;
     }
 
-    // Check by fileRef, not buildFile UUID — files[] holds PBXBuildFile UUIDs, not product refs
     const buildFiles = project.hash.project.objects.PBXBuildFile || {};
     const isAlreadyInPhase = pbxBuildPhase.files.some(f => {
       const bf = buildFiles[f.value];

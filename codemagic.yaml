@@ -5,20 +5,14 @@ workflows:
     instance_type: mac_mini_m2
 
     integrations:
-      app_store_connect: AppStoreConnect  
+      app_store_connect: AppStoreConnect
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier:
-          - com.beforeitbills.app
-          - com.beforeitbills.app.ShareExtension
-          - com.beforeitbills.app.SubsWidget
       node: 20.18.0
       xcode: 16.1
       cocoapods: default
       groups:
-        - bib_env  # create this group in Codemagic UI with the vars below
+        - bib_env
 
     scripts:
       - name: Install JS dependencies
@@ -31,6 +25,34 @@ workflows:
         script: |
           cd ios
           pod install
+
+      - name: Set up keychain and fetch signing files
+        script: |
+          set -e
+          keychain initialize
+          for BUNDLE_ID in \
+            com.beforeitbills.app \
+            com.beforeitbills.app.ShareExtension \
+            com.beforeitbills.app.SubsWidget; do
+            app-store-connect fetch-signing-files "$BUNDLE_ID" \
+              --type IOS_APP_STORE \
+              --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
+              --create \
+              --delete-stale-profiles \
+              --log-api-calls
+          done
+          keychain add-certificates
+          cd ios && xcode-project use-profiles
+
+      - name: Debug signing state
+        script: |
+          echo "=== Find ALL provisioning profiles on disk ==="
+          find /Users/builder /tmp -name "*.mobileprovision" 2>/dev/null || echo "none found anywhere"
+          echo "=== Find ALL p12 certificates on disk ==="
+          find /Users/builder /tmp -name "*.p12" 2>/dev/null || echo "none found"
+          echo "=== Xcode build settings (provisioning) ==="
+          xcodebuild -workspace ios/BeforeItBills.xcworkspace -scheme BeforeItBills -showBuildSettings 2>/dev/null \
+            | grep -E "PROVISIONING_PROFILE|CODE_SIGN|BUNDLE_IDENTIFIER" | head -60
 
       - name: Build IPA
         script: |
