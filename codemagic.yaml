@@ -9,7 +9,7 @@ workflows:
 
     environment:
       node: 20.18.0
-      xcode: 16.1
+      xcode: 26.0
       cocoapods: default
       groups:
         - bib_env
