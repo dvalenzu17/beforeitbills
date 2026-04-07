@@ -10,10 +10,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier:
-          - com.beforeitbills.app
-          - com.beforeitbills.app.ShareExtension
-          - com.beforeitbills.app.SubsWidget
+        bundle_identifier: com.beforeitbills.app
       node: 20.18.0
       xcode: 16.1
       cocoapods: default
