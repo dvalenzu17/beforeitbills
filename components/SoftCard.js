@@ -1,8 +1,8 @@
-// app/components/SoftCard.js
+// components/SoftCard.js
 import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '../lib/theme';
-
+import { SPACING } from "../lib/ui/tokens";
 export default function SoftCard({ children, style }) {
   const t = useTheme();
   return (
@@ -10,12 +10,12 @@ export default function SoftCard({ children, style }) {
       style={[
         {
           backgroundColor: t.soft,
-          borderRadius: 16,
+          borderRadius: t.radius,
           borderWidth: 1,
           borderColor: t.border,
-          padding: 12
+          padding: SPACING.screen,
         },
-        style
+        style,
       ]}
     >
       {children}

@@ -6,7 +6,9 @@
     "save": "Enregistrer",
     "v1Label": "V1 stub",
     "v1Body": "This is a basic placeholder UI so we can iterate fast. Real logic + backend wiring comes next.",
-    "backToFeatures": "Back to Features"
+    "backToFeatures": "Back to Features",
+    "back": "Retour",
+    "share": "Partager"
   },
   "tabs": {
     "home": "Accueil",
@@ -32,7 +34,8 @@
     "resetSentBody": "Vérifiez votre boîte de réception.",
     "resetFailed": "Échec de l’envoi",
     "resetFailedBody": "Réessayez.",
-    "enterEmailFirst": "Entrez d’abord votre e-mail"
+    "enterEmailFirst": "Entrez d’abord votre e-mail",
+    "appleSignInFailedBody": "La connexion avec Apple a échoué. Réessayez ou utilisez votre e-mail."
   },
   "features": {
     "title": "Hub Fonctionnalités",
@@ -112,6 +115,26 @@
     "urgentCount": "{{n}} urgent",
     "newFromInbox": "{{n}} nouveau de la boîte"
   },
+  "conflict": {
+    "title": "Conflit de synchronisation",
+    "titlePlural": "{{n}} conflits de synchronisation",
+    "subtitle": "Cet élément a été modifié sur deux appareils. Choisissez la version à conserver.",
+    "unknownItem": "Abonnement",
+    "thisDevice": "Cet appareil",
+    "otherDevice": "Autre appareil",
+    "keepMine": "Garder la mienne",
+    "useTheirs": "Utiliser la leur",
+    "skipForNow": "Ignorer pour l'instant"
+  },
+  "search": {
+    "placeholder": "Rechercher abonnements et dépenses…",
+    "startTyping": "Tapez pour rechercher dans tous les éléments",
+    "noResults": "Aucun résultat pour « {{q}} »",
+    "result": "résultat",
+    "results": "résultats",
+    "kindSubscription": "Abonnement",
+    "kindBill": "Dépense"
+  },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
     "connectTitle": "Connect Gmail (read-only)",
@@ -143,7 +166,14 @@
     "defaultSubCategory": "Subscriptions",
     "defaultBillCategory": "Bills",
     "addManually": "Ajouter manuellement",
-    "scanInbox": "Analyser la boîte"
+    "scanInbox": "Analyser la boîte",
+    "forecast": "Prévisions de dépenses",
+    "forecastSub": "Projection sur 12 mois · appuyer pour inspecter",
+    "forecastAnnual": "À ce rythme : {{amount}}/an",
+    "monthTrend": "Mois par mois",
+    "monthTrendSub": "6 derniers mois",
+    "flatVsLastMonth": "Stable par rapport au mois dernier",
+    "vsLastMonth": "{{pct}}% par rapport au mois dernier"
   },
   "account": {
     "freePill": "FREE",
@@ -419,7 +449,10 @@
     "archiveBody": "Cela marquera l'élément comme inactif.",
     "cancelLabel": "Annuler",
     "billFormTitle": "Facture",
-    "subFormTitle": "Abonnement"
+    "subFormTitle": "Abonnement",
+    "contextCancel": "Résilier l'abonnement",
+    "sortCustom": "Réorganiser",
+    "dragHint": "Appuyez longuement sur ≡ pour déplacer"
   },
   "help": {
     "title": "Aide",
@@ -491,5 +524,45 @@
     "resendFailedBody": "Réessayez dans un instant.",
     "uploadFailedTitle": "Échec du téléchargement",
     "uploadFailedBody": "Votre photo a été enregistrée localement mais n'a pas pu être synchronisée."
+  },
+  "settings": {
+    "title": "Paramètres",
+    "sectionAppearance": "Apparence",
+    "automatic": "Automatique",
+    "automaticSub": "Suivre l'apparence du système",
+    "light": "Clair",
+    "dark": "Sombre",
+    "sectionLanguage": "Langue",
+    "sectionData": "Données",
+    "exportData": "Exporter les données",
+    "exportDataSub": "Télécharger les abonnements",
+    "rebuildSystem": "Reconstruire le système",
+    "rebuildSystemSub": "Rafraîchir la synchro et les rappels",
+    "sectionSupport": "Assistance",
+    "help": "Aide",
+    "helpSub": "FAQ et assistance",
+    "privacyTerms": "Confidentialité et conditions",
+    "privacyTermsSub": "Documents légaux",
+    "about": "À propos",
+    "aboutSub": "Version et crédits",
+    "sectionSecurity": "Sécurité",
+    "biometricLock": "Verrouillage biométrique",
+    "biometricLockSub": "Face ID ou empreinte digitale",
+    "sectionAdvanced": "Avancé",
+    "resetData": "Réinitialiser les données locales",
+    "resetDataSub": "Effacer les abonnements et rappels",
+    "sectionShortcuts": "Actions rapides",
+    "shortcutsTitle": "Raccourcis sur l'écran d'accueil",
+    "shortcutsSub": "Appuyez longuement sur l'icône pour accéder rapidement",
+    "shortcutsAvailable": "3 raccourcis prêts",
+    "shortcutsUnavailable": "Reconstruire l'app pour activer les raccourcis"
+  },
+  "shortcuts": {
+    "addTitle": "Ajouter un abonnement",
+    "addSub": "Suivre un nouveau prélèvement récurrent",
+    "spendingTitle": "Voir les dépenses",
+    "spendingSub": "Consultez votre taux mensuel",
+    "scanTitle": "Scanner la boîte mail",
+    "scanSub": "Trouver des abonnements dans vos e-mails"
   }
 }

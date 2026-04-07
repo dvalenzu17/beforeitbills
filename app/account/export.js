@@ -42,9 +42,9 @@ export default function ExportScreen() {
       const csv = [header, ...rows].join("\n");
       const path = FileSystem.cacheDirectory + "beforeitbills-subscriptions.csv";
       await FileSystem.writeAsStringAsync(path, csv);
-      await Sharing.shareAsync(path, { mimeType: "text/csv", dialogTitle: "Export Subscriptions" });
+      await Sharing.shareAsync(path, { mimeType: "text/csv", dialogTitle: tt("export.shareDialogCsv") });
     } catch (e) {
-      Alert.alert("Export failed", e?.message || "Try again.");
+      Alert.alert(tt("export.errorTitle"), tt("export.errorBody"));
     } finally {
       setBusy(false);
     }
@@ -64,9 +64,9 @@ export default function ExportScreen() {
       };
       const path = FileSystem.cacheDirectory + "beforeitbills-backup.json";
       await FileSystem.writeAsStringAsync(path, JSON.stringify(payload, null, 2));
-      await Sharing.shareAsync(path, { mimeType: "application/json", dialogTitle: "Export Backup (JSON)" });
+      await Sharing.shareAsync(path, { mimeType: "application/json", dialogTitle: tt("export.shareDialogJson") });
     } catch (e) {
-      Alert.alert("Export failed", e?.message || "Try again.");
+      Alert.alert(tt("export.errorTitle"), tt("export.errorBody"));
     } finally {
       setBusy(false);
     }

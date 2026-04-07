@@ -4,9 +4,12 @@
     "continue": "Continue",
     "cancel": "Cancel",
     "save": "Save",
+    "back": "Back",
+    "share": "Share",
     "v1Label": "V1 stub",
     "v1Body": "This is a basic placeholder UI so we can iterate fast. Real logic + backend wiring comes next.",
-    "backToFeatures": "Back to Features"
+    "backToFeatures": "Back to Features",
+    "syncing": "Syncing…"
   },
   "tabs": {
     "home": "Home",
@@ -32,7 +35,8 @@
     "resetSentBody": "Check your inbox.",
     "resetFailed": "Reset failed",
     "resetFailedBody": "Try again.",
-    "enterEmailFirst": "Enter your email first"
+    "enterEmailFirst": "Enter your email first",
+    "appleSignInFailedBody": "Apple Sign In failed. Please try again or use email."
   },
   "features": {
     "title": "Feature Hub",
@@ -123,6 +127,26 @@
     "urgentCount": "{{n}} urgent",
     "newFromInbox": "{{n}} new from inbox"
   },
+  "conflict": {
+    "title": "Sync conflict",
+    "titlePlural": "{{n}} sync conflicts",
+    "subtitle": "This item was edited on two devices. Choose which version to keep.",
+    "unknownItem": "Subscription",
+    "thisDevice": "This device",
+    "otherDevice": "Other device",
+    "keepMine": "Keep mine",
+    "useTheirs": "Use theirs",
+    "skipForNow": "Skip for now"
+  },
+  "search": {
+    "placeholder": "Search subscriptions & bills…",
+    "startTyping": "Type to search across all items",
+    "noResults": "No results for \"{{q}}\"",
+    "result": "result",
+    "results": "results",
+    "kindSubscription": "Subscription",
+    "kindBill": "Bill"
+  },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
     "connectTitle": "Connect Gmail (read-only)",
@@ -191,7 +215,14 @@
     "projected": "{{amount}} projected",
     "noDataYet": "Add a subscription to see charts",
     "addManually": "Add manually",
-    "scanInbox": "Scan inbox"
+    "scanInbox": "Scan inbox",
+    "forecast": "Spending forecast",
+    "forecastSub": "12-month projection · tap to inspect",
+    "forecastAnnual": "At this rate: {{amount}}/yr",
+    "monthTrend": "Month over month",
+    "monthTrendSub": "Past 6 months",
+    "flatVsLastMonth": "Stable vs last month",
+    "vsLastMonth": "{{pct}}% vs last month"
   },
   "account": {
     "freePill": "FREE",
@@ -412,9 +443,16 @@
     "remind3dSub": "Enough time to act without forgetting.",
     "remind1d": "1 day before",
     "remind1dSub": "Last chance reminder.",
-    "footnote": "Reminders are sent at 9 AM on the day they're due.",
+    "sectionTime": "Reminder time",
+    "timeLabel": "Send reminders at",
+    "timeSub": "All reminders fire at this time each day.",
+    "footnote": "Reminders fire at {{time}} on the day they're due. You'll only be reminded for items with a renewal date set.",
     "onAlert": "Reminders on",
+    "onBody": "You'll be reminded {{days}} day(s) before each charge, at {{time}}.",
     "offAlert": "Reminders off",
+    "offBody": "You won't receive renewal reminders.",
+    "blockedTitle": "Notifications blocked",
+    "blockedBody": "Go to Settings → BeforeItBills → Notifications and allow notifications, then try again.",
     "save": "Save"
   },
   "settings": {
@@ -437,9 +475,37 @@
     "privacyTermsSub": "Legal documents",
     "about": "About",
     "aboutSub": "Version and credits",
+    "sectionSecurity": "Security",
+    "biometricLock": "Biometric lock",
+    "biometricLockSub": "Face ID or fingerprint",
     "sectionAdvanced": "Advanced",
     "resetData": "Reset local data",
-    "resetDataSub": "Clear subscriptions and reminders"
+    "resetDataSub": "Clear subscriptions and reminders",
+    "sectionShortcuts": "Quick Actions",
+    "shortcutsTitle": "Home screen shortcuts",
+    "shortcutsSub": "Long-press the app icon to jump straight in",
+    "shortcutsAvailable": "3 shortcuts ready",
+    "shortcutsUnavailable": "Rebuild app to enable shortcuts"
+  },
+  "shortcuts": {
+    "addTitle": "Add Subscription",
+    "addSub": "Track a new recurring charge",
+    "spendingTitle": "View Spending",
+    "spendingSub": "See your monthly burn rate",
+    "scanTitle": "Scan Inbox",
+    "scanSub": "Find subscriptions in your email"
+  },
+  "biometricLock": {
+    "title": "Biometric lock",
+    "toggle": "Require biometrics on open",
+    "toggleSub": "Face ID, fingerprint, or device PIN",
+    "description": "When enabled, you'll be asked to authenticate each time you open the app or return from the background.",
+    "unavailable": "No biometric authentication is set up on this device.",
+    "failTitle": "Authentication required",
+    "failBody": "You must authenticate to enable biometric lock.",
+    "lockedTitle": "BeforeItBills is locked",
+    "unlock": "Unlock",
+    "authenticating": "Authenticating…"
   },
   "recurring_screen": {
     "title": "All recurring",
@@ -456,7 +522,16 @@
     "sortAmount": "Sort: $↓",
     "sortNext": "Sort: next",
     "sortName": "Sort: A→Z",
+    "sortCustom": "Reorder",
+    "dragHint": "Long-press ≡ to drag",
     "results": "{{n}} results",
+    "swipeEdit": "Edit",
+    "swipeArchive": "Archive",
+    "swipeDelete": "Delete",
+    "contextCancel": "Cancel subscription",
+    "deleteAlertTitle": "Delete item?",
+    "deleteAlertBody": "{{name}} will be permanently removed from your list.",
+    "deleteAlertConfirm": "Delete",
     "nothingTracked": "Nothing tracked yet",
     "nothingTrackedBody": "Add one recurring item to start.",
     "addRecurring": "Add recurring",

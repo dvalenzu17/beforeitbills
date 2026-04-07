@@ -1,6 +1,6 @@
 // app/(tabs)/index.js
-import React, { useEffect, useMemo, useState } from "react";
-import { View, ScrollView, Text, Pressable } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { View, ScrollView, Text, Pressable, InteractionManager } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { MotiView } from "moti";
@@ -13,7 +13,10 @@ import Button from "../../components/Button";
 import PressableScale from "../../components/PressableScale";
 import ListItem from "../../components/ListItem";
 import ProofModal from "../../components/ProofModal";
+import ContextMenuSheet from "../../components/ContextMenuSheet";
+import CelebrationSheet from "../../components/CelebrationSheet";
 import HomeSkeleton from "../../components/HomeSkeleton";
+import { BiBRefreshControl, BiBRefreshBanner } from "../../components/BiBRefreshControl";
 import MonthlyDigestCard from "../../components/MonthlyDigestCard";
 import SetupChecklistCard from "../../components/SetupCheckListCard";
 import ScanSummaryCard from "../../components/ScanSummaryCard";
@@ -47,7 +50,7 @@ function daysUntil(dateStr) {
   return Math.ceil((d.getTime() - Date.now()) / 86400000);
 }
 
-function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnected, greetingKey, tt }) {
+function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnected, greetingKey, tt, onSearch }) {
   const hour = new Date().getHours();
   const greeting = tt(greetingKey) || (hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening");
 
@@ -59,8 +62,21 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
     >
       <T.Sub style={{ marginBottom: 2 }}>{greeting}</T.Sub>
 
-      <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <T.Title style={{ fontSize: 30 }}>{displayName}</T.Title>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <T.Title style={{ fontSize: 30, flex: 1 }}>{displayName}</T.Title>
+        <Pressable
+          onPress={onSearch}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={tt("search.placeholder") || "Search"}
+          style={{
+            padding: 10, borderRadius: 14,
+            borderWidth: 1, borderColor: t.hairline,
+            backgroundColor: t.surface,
+          }}
+        >
+          <Feather name="search" size={18} color={t.text} />
+        </Pressable>
       </View>
 
       {/* Urgent / inbox badges only — spend is shown in MonthlyDigestCard */}
@@ -75,7 +91,7 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
             }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#FF3B30" }} />
               <Text style={{ color: "#FF3B30", fontWeight: "800", fontSize: 12 }}>
-                {urgentCount} urgent
+                {tt("home.urgentCount", { n: urgentCount })}
               </Text>
             </View>
           )}
@@ -88,7 +104,7 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
             }}>
               <Feather name="mail" size={11} color={t.accent} />
               <Text style={{ color: t.accent, fontWeight: "800", fontSize: 12 }}>
-                {candidateCount} new from inbox
+                {tt("home.newFromInbox", { n: candidateCount })}
               </Text>
             </View>
           )}
@@ -152,7 +168,7 @@ function ActionCard({ t, item, onPress }) {
 }
 
 // ── Upcoming tabs ─────────────────────────────────────────────────────────────
-function UpcomingTabs({ t, subs, bills, onPressItem, tt }) {
+function UpcomingTabs({ t, subs, bills, onPressItem, onLongPressItem, tt }) {
   const [tab, setTab] = useState("subscriptions");
   const items = tab === "subscriptions" ? subs : bills;
 
@@ -210,6 +226,7 @@ function UpcomingTabs({ t, subs, bills, onPressItem, tt }) {
               billIconKey={x.billIconKey}
               index={i}
               onPress={() => onPressItem(x)}
+              onLongPress={() => onLongPressItem?.(x)}
             />
           ))}
         </View>
@@ -234,6 +251,7 @@ export default function Home() {
     loadMail, loadProfile, user, profile,
     fetchSubs, loadSubsLocal, loadBills,
     getActionFeed, getRecurring, notificationSettings,
+    savings, updateSub, updateBill, deleteSub, deleteBill,
   } = useStore();
 
   const emailStateHydrate = useEmailImportStore((s) => s.hydrate);
@@ -257,6 +275,9 @@ export default function Home() {
   const [proofOpen, setProofOpen] = useState(false);
   const [proofItem, setProofItem] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [contextItem, setContextItem] = useState(null);
+  const [celebration, setCelebration] = useState(null);
 
   const openProof = (x) => { setProofItem(x); setProofOpen(true); };
 
@@ -267,22 +288,49 @@ export default function Home() {
     track("app_opened");
   }, []);
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadMail?.();
+      await loadBills?.();
+      await loadProfile?.();
+      if (user) await fetchSubs?.();
+      else await loadSubsLocal?.();
+    } catch (e) {
+      if (__DEV__) console.warn("[home] refresh failed:", e?.message);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     const timeout = setTimeout(() => setInitialLoading(false), 30_000);
+
     (async () => {
       try {
-        await loadProfile?.();
+        // Phase 1: local reads only — fast, no network, unblocks render immediately
         await loadMail?.();
         await loadBills?.();
-        if (user) await fetchSubs?.();
-        else await loadSubsLocal?.();
+        await loadSubsLocal?.();
+        await loadProfile?.();
       } catch (e) {
-        if (__DEV__) console.warn("[home] initial load failed:", e?.message);
+        if (__DEV__) console.warn("[home] local load failed:", e?.message);
       } finally {
         clearTimeout(timeout);
         setInitialLoading(false);
       }
+
+      // Phase 2: cloud sync deferred until after animations settle
+      // so the navigation transition isn't competing with network I/O
+      if (user) {
+        InteractionManager.runAfterInteractions(() => {
+          fetchSubs?.().catch((e) => {
+            if (__DEV__) console.warn("[home] background sync failed:", e?.message);
+          });
+        });
+      }
     })();
+
     return () => clearTimeout(timeout);
   }, [user]);
 
@@ -396,7 +444,11 @@ export default function Home() {
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <BiBRefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
+        <BiBRefreshBanner refreshing={refreshing} />
         {/* ── HERO ── */}
         <HeroSection
           t={t}
@@ -406,6 +458,7 @@ export default function Home() {
           emailConnected={emailConnected}
           greetingKey={greetingKey}
           tt={tt}
+          onSearch={() => r.push("/search")}
         />
 
         {initialLoading ? (
@@ -414,87 +467,164 @@ export default function Home() {
           <>
 
         {/* ── EMAIL REVIEW BANNER — above the fold when detections exist ── */}
-        {!initialLoading && candidateCount > 0 && (
-          <Pressable
-            onPress={() => r.push("/account/connect-email/review")}
-            style={({ pressed }) => ({
-              borderRadius: 16,
-              overflow: "hidden",
-              opacity: pressed ? 0.88 : 1,
-            })}
+        {candidateCount > 0 && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 0 }}
           >
-            <LinearGradient
-              colors={[t.accent, "#6366F1"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                paddingVertical: 14,
-                paddingHorizontal: 18,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
+            <Pressable
+              onPress={() => r.push("/account/connect-email/review")}
+              style={({ pressed }) => ({
+                borderRadius: 16,
+                overflow: "hidden",
+                opacity: pressed ? 0.88 : 1,
+              })}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Feather name="mail" size={18} color="#fff" />
-                <View>
-                  <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
-                    Review {candidateCount} new email detection{candidateCount !== 1 ? "s" : ""}
-                  </Text>
-                  <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 1 }}>
-                    Tap to confirm from your inbox scan
-                  </Text>
+              <LinearGradient
+                colors={[t.accent, "#6366F1"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  paddingVertical: 14,
+                  paddingHorizontal: 18,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <Feather name="mail" size={18} color="#fff" />
+                  <View>
+                    <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
+                      Review {candidateCount} new email detection{candidateCount !== 1 ? "s" : ""}
+                    </Text>
+                    <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 1 }}>
+                      Tap to confirm from your inbox scan
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              <Feather name="arrow-right" size={18} color="#fff" />
-            </LinearGradient>
-          </Pressable>
+                <Feather name="arrow-right" size={18} color="#fff" />
+              </LinearGradient>
+            </Pressable>
+          </MotiView>
         )}
 
         {/* ── MONTHLY DIGEST — month label + view all + share ── */}
-        <MonthlyDigestCard
-          recurring={recurring}
-          subs={subs}
-          bills={bills}
-          currency="USD"
-          emailConnected={emailConnected}
-          onOpenRecap={() => r.push("/(tabs)/insights?recap=1")}
-          onViewAll={() => r.push("/recurring")}
-        />
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 60 }}
+        >
+          <MonthlyDigestCard
+            recurring={recurring}
+            subs={subs}
+            bills={bills}
+            currency="USD"
+            emailConnected={emailConnected}
+            onOpenRecap={() => r.push("/(tabs)/insights?recap=1")}
+            onViewAll={() => r.push("/recurring")}
+          />
+        </MotiView>
+
+        {/* ── SAVINGS TRACKER — only when something has been cancelled ── */}
+        {(savings?.totalSaved > 0) && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 90 }}
+          >
+            <Pressable
+              onPress={() => r.push("/recurring")}
+              style={({ pressed }) => ({
+                borderRadius: 18,
+                overflow: "hidden",
+                opacity: pressed ? 0.88 : 1,
+              })}
+            >
+              <LinearGradient
+                colors={["#064E3B", "#065F46"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 16,
+                  paddingHorizontal: 18,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: "#34D39944",
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                  <Text style={{ fontSize: 24 }}>🎉</Text>
+                  <View>
+                    <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
+                      You've saved {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(savings.totalSaved)}/mo
+                    </Text>
+                    <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 }}>
+                      From {savings.entries?.length || 0} cancelled subscription{savings.entries?.length !== 1 ? "s" : ""}
+                    </Text>
+                  </View>
+                </View>
+                <Feather name="arrow-right" size={16} color="rgba(255,255,255,0.6)" />
+              </LinearGradient>
+            </Pressable>
+          </MotiView>
+        )}
 
         {/* ── SETUP CHECKLIST (hides when dismissed) ── */}
-        <SetupChecklistCard
-          steps={steps}
-          demoMode={demoMode}
-          dismissed={dismissed}
-          isDone={isDone?.()}
-          onDismiss={dismissChecklist}
-          onEnableDemo={enableDemo}
-          onDisableDemo={disableDemo}
-          onMarkReviewedUpcoming={() => markStep?.("reviewedUpcoming", true)}
-        />
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 120 }}
+        >
+          <SetupChecklistCard
+            steps={steps}
+            demoMode={demoMode}
+            dismissed={dismissed}
+            isDone={isDone?.()}
+            onDismiss={dismissChecklist}
+            onEnableDemo={enableDemo}
+            onDisableDemo={disableDemo}
+            onMarkReviewedUpcoming={() => markStep?.("reviewedUpcoming", true)}
+          />
+        </MotiView>
    
 
         {/* ── QUICK ADD — full width ── */}
-        <Button
-          title={tt("home.addRecurring")}
-          onPress={() => r.push("/add-recurring")}
-          left={<Feather name="plus" size={16} color="#fff" />}
-        />
+        <MotiView
+          from={{ opacity: 0, translateY: 10 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 180 }}
+        >
+          <Button
+            title={tt("home.addRecurring")}
+            onPress={() => r.push("/add-recurring")}
+            left={<Feather name="plus" size={16} color="#fff" />}
+          />
+        </MotiView>
         {/* ── NEXT ACTIONS ── */}
         {actionFeed.length > 0 && (
-          <HomeSection title={tt("home.nextActions")}>
-            <VStack gap={8}>
-              {actionFeed.slice(0, 4).map((a, idx) => (
-                <ActionCard
-                  key={`${a.kind}-${idx}`}
-                  t={t}
-                  item={a}
-                  onPress={() => a.href ? r.push(a.href) : null}
-                />
-              ))}
-            </VStack>
-          </HomeSection>
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 240 }}
+          >
+            <HomeSection title={tt("home.nextActions")}>
+              <VStack gap={8}>
+                {actionFeed.slice(0, 4).map((a, idx) => (
+                  <ActionCard
+                    key={`${a.kind}-${idx}`}
+                    t={t}
+                    item={a}
+                    onPress={() => a.href ? r.push(a.href) : null}
+                  />
+                ))}
+              </VStack>
+            </HomeSection>
+          </MotiView>
         )}
 
         {/* ── TRIALS ── */}
@@ -569,6 +699,10 @@ export default function Home() {
                     markStep?.("reviewedUpcoming", true);
                     r.push({ pathname: "/brand", params: { domain: x.domain || "", name: x.name || "" } });
                   }}
+                  onLongPressItem={(x) => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+                    setContextItem(x);
+                  }}
                 />
               </View>
 
@@ -580,6 +714,39 @@ export default function Home() {
         )}
       </ScrollView>
       <ProofModal visible={proofOpen} item={proofItem} onClose={() => setProofOpen(false)} />
+      <ContextMenuSheet
+        visible={!!contextItem}
+        item={contextItem}
+        onClose={() => setContextItem(null)}
+        onEdit={() => {
+          if (!contextItem) return;
+          const kind = contextItem.kind === "bill" ? "bill" : "subscription";
+          r.push(`/recurring/${kind}/${contextItem.id}`);
+        }}
+        onArchive={async () => {
+          if (!contextItem) return;
+          try {
+            const result = contextItem.kind === "bill"
+              ? await updateBill?.(contextItem.id, { active: false })
+              : await updateSub?.(contextItem.id, { active: false });
+            if (result?.savedEntry) setCelebration(result.savedEntry);
+          } catch (e) {
+            if (__DEV__) console.warn("[home] archive failed:", e?.message);
+          }
+        }}
+        onCancel={contextItem?.kind !== "bill" ? () => {
+          if (!contextItem) return;
+          r.push({
+            pathname: "/cancel-center",
+            params: { name: contextItem.name || "", domain: contextItem.domain || "", cadence: contextItem.cadence || "" },
+          });
+        } : null}
+      />
+      <CelebrationSheet
+        visible={!!celebration}
+        entry={celebration}
+        onDismiss={() => setCelebration(null)}
+      />
     </Screen>
   );
 }

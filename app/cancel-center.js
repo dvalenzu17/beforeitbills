@@ -1,100 +1,404 @@
 // app/cancel-center.js
-import React, { useMemo } from 'react';
-import { ScrollView, View, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../lib/theme';
-import { useStore } from '../lib/store';
-import Card from '../components/Card';
-import Button from '../components/Button';
-import { A } from '../lib/arr';
+import React, { useMemo, useState } from "react";
+import { View, Text, ScrollView, Pressable, TextInput, Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import * as Linking from "expo-linking";
+import { SPACING } from "../lib/ui/tokens";
+
+import { useTheme } from "../lib/theme";
+import BrandAvatar from "../components/BrandAvatar";
+import Button from "../components/Button";
+import EmptyStateCard from "../components/EmptyStateCard";
+
+function norm(s) {
+  return String(s || "").trim();
+}
+
+function domainToSupportUrl(domain) {
+  if (!domain) return null;
+  const d = domain.replace(/^www\./, "");
+  return `https://${d}/help`;
+}
+
+async function tryCopy(text) {
+  // Optional dependency: won’t crash if not installed.
+  try {
+    const Clipboard = await import("expo-clipboard");
+    if (Clipboard?.setStringAsync) {
+      await Clipboard.setStringAsync(String(text || ""));
+      return true;
+    }
+  } catch {}
+
+  // Fallback: still not a dead end
+  Alert.alert("Copy not available", "Install expo-clipboard to enable 1-tap copy on this device.");
+  return false;
+}
+
+function buildEmailTemplate({ brand, domain, userEmail, reason }) {
+  const b = brand || domain || "your service";
+  return {
+    subject: `Cancellation request — ${b}`,
+    body: `Hi ${b} Support,
+
+Please cancel my subscription and stop any future charges.
+
+Account email: ${userEmail || "[your email]"}
+Reason: ${reason || "No longer needed"}
+
+Please confirm cancellation and the effective date.
+
+Thanks,`,
+  };
+}
+
+function buildChatScript({ brand, reason }) {
+  const b = brand || "this service";
+  return `Hey! I want to cancel my ${b} subscription and make sure I won’t be charged again.
+Reason: ${reason || "No longer needed"}.
+Please confirm cancellation + effective date.`;
+}
+
+function Step({ idx, text }) {
+  const t = useTheme();
+
+  return (
+    <View style={{ flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
+      <View
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 15,
+          borderWidth: 1,
+          borderColor: t.hairline,
+          backgroundColor: t.surface2,
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: 2,
+        }}
+      >
+        <Text style={{ color: t.text, fontWeight: "900", fontSize: 13 }}>
+          {idx}
+        </Text>
+      </View>
+
+      <Text style={{ color: t.text, lineHeight: 20, flex: 1 }}>
+        {text}
+      </Text>
+    </View>
+  );
+}
 
 export default function CancelCenter() {
   const t = useTheme();
-  const { subs = [] } = useStore();
+  const r = useRouter();
+  const params = useLocalSearchParams();
 
-  const canceled = useMemo(() => A(subs).filter(s => A(s?.tags).includes('canceled')), [subs]);
-  const candidates = useMemo(() => {
-    return A(subs).filter(s => {
-      const tags = A(s?.tags);
-      const isTrial = s?.trial?.isTrial;
-      const lowSpend = (Number(s?.amount) || 0) <= 6;
-      const dupCat = !!A(subs).find(o => o !== s && (o?.category || 'Other') === (s?.category || 'Other'));
-      return !tags.includes('canceled') && (isTrial || dupCat || lowSpend);
-    });
-  }, [subs]);
+  const brand = norm(params?.name || params?.brand || "");
+  const domain = norm(params?.domain || "");
+  const plan = norm(params?.plan || "");
+  const price = norm(params?.price || "");
+  const cadence = norm(params?.cadence || "");
 
-  const inProgress = useMemo(() => A(subs).filter(s => !!s?.cancelFollowupAt), [subs]);
+  const [tier, setTier] = useState("tier0"); // tier0 | tier1 | tier2
+  const [userEmail, setUserEmail] = useState("");
+  const [reason, setReason] = useState("");
 
-  const byCategory = useMemo(() => {
-    const m = {};
-    for (const s of A(subs)) {
-      const k = s?.category || 'Other';
-      m[k] = (m[k] || 0) + (Number(s?.amount) || 0);
-    }
-    return Object.entries(m).sort((a, b) => b[1] - a[1]);
-  }, [subs]);
+  const [ticketStatus, setTicketStatus] = useState("Not started"); // Not started | Submitted | Waiting | Confirmed
+  const supportUrl = useMemo(() => domainToSupportUrl(domain), [domain]);
+
+  const steps = useMemo(() => {
+    const b = brand || domain || "this service";
+    return [
+      `Open ${b} account settings (usually “Settings” → “Subscription” or “Billing”).`,
+      `Look for “Cancel subscription” / “Manage plan” and follow the prompts.`,
+      `Take a screenshot of the cancellation confirmation page/email.`,
+      `Verify you received a confirmation email. If not, contact support.`,
+    ];
+  }, [brand, domain]);
+
+  const templates = useMemo(
+    () => ({
+      email: buildEmailTemplate({ brand, domain, userEmail, reason }),
+      chat: buildChatScript({ brand, reason }),
+    }),
+    [brand, domain, userEmail, reason]
+  );
+
+  const headerTitle = brand || (domain ? domain.replace(/^www\./, "") : "Cancel Center");
+
+  const Tab = ({ id, label }) => (
+    <Pressable
+      onPress={() => setTier(id)}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: t.hairline,
+        backgroundColor: tier === id ? t.surface2 : t.surface,
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ color: t.text, fontWeight: "800", fontSize: 12 }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+
+  const CopyBox = ({ title, text }) => (
+    <View
+      style={{
+        padding: 12,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: t.hairline,
+        backgroundColor: t.surface2,
+        gap: 8,
+      }}
+    >
+      <Text style={{ color: t.subtext, fontWeight: "900" }}>{title}</Text>
+      <Text style={{ color: t.text, lineHeight: 18 }}>{text}</Text>
+      <Button
+        title="Copy"
+        variant="secondary"
+        onPress={async () => {
+          const ok = await tryCopy(text);
+          if (ok) Alert.alert("Copied", "Paste it into email or chat support.");
+        }}
+        left={<Feather name="copy" size={16} color={t.text} />}
+      />
+    </View>
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: 40 }}>
-        <Text style={{ color: t.text, fontSize: 22, fontWeight: '900' }}>Cancel Center</Text>
+      <View style={{ padding: 16, paddingBottom: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Pressable
+            onPress={() => r.back()}
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: t.hairline,
+              backgroundColor: t.surface,
+            }}
+          >
+            <Feather name="arrow-left" size={16} color={t.text} />
+          </Pressable>
 
-        <Card>
-          <Text style={{ color: t.subtext, fontWeight: '700', marginBottom: 8 }}>Quick insights</Text>
-          <Text style={{ color: t.text }}>Categories by spend</Text>
-          {A(Object.entries(byCategory)).length === 0 ? (
-            <Text style={{ color: t.subtext, marginTop: 6 }}>No data yet.</Text>
-          ) : (
-            A(Object.entries(byCategory)).map(([cat, total]) => (
-              <View key={String(cat)} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-                <Text style={{ color: t.text, fontWeight: '800' }}>{cat}</Text>
-                <Text style={{ color: t.text }}>${Number(total).toFixed(2)}</Text>
-              </View>
-            ))
-          )}
-        </Card>
+          <Text style={{ color: t.text, fontSize: 22, fontWeight: "900" }}>{headerTitle}</Text>
+        </View>
 
-        <Card>
-          <Text style={{ color: t.subtext, fontWeight: '700', marginBottom: 8 }}>In progress</Text>
-          {A(inProgress).length === 0 ? (
-            <Text style={{ color: t.subtext }}>Nothing in progress.</Text>
-          ) : (
-            A(inProgress).map(s => (
-              <View key={s.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 }}>
-                <Text style={{ color: t.text }}>{s.merchant}</Text>
-                <Text style={{ color: t.text }}>{new Date(s.cancelFollowupAt).toLocaleString()}</Text>
-              </View>
-            ))
-          )}
-        </Card>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 }}>
+          <BrandAvatar domain={domain} name={brand || domain} size={52} />
+          <View style={{ flex: 1 }}>
+            {!!plan && <Text style={{ color: t.text, fontWeight: "900" }}>{plan}</Text>}
+            <Text style={{ color: t.subtext, marginTop: 4 }}>
+              {price ? `${price} ` : ""}
+              {cadence ? `/${cadence}` : ""}
+              {domain ? ` · ${domain}` : ""}
+            </Text>
+          </View>
+        </View>
 
-        <Card>
-          <Text style={{ color: t.subtext, fontWeight: '700', marginBottom: 8 }}>Suggestions</Text>
-          {A(candidates).length === 0 ? (
-            <Text style={{ color: t.subtext }}>No suggestions right now.</Text>
-          ) : (
-            A(candidates).map(s => (
-              <View key={s.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 }}>
-                <Text style={{ color: t.text, fontWeight: '800' }}>{s.merchant}</Text>
-                <Button title="View" onPress={() => { /* route to /sub/[id] if desired */ }} />
-              </View>
-            ))
-          )}
-        </Card>
+        <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
+          <Tab id="tier0" label="Tier 0: Steps" />
+          <Tab id="tier1" label="Tier 1: Templates" />
+          <Tab id="tier2" label="Tier 2: Tracking" />
+        </View>
+      </View>
 
-        <Card>
-          <Text style={{ color: t.subtext, fontWeight: '700', marginBottom: 8 }}>Canceled</Text>
-          {A(canceled).length === 0 ? (
-            <Text style={{ color: t.subtext }}>No canceled subscriptions.</Text>
-          ) : (
-            A(canceled).map(s => (
-              <View key={s.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 }}>
-                <Text style={{ color: t.text }}>{s.merchant}</Text>
-                <Text style={{ color: t.text }}>Tagged canceled</Text>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingTop: 6, paddingBottom: 28, gap: 12 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {tier === "tier0" ? (
+          <>
+            <View
+              style={{
+                padding: SPACING.screen,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: t.hairline,
+                backgroundColor: t.surface,
+                gap: 12,
+              }}
+            >
+              <Text style={{ color: t.text, fontWeight: "900", fontSize: 16 }}>Cancel steps</Text>
+              {steps.map((s, i) => (
+                <Step key={i} idx={i + 1} text={s} />
+              ))}
+
+              <View style={{ flexDirection: "row", gap: 10, marginTop: 6 }}>
+                <View style={{ flex: 1 }}>
+                  <Button
+                    title="Open help page"
+                    onPress={async () => {
+                      if (!supportUrl) {
+                        return Alert.alert("Missing domain", "We need a domain to open the help page.");
+                      }
+                      try {
+                        await Linking.openURL(supportUrl);
+                      } catch (e) {
+                        Alert.alert("Couldn’t open link", e?.message || "Try again.");
+                      }
+                    }}
+                    left={<Feather name="external-link" size={16} color="#fff" />}
+                  />
+                </View>
               </View>
-            ))
-          )}
-        </Card>
+            </View>
+
+            <EmptyStateCard
+              icon="shield"
+              title="Pro tip"
+              body="Always wait for a cancellation confirmation email. That’s your receipt if they try to bill you again."
+              primary={{
+                title: "View proof emails",
+                icon: "mail",
+                onPress: () => r.push({ pathname: "/brand", params: { domain, name: brand } }),
+              }}
+            />
+          </>
+        ) : null}
+
+        {tier === "tier1" ? (
+          <>
+            <View
+              style={{
+                padding: SPACING.screen,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: t.hairline,
+                backgroundColor: t.surface,
+                gap: 10,
+              }}
+            >
+              <Text style={{ color: t.text, fontWeight: "900", fontSize: 16 }}>Templates</Text>
+
+              <Text style={{ color: t.subtext, lineHeight: 18 }}>
+                Fill your account email + reason. Then copy/paste into email or chat support.
+              </Text>
+
+              <View style={{ gap: 10 }}>
+                <TextInput
+                  value={userEmail}
+                  onChangeText={setUserEmail}
+                  placeholder="Your account email"
+                  placeholderTextColor={t.tertiary}
+                  autoCapitalize="none"
+                  style={{
+                    borderRadius: 16,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    borderWidth: 1,
+                    borderColor: t.hairline,
+                    backgroundColor: t.surface2,
+                    color: t.text,
+                    fontWeight: "600",
+                  }}
+                />
+                <TextInput
+                  value={reason}
+                  onChangeText={setReason}
+                  placeholder="Reason (optional)"
+                  placeholderTextColor={t.tertiary}
+                  style={{
+                    borderRadius: 16,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    borderWidth: 1,
+                    borderColor: t.hairline,
+                    backgroundColor: t.surface2,
+                    color: t.text,
+                    fontWeight: "600",
+                  }}
+                />
+              </View>
+            </View>
+
+            <CopyBox title="EMAIL SUBJECT" text={templates.email.subject} />
+            <CopyBox title="EMAIL BODY" text={templates.email.body} />
+            <CopyBox title="CHAT SCRIPT" text={templates.chat} />
+          </>
+        ) : null}
+
+        {tier === "tier2" ? (
+          <>
+            <View
+              style={{
+                padding: SPACING.screen,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: t.hairline,
+                backgroundColor: t.surface,
+                gap: 12,
+              }}
+            >
+              <Text style={{ color: t.text, fontWeight: "900", fontSize: 16 }}>
+                Concierge tracking
+              </Text>
+
+              <Text style={{ color: t.subtext, lineHeight: 18 }}>
+                Track your progress so you don’t lose the thread.
+              </Text>
+
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                {["Not started", "Submitted", "Waiting", "Confirmed"].map((s) => (
+                  <Pressable
+                    key={s}
+                    onPress={() => setTicketStatus(s)}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 10,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: ticketStatus === s ? "rgba(255,255,255,0.35)" : t.hairline,
+                      backgroundColor: ticketStatus === s ? t.surface2 : t.surface,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: t.text, fontWeight: "900", fontSize: 12 }}>{s}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Button
+                    title="Create request"
+                    onPress={() => r.push("/account/security")}
+                    left={<Feather name="send" size={16} color="#fff" />}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Button
+                    title="Upload proof"
+                    variant="secondary"
+                    onPress={() => r.push({ pathname: "/brand", params: { domain, name: brand } })}
+                    left={<Feather name="upload" size={16} color={t.text} />}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <EmptyStateCard
+              icon="info"
+              title="Optional"
+              body="Most users will self-cancel with Tier 0. Tracking is here when you need it."
+              primary={{
+                title: "Use Tier 0 steps",
+                icon: "corner-up-left",
+                onPress: () => setTier("tier0"),
+              }}
+            />
+          </>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

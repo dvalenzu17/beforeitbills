@@ -80,16 +80,16 @@ export default function UpgradeScreen() {
 
   const rows = useMemo(
     () => [
-      { label: tt("upgrade.rows.recurringItems"),       free: `Up to ${FREE_RECURRING_LIMIT}`, pro: "Unlimited",           highlightPro: true },
-      { label: tt("upgrade.rows.mailScanDepth"),        free: "100 emails",                    pro: "Unlimited",           highlightPro: true },
-      { label: tt("upgrade.rows.preChargeAlerts"),      free: "24hr before (×1)",              pro: "3 days + 24hr + 1hr", highlightPro: true },
-      { label: tt("upgrade.rows.priceIncreaseAlerts"),  free: "—",                             pro: "✓",                   highlightPro: true },
-      { label: tt("upgrade.rows.cancellationShortcuts"),free: "—",                             pro: "✓",                   highlightPro: true },
-      { label: tt("upgrade.rows.renewalHistory"),       free: "30 days",                       pro: "12 months",           highlightPro: true },
-      { label: tt("upgrade.rows.spendAnalytics"),       free: "Monthly total",                 pro: "Trends + categories", highlightPro: true },
-      { label: tt("upgrade.rows.gmailAccounts"),        free: "1",                             pro: "Up to 5",             highlightPro: true },
-      { label: tt("upgrade.rows.csvExport"),            free: "—",                             pro: "✓",                   highlightPro: true },
-      { label: tt("upgrade.rows.imapConnect"),          free: "—",                             pro: "Unlocked",            highlightPro: true },
+      { label: tt("upgrade.rows.recurringItems"),        free: tt("upgrade.values.upTo", { n: FREE_RECURRING_LIMIT }), pro: tt("upgrade.values.unlimited"),           highlightPro: true },
+      { label: tt("upgrade.rows.mailScanDepth"),         free: tt("upgrade.values.nEmails", { n: 100 }),               pro: tt("upgrade.values.unlimited"),           highlightPro: true },
+      { label: tt("upgrade.rows.preChargeAlerts"),       free: tt("upgrade.values.alertFree"),                         pro: tt("upgrade.values.alertPro"),            highlightPro: true },
+      { label: tt("upgrade.rows.priceIncreaseAlerts"),   free: "—",                                                    pro: "✓",                                      highlightPro: true },
+      { label: tt("upgrade.rows.cancellationShortcuts"), free: "—",                                                    pro: "✓",                                      highlightPro: true },
+      { label: tt("upgrade.rows.renewalHistory"),        free: tt("upgrade.values.nDays", { n: 30 }),                  pro: tt("upgrade.values.nMonths", { n: 12 }), highlightPro: true },
+      { label: tt("upgrade.rows.spendAnalytics"),        free: tt("upgrade.values.monthlyTotal"),                      pro: tt("upgrade.values.trendsAndCategories"), highlightPro: true },
+      { label: tt("upgrade.rows.gmailAccounts"),         free: "1",                                                    pro: tt("upgrade.values.upTo", { n: 5 }),      highlightPro: true },
+      { label: tt("upgrade.rows.csvExport"),             free: "—",                                                    pro: "✓",                                      highlightPro: true },
+      { label: tt("upgrade.rows.imapConnect"),           free: "—",                                                    pro: tt("upgrade.values.unlocked"),            highlightPro: true },
     ],
     [tt]
   );

@@ -1,6 +1,6 @@
 // app/components/SearchSheet.js
-import React, { useState, useMemo } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useMemo, useRef } from 'react';
+import { Modal, View, Text, TextInput, TouchableOpacity, FlatList, PanResponder, Animated } from 'react-native';
 import { useTheme } from '../lib/theme';
 import { useStore } from '../lib/store';
 import { A } from '../lib/arr';
@@ -9,6 +9,23 @@ export default function SearchSheet({ visible, onClose }) {
   const t = useTheme();
   const { subs = [] } = useStore();
   const [q, setQ] = useState('');
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+    onMoveShouldSetPanResponder: (_, g) => g.dy > 6 && Math.abs(g.dy) > Math.abs(g.dx),
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) translateY.setValue(g.dy);
+    },
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 80) {
+        onClose?.();
+        translateY.setValue(0);
+      } else {
+        Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+      }
+    },
+  })).current;
 
   const results = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -23,15 +40,21 @@ export default function SearchSheet({ visible, onClose }) {
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.35)' }}>
-        <View style={{
-          backgroundColor: t.bg,
-          borderTopLeftRadius: 18,
-          borderTopRightRadius: 18,
-          padding: 16,
-          borderTopWidth: 1,
-          borderColor: t.border,
-          maxHeight: '70%'
-        }}>
+        <Animated.View
+          style={{
+            backgroundColor: t.bg,
+            borderTopLeftRadius: 18,
+            borderTopRightRadius: 18,
+            padding: 16,
+            borderTopWidth: 1,
+            borderColor: t.border,
+            maxHeight: '70%',
+            transform: [{ translateY }],
+          }}
+          {...panResponder.panHandlers}
+        >
+          {/* Drag handle */}
+          <View style={{ alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: t.hairline, marginBottom: 12 }} />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
             <Text style={{ color: t.text, fontWeight: '900', fontSize: 16 }}>Search</Text>
             <TouchableOpacity onPress={onClose}><Text style={{ color: t.accent, fontWeight: '800' }}>Close</Text></TouchableOpacity>
@@ -51,6 +74,7 @@ export default function SearchSheet({ visible, onClose }) {
           <FlatList
             data={A(results)}
             keyExtractor={x => String(x.id)}
+            getItemLayout={(_, index) => ({ length: 43, offset: 43 * index, index })}
             renderItem={({ item }) => (
               <View style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: t.border }}>
                 <Text style={{ color: t.text, fontWeight: '800' }}>{item.merchant}</Text>
@@ -59,7 +83,7 @@ export default function SearchSheet({ visible, onClose }) {
             )}
             ListEmptyComponent={<Text style={{ color: t.subtext }}>Type to search subscriptions.</Text>}
           />
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );

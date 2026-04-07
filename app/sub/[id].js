@@ -1,118 +1,329 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, Switch } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { useStore } from '../../lib/store';
-import { formatMoney } from '../../lib/utils';
-import { useTheme } from '../../lib/theme';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
-import CancelPlaybookCard from '../../components/CancelPlaybookCard';
+import React, { useMemo, useState } from "react"
+import {
+View,
+Text,
+TextInput,
+ScrollView,
+TouchableOpacity,
+Switch,
+Alert
+} from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { Feather } from "@expo/vector-icons"
+import { useRouter, useLocalSearchParams } from "expo-router"
 
-export default function SubDetail() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
-  const { subs, updateSub, deleteSub } = useStore();
-  const t = useTheme();
-  const sub = useMemo(() => subs.find(s => String(s.id) === String(id)), [subs, id]);
+import { useTranslation } from "react-i18next"
+import { useTheme } from "../../lib/theme"
+import { useStore } from "../../lib/store"
 
-  const [merchant, setMerchant] = useState(sub?.merchant ?? '');
-  const [amount, setAmount] = useState(String(sub?.amount ?? ''));
-  const [cadence, setCadence] = useState(sub?.cadence ?? 'monthly');
-  const [nextRenewal, setNextRenewal] = useState(sub?.nextRenewal ?? '');
-  const [tags, setTags] = useState((sub?.tags || []).join(', '));
+import NavHeader from "../../components/NavHeader"
+import Button from "../../components/Button"
+import BrandAvatar from "../../components/BrandAvatar"
 
-  const [isTrial, setIsTrial] = useState(!!sub?.trial?.isTrial);
-  const [trialEnd, setTrialEnd] = useState(sub?.trial?.end || '');
+export default function SubscriptionDetail(){
 
-  if (!sub) {
-    return <SafeAreaView style={{ flex: 1 }}><View style={{ padding: 20 }}><Text>Subscription not found.</Text></View></SafeAreaView>;
-  }
+const t = useTheme()
+const r = useRouter()
+const { t: tt } = useTranslation()
+const { id } = useLocalSearchParams()
 
-  function save() {
-    const a = parseFloat(amount);
-    if (!merchant.trim() || isNaN(a) || a <= 0) { Alert.alert('Validation', 'Fix the fields.'); return; }
-    const trial = isTrial && trialEnd ? { isTrial: true, end: trialEnd } : null;
-    updateSub(sub.id, { merchant: merchant.trim(), amount: a, cadence, nextRenewal, tags: tags.split(',').map(t=>t.trim()).filter(Boolean), trial });
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.replace('/(tabs)');
-  }
+const subs = useStore(s => s.subs)
+const updateSub = useStore(s => s.updateSub)
+const archiveSub = useStore(s => s.archiveSub)
+const deleteSub = useStore(s => s.deleteSub)
 
-  function remove() {
-    Alert.alert('Delete', `Delete ${sub.merchant}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => { deleteSub(sub.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); router.replace('/(tabs)'); } }
-    ]);
-  }
+const sub = useMemo(()=>subs.find(s=>String(s.id)===String(id)),[subs,id])
 
-  return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 22, fontWeight: '900', color: t.text, marginBottom: 12 }}>{sub.merchant}</Text>
-        <Text style={{ color: t.subtext, marginBottom: 12 }}>{sub.cadence} • {formatMoney(sub.amount, sub.currency)} • next {sub.nextRenewal}</Text>
+const [merchant,setMerchant] = useState(sub?.merchant || "")
+const [price,setPrice] = useState(String(sub?.price || ""))
+const [cycle,setCycle] = useState(sub?.cycle || "monthly")
+const [active,setActive] = useState(sub?.active ?? true)
 
-        {/* Edit core fields */}
-        <Card>
-          <Text style={{ color: t.subtext, marginBottom: 6, fontWeight: '700' }}>Merchant</Text>
-          <TextInput value={merchant} onChangeText={setMerchant} style={{ borderWidth:1, borderColor:t.border, borderRadius:t.radius, padding:12, color:t.text }} />
+if(!sub){
+return (
+<SafeAreaView style={{flex:1,backgroundColor:t.bg}}>
+<Text style={{padding:20,color:t.text}}>{tt("sub_screen.notFound")}</Text>
+</SafeAreaView>
+)
+}
 
-          <View style={{ height: 16 }} />
-          <Text style={{ color: t.subtext, marginBottom: 6, fontWeight: '700' }}>Amount</Text>
-          <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" style={{ borderWidth:1, borderColor:t.border, borderRadius:t.radius, padding:12, color:t.text }} />
+function save(){
+updateSub?.(sub.id,{
+merchant,
+price: Number(price),
+cycle,
+active
+})
+Alert.alert(tt("sub_screen.savedTitle"), tt("sub_screen.savedBody"))
+}
 
-          <View style={{ height: 16 }} />
-          <Text style={{ color: t.subtext, marginBottom: 6, fontWeight: '700' }}>Cadence</Text>
-          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-            {['monthly','yearly','quarterly','weekly'].map(c => (
-              <Text key={c}
-                style={{ backgroundColor: cadence===c? t.primary : t.surface, color: cadence===c? '#000' : t.text, paddingVertical:8, paddingHorizontal:12, borderRadius:t.radius, fontWeight:'800', borderWidth: cadence===c?0:1, borderColor:t.border }}
-                onPress={() => setCadence(c)}
-              >{c}</Text>
-            ))}
-          </View>
+function archive(){
+archiveSub?.(sub.id)
+r.back()
+}
 
-          <View style={{ height: 16 }} />
-          <Text style={{ color: t.subtext, marginBottom: 6, fontWeight: '700' }}>Next Renewal (YYYY-MM-DD)</Text>
-          <TextInput value={nextRenewal} onChangeText={setNextRenewal} style={{ borderWidth:1, borderColor:t.border, borderRadius:t.radius, padding:12, color:t.text }} />
+function remove(){
+Alert.alert(
+tt("sub_screen.deleteTitle"),
+tt("sub_screen.deleteBody"),
+[
+{text:tt("sub_screen.cancelLabel")},
+{text:tt("sub_screen.deleteLabel"),style:"destructive",onPress:()=>{
+deleteSub?.(sub.id)
+r.replace("/(tabs)/home")
+}}
+]
+)
+}
 
-          <View style={{ height: 16 }} />
-          <Text style={{ color: t.subtext, marginBottom: 6, fontWeight: '700' }}>Tags</Text>
-          <TextInput value={tags} onChangeText={setTags} placeholder="streaming, family"
-            placeholderTextColor={t.subtext} style={{ borderWidth:1, borderColor:t.border, borderRadius:t.radius, padding:12, color:t.text }} />
-        </Card>
+const Card = ({children}) => (
+<View
+style={{
+backgroundColor:t.surface,
+borderRadius:22,
+borderWidth:1,
+borderColor:t.hairline,
+padding:18,
+marginBottom:14
+}}
+>
+{children}
+</View>
+)
 
-        {/* Trial block */}
-        <Card>
-          <Text style={{ color: t.subtext, marginBottom: 10, fontWeight: '700' }}>Trial</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <Text style={{ color: t.text, fontWeight: '800' }}>Is free trial?</Text>
-            <Switch
-              value={isTrial}
-              onValueChange={(v) => setIsTrial(v)}
-              thumbColor={isTrial ? '#000' : undefined}
-              trackColor={{ false: t.border, true: t.primary }}
-            />
-          </View>
-          {isTrial && (
-            <>
-              <Text style={{ color: t.subtext, marginBottom: 6, fontWeight: '700' }}>Trial ends (YYYY-MM-DD)</Text>
-              <TextInput value={trialEnd} onChangeText={setTrialEnd} style={{ borderWidth:1, borderColor:t.border, borderRadius:t.radius, padding:12, color:t.text }} />
-              <Text style={{ color: t.subtext, marginTop: 6, fontSize: 12 }}>You’ll get reminders 3 days and 1 day before this date.</Text>
-            </>
-          )}
-        </Card>
+return (
+<SafeAreaView style={{flex:1,backgroundColor:t.bg}}>
 
-        {/* Cancel playbook */}
-        <CancelPlaybookCard sub={sub} />
+<NavHeader
+title="Subscription"
+onBack={()=>r.back()}
+/>
 
-        <Card>
-          <Button title="Save" onPress={save} />
-          <TouchableOpacity onPress={remove} style={{ backgroundColor:'#FEE2E2', paddingVertical:12, borderRadius:t.radius, marginTop: 10, alignItems:'center' }}>
-            <Text style={{ color:'#B91C1C', fontWeight:'800' }}>Delete</Text>
-          </TouchableOpacity>
-        </Card>
-      </ScrollView>
-    </SafeAreaView>
-  );
+<ScrollView contentContainerStyle={{padding:16,paddingBottom:40}}>
+
+{/* HEADER */}
+
+<View
+style={{
+flexDirection:"row",
+alignItems:"center",
+marginBottom:14
+}}
+>
+
+<BrandAvatar merchant={merchant} size={54}/>
+
+<View style={{marginLeft:12,flex:1}}>
+<Text style={{color:t.text,fontSize:20,fontWeight:"800"}}>
+{merchant}
+</Text>
+<Text style={{color:t.subtext,marginTop:2}}>
+Subscription details
+</Text>
+</View>
+
+</View>
+
+
+{/* TYPE */}
+
+<Card>
+
+<View style={{flexDirection:"row",alignItems:"center",marginBottom:10}}>
+<Feather name="tag" size={18} color={t.subtext}/>
+<Text style={{color:t.text,fontWeight:"700",marginLeft:8}}>
+Type
+</Text>
+</View>
+
+<View style={{flexDirection:"row",gap:10}}>
+
+<TouchableOpacity
+style={{
+paddingVertical:10,
+paddingHorizontal:18,
+borderRadius:999,
+backgroundColor:"rgba(124,92,255,0.14)"
+}}
+>
+<Text style={{color:t.text,fontWeight:"700"}}>
+Subscription
+</Text>
+</TouchableOpacity>
+
+<TouchableOpacity
+style={{
+paddingVertical:10,
+paddingHorizontal:18,
+borderRadius:999,
+borderWidth:1,
+borderColor:t.hairline
+}}
+>
+<Text style={{color:t.subtext,fontWeight:"700"}}>
+Bill
+</Text>
+</TouchableOpacity>
+
+</View>
+
+</Card>
+
+
+{/* STATUS */}
+
+<Card>
+
+<View
+style={{
+flexDirection:"row",
+alignItems:"center",
+justifyContent:"space-between"
+}}
+>
+
+<View>
+<Text style={{color:t.text,fontWeight:"700"}}>
+Status
+</Text>
+<Text style={{color:t.subtext,marginTop:2}}>
+Active subscription
+</Text>
+</View>
+
+<Switch
+value={active}
+onValueChange={setActive}
+/>
+
+</View>
+
+</Card>
+
+
+{/* DETAILS */}
+
+<Card>
+
+<View style={{flexDirection:"row",alignItems:"center",marginBottom:10}}>
+<Feather name="edit-2" size={18} color={t.subtext}/>
+<Text style={{color:t.text,fontWeight:"700",marginLeft:8}}>
+Details
+</Text>
+</View>
+
+<TextInput
+value={merchant}
+onChangeText={setMerchant}
+placeholder="Merchant"
+placeholderTextColor={t.subtext}
+style={{
+backgroundColor:t.bg,
+padding:12,
+borderRadius:12,
+color:t.text,
+marginBottom:10
+}}
+/>
+
+<TextInput
+value={price}
+onChangeText={setPrice}
+placeholder="Price"
+placeholderTextColor={t.subtext}
+keyboardType="numeric"
+style={{
+backgroundColor:t.bg,
+padding:12,
+borderRadius:12,
+color:t.text
+}}
+/>
+
+</Card>
+
+
+{/* CANCEL PLAYBOOK */}
+
+<Card>
+
+<Text style={{color:t.subtext,fontWeight:"700"}}>
+Cancel playbook
+</Text>
+
+<Text style={{color:t.text,fontWeight:"800",marginTop:8}}>
+{merchant}
+</Text>
+
+<Text style={{color:t.subtext,marginTop:8,lineHeight:20}}>
+Visit your {merchant} account → Subscription.
+</Text>
+
+<Text style={{color:t.subtext,marginTop:4,lineHeight:20}}>
+Click “Manage plan” → “Cancel”.
+</Text>
+
+<View style={{flexDirection:"row",gap:10,marginTop:14}}>
+
+<Button
+title="Open cancel page"
+variant="secondary"
+onPress={()=>{}}
+/>
+
+<Button
+title="Support"
+variant="secondary"
+onPress={()=>{}}
+/>
+
+</View>
+
+<View style={{marginTop:12}}>
+<Button
+title="Start 24h confirm timer"
+onPress={()=>{}}
+/>
+</View>
+
+</Card>
+
+
+{/* DELETE / ARCHIVE */}
+
+<Card>
+
+<Text style={{color:t.text,fontWeight:"800",marginBottom:10}}>
+Delete / Archive
+</Text>
+
+<View style={{flexDirection:"row",gap:10}}>
+
+<Button
+title="Archive"
+variant="secondary"
+onPress={archive}
+/>
+
+<Button
+title="Delete"
+variant="danger"
+onPress={remove}
+/>
+
+</View>
+
+</Card>
+
+
+{/* SAVE */}
+
+<Button
+title="Save changes"
+onPress={save}
+/>
+
+</ScrollView>
+</SafeAreaView>
+)
 }

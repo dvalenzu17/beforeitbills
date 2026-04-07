@@ -1,38 +1,65 @@
-// app/components/ListItem.js
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { useTheme } from '../lib/theme';
-import { formatMoney } from '../lib/utils';
+// components/ListItem.js
+import React from "react";
+import { View, Text } from "react-native";
+import PressableScale from "./PressableScale";
+import { useTheme } from "../lib/theme";
+import { formatMoney } from "../lib/utils";
+import BrandAvatar from "./BrandAvatar";
+import SharedBadge from "./SharedBadge";
+import { SPACING } from "../lib/ui/tokens";
 
 export default function ListItem({
-  merchant = '',
-  subtitle = '',
-  amount = 0,
-  currency = 'USD',
-  onPress
+  merchant,
+  subtitle,
+  amount,
+  currency,
+  onPress,
+  onLongPress,
+  index,
+  domain,
+  sharedCount,
+  isShared,
+  billIconKey,
 }) {
   const t = useTheme();
+
+  const sc = Number(sharedCount ?? 1) || 1;
+  const shared = isShared === true || sc > 1;
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
-      <View style={{ paddingVertical: 12, flexDirection: 'row', alignItems: 'center' }}>
-        <View style={{
-          width: 36, height: 36, borderRadius: 10,
-          alignItems: 'center', justifyContent: 'center',
-          backgroundColor: t.soft, borderWidth: 1, borderColor: t.border, marginRight: 12
-        }}>
-          <Feather name="credit-card" size={18} color={t.text} />
-        </View>
+    <PressableScale
+      haptic="selection"
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: SPACING.rowGap,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 18,
+      }}
+    >
+      <BrandAvatar domain={domain} name={merchant} size={42} billIconKey={billIconKey} />
 
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: t.text, fontWeight: '800' }}>{merchant}</Text>
-          {!!subtitle && <Text style={{ color: t.subtext, marginTop: 2 }}>{subtitle}</Text>}
-        </View>
-
-        <Text style={{ color: t.text, fontWeight: '800' }}>
-          {formatMoney(amount, currency)}
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: t.text, fontWeight: "900", fontSize: 15 }} numberOfLines={1}>
+          {merchant}
         </Text>
+        {!!subtitle ? (
+          <Text style={{ color: t.subtext, marginTop: 3, fontWeight: "700" }} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
-    </TouchableOpacity>
+
+      {shared ? <SharedBadge count={sc} /> : null}
+
+      <Text style={{ color: t.text, fontWeight: "900" }}>
+        {formatMoney?.(amount, currency) ?? `${amount} ${currency || ""}`}
+      </Text>
+
+      <Text style={{ color: t.tertiary, marginLeft: 6 }}>›</Text>
+    </PressableScale>
   );
 }

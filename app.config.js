@@ -1,0 +1,129 @@
+require("dotenv").config();
+
+module.exports = {
+  expo: {
+    name: "BeforeItBills",
+    slug: "sublytics",
+    scheme: "beforeitbills",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/BeforeItBillsLogo.png",
+
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "contain",
+      backgroundColor: "#0D1B3E",
+    },
+
+    updates: {
+      fallbackToCacheTimeout: 0,
+    },
+
+    assetBundlePatterns: ["**/*"],
+
+    ios: {
+      bundleIdentifier: "com.beforeitbills.app",
+      userInterfaceStyle: "automatic",
+      supportsTablet: false,
+      config: {
+        usesNonExemptEncryption: false,
+      },
+      entitlements: {
+        "aps-environment": "production",
+        "com.apple.security.application-groups": ["group.com.beforeitbills.app"],
+      },
+    }, // Fixed missing closing brace here
+
+    android: {
+      package: "com.beforeitbills.app",
+      intentFilters: [
+        {
+          action: "VIEW",
+          data: [{ scheme: "beforeitbills", host: "redirect" }],
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
+    },
+
+    web: {
+      favicon: "./assets/BeforeItBillsLogo.png",
+    },
+
+    plugins: [
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            deploymentTarget: "16.0",
+            appleTeamId: "4RWRT2WU2H",
+          },
+        },
+      ],
+      "expo-web-browser",
+      [
+        "@sentry/react-native/expo",
+        {
+          url: "https://sentry.io/",
+          project: process.env.SENTRY_PROJECT || "beforeitbills",
+          organization: process.env.SENTRY_ORG || "miraiware-studios",
+        },
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme: "com.googleusercontent.apps.577544895857-igb9t8cbphcfao6idjjot8u81h3nbp4t",
+          scopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+        },
+      ],
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          icon: "./assets/notification-icon.png",
+          color: "#7DD3FC",
+          sounds: [],
+        },
+      ],
+      "./plugins/withIosWidget",
+      "expo-quick-actions",
+      "expo-apple-authentication",
+      "./plugins/withShareExtension",
+    ],
+
+    extra: {
+      eas: {
+        projectId: "47e62a9c-3e47-4af7-90f3-1b5779fcc586",
+        // ADD THIS BLOCK BELOW
+        build: {
+          experimental: {
+            ios: {
+              appExtensions: [
+                {
+                  targetName: "ShareExtension",
+                  bundleIdentifier: "com.beforeitbills.app.ShareExtension",
+                  entitlements: {
+                    "com.apple.security.application-groups": ["group.com.beforeitbills.app"]
+                  }
+                },
+                {
+                  targetName: "SubsWidget",
+                  bundleIdentifier: "com.beforeitbills.app.SubsWidget"
+                }
+              ]
+            }
+          }
+        }
+      },
+      // Env Vars
+      EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      EXPO_PUBLIC_BACKEND_URL: process.env.EXPO_PUBLIC_BACKEND_URL,
+      EXPO_PUBLIC_LOGO_DEV_TOKEN: process.env.EXPO_PUBLIC_LOGO_DEV_TOKEN,
+      EXPO_PUBLIC_BRANDFETCH_API_KEY: process.env.EXPO_PUBLIC_BRANDFETCH_API_KEY,
+      EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      revenuecatIosApiKey: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY,
+      revenuecatAndroidApiKey: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
+    },
+  },
+};

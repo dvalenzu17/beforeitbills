@@ -6,7 +6,9 @@
     "save": "Salvar",
     "v1Label": "V1 stub",
     "v1Body": "This is a basic placeholder UI so we can iterate fast. Real logic + backend wiring comes next.",
-    "backToFeatures": "Back to Features"
+    "backToFeatures": "Back to Features",
+    "back": "Voltar",
+    "share": "Compartilhar"
   },
   "tabs": {
     "home": "Início",
@@ -32,7 +34,8 @@
     "resetSentBody": "Verifique sua caixa de entrada.",
     "resetFailed": "Falha ao enviar",
     "resetFailedBody": "Tente novamente.",
-    "enterEmailFirst": "Digite seu e-mail primeiro"
+    "enterEmailFirst": "Digite seu e-mail primeiro",
+    "appleSignInFailedBody": "O login com Apple falhou. Tente novamente ou use seu e-mail."
   },
   "features": {
     "title": "Hub de Recursos",
@@ -112,6 +115,26 @@
     "urgentCount": "{{n}} urgente",
     "newFromInbox": "{{n}} novo da caixa"
   },
+  "conflict": {
+    "title": "Conflito de sincronização",
+    "titlePlural": "{{n}} conflitos de sincronização",
+    "subtitle": "Este item foi editado em dois dispositivos. Escolha qual versão manter.",
+    "unknownItem": "Assinatura",
+    "thisDevice": "Este dispositivo",
+    "otherDevice": "Outro dispositivo",
+    "keepMine": "Manter a minha",
+    "useTheirs": "Usar a deles",
+    "skipForNow": "Ignorar por agora"
+  },
+  "search": {
+    "placeholder": "Buscar assinaturas e contas…",
+    "startTyping": "Digite para pesquisar em todos os itens",
+    "noResults": "Nenhum resultado para \"{{q}}\"",
+    "result": "resultado",
+    "results": "resultados",
+    "kindSubscription": "Assinatura",
+    "kindBill": "Conta"
+  },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
     "connectTitle": "Connect Gmail (read-only)",
@@ -143,7 +166,14 @@
     "defaultSubCategory": "Subscriptions",
     "defaultBillCategory": "Bills",
     "addManually": "Adicionar manualmente",
-    "scanInbox": "Verificar caixa"
+    "scanInbox": "Verificar caixa",
+    "forecast": "Previsão de gastos",
+    "forecastSub": "Projeção de 12 meses · toque para inspecionar",
+    "forecastAnnual": "Neste ritmo: {{amount}}/ano",
+    "monthTrend": "Mês a mês",
+    "monthTrendSub": "Últimos 6 meses",
+    "flatVsLastMonth": "Estável em relação ao mês passado",
+    "vsLastMonth": "{{pct}}% em relação ao mês passado"
   },
   "account": {
     "freePill": "FREE",
@@ -419,7 +449,10 @@
     "archiveBody": "Isso o marcará como inativo.",
     "cancelLabel": "Cancelar",
     "billFormTitle": "Conta",
-    "subFormTitle": "Assinatura"
+    "subFormTitle": "Assinatura",
+    "contextCancel": "Cancelar assinatura",
+    "sortCustom": "Reordenar",
+    "dragHint": "Pressione ≡ para arrastar"
   },
   "help": {
     "title": "Ajuda",
@@ -491,5 +524,45 @@
     "resendFailedBody": "Tente novamente em um momento.",
     "uploadFailedTitle": "Falha no upload",
     "uploadFailedBody": "Sua foto foi salva localmente, mas não foi possível sincronizar."
+  },
+  "settings": {
+    "title": "Configurações",
+    "sectionAppearance": "Aparência",
+    "automatic": "Automático",
+    "automaticSub": "Seguir a aparência do sistema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "sectionLanguage": "Idioma",
+    "sectionData": "Dados",
+    "exportData": "Exportar dados",
+    "exportDataSub": "Baixar assinaturas",
+    "rebuildSystem": "Reconstruir sistema",
+    "rebuildSystemSub": "Atualizar sincronização e lembretes",
+    "sectionSupport": "Suporte",
+    "help": "Ajuda",
+    "helpSub": "Perguntas frequentes e suporte",
+    "privacyTerms": "Privacidade e termos",
+    "privacyTermsSub": "Documentos legais",
+    "about": "Sobre",
+    "aboutSub": "Versão e créditos",
+    "sectionSecurity": "Segurança",
+    "biometricLock": "Bloqueio biométrico",
+    "biometricLockSub": "Face ID ou impressão digital",
+    "sectionAdvanced": "Avançado",
+    "resetData": "Redefinir dados locais",
+    "resetDataSub": "Limpar assinaturas e lembretes",
+    "sectionShortcuts": "Ações rápidas",
+    "shortcutsTitle": "Atalhos na tela inicial",
+    "shortcutsSub": "Pressione o ícone para acessar rapidamente",
+    "shortcutsAvailable": "3 atalhos disponíveis",
+    "shortcutsUnavailable": "Reconstrua o app para ativar atalhos"
+  },
+  "shortcuts": {
+    "addTitle": "Adicionar assinatura",
+    "addSub": "Registrar uma nova cobrança recorrente",
+    "spendingTitle": "Ver gastos",
+    "spendingSub": "Veja sua taxa de gasto mensal",
+    "scanTitle": "Escanear caixa de entrada",
+    "scanSub": "Encontrar assinaturas no seu e-mail"
   }
 }

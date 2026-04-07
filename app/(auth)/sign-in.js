@@ -15,7 +15,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Linking } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
+import * as AppleAuthentication from "expo-apple-authentication";
+import * as Crypto from "expo-crypto";
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../lib/store";
 import { useAuthState } from "../../lib/authState";
@@ -25,11 +28,24 @@ import { TERMS_URL, PRIVACY_URL } from "../../lib/config";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Generate a random nonce and its SHA-256 hash for Apple Sign In
+async function generateNonce() {
+  const raw = Array.from(Crypto.getRandomBytes(32))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  const hashed = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    raw
+  );
+  return { raw, hashed };
+}
+
 export default function LoginScreen() {
   const router = useRouter();
   const theme = useTheme();
   const s = useMemo(() => makeStyles(theme), [theme]);
 
+  const { t: tt } = useTranslation();
   const setUser = useStore((st) => st.setUser);
   const setAuthReady = useAuthState((st) => st.setReady);
 
@@ -38,6 +54,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const cleanEmail = useMemo(() => email.trim().toLowerCase(), [email]);
@@ -57,6 +74,16 @@ export default function LoginScreen() {
     setShowPw(false);
   }, []);
 
+  function onAuthSuccess(u, method) {
+    setUser(u);
+    setAuthReady(true);
+    if (u) {
+      track("signed_in", { method });
+      identify(u.id, { email: u.email });
+    }
+    // gate in _layout.js reacts and navigates
+  }
+
   async function handlePrimary() {
     Keyboard.dismiss();
     if (!canSubmit || loading) return;
@@ -69,51 +96,31 @@ export default function LoginScreen() {
           password,
         });
         if (error) throw error;
-        // Immediately update store — gate in _layout.js reacts and navigates
-        const u = data?.session?.user ?? null;
-        setUser(u);
-        setAuthReady(true);
-        if (u) { track("signed_in", { method: "email" }); identify(u.id, { email: u.email }); }
-        return; // gate handles navigation — no need to setLoading(false)
+        onAuthSuccess(data?.session?.user ?? null, "email");
+        return;
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail,
           password,
         });
         if (error) throw error;
-        const u = data?.session?.user ?? data?.user ?? null;
-        setUser(u);
-        setAuthReady(true);
-        if (u) { track("signed_up", { method: "email" }); identify(u.id, { email: u.email }); }
-        return; // gate handles navigation
+        onAuthSuccess(data?.session?.user ?? data?.user ?? null, "email_signup");
+        return;
       }
     } catch (e) {
-      const msg = typeof e?.message === "string" ? e.message : "Something went wrong.";
-
-      const isUnconfirmed =
-        msg.toLowerCase().includes("email not confirmed") ||
-        msg.toLowerCase().includes("confirm");
-
-      const isDbError =
-        msg.toLowerCase().includes("database error") ||
-        msg.toLowerCase().includes("saving new user");
-
-      Alert.alert(
-        isUnconfirmed
-          ? "Email not confirmed"
-          : isDbError && mode === "signup"
-          ? "Account setup error"
-          : mode === "signin"
-          ? "Sign in failed"
-          : "Sign up failed",
-        isUnconfirmed
-          ? `Check your inbox for ${cleanEmail} and tap the confirmation link, then sign in again.`
-          : isDbError && mode === "signup"
-          ? "Your account was created but profile setup failed. Please contact support@beforeitbills.com — this is on our end, not yours."
-          : mode === "signin"
-          ? "Check your email and password and try again."
-          : "Could not create account. Please try again."
-      );
+      if (__DEV__) console.warn("[sign-in] auth error:", e?.message);
+      if (mode === "signin") {
+        Alert.alert(tt("auth.signInFailed"), tt("auth.signInFailedBody"));
+      } else {
+        const isDbError =
+          typeof e?.message === "string" &&
+          (e.message.toLowerCase().includes("database error") ||
+            e.message.toLowerCase().includes("saving new user"));
+        Alert.alert(
+          isDbError ? tt("auth.accountSetupError") : tt("auth.signUpFailed"),
+          isDbError ? tt("auth.accountSetupErrorBody") : tt("auth.signUpFailedBody")
+        );
+      }
       setLoading(false);
     }
   }
@@ -121,18 +128,67 @@ export default function LoginScreen() {
   async function handleForgotPassword() {
     Keyboard.dismiss();
     if (!EMAIL_REGEX.test(cleanEmail)) {
-      Alert.alert("Enter your email first");
+      Alert.alert(tt("auth.enterEmailFirst"));
       return;
     }
     try {
       setLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
       if (error) throw error;
-      Alert.alert("Reset sent", "Check your inbox.");
+      Alert.alert(tt("auth.resetSent"), tt("auth.resetSentBody"));
     } catch (e) {
-      Alert.alert("Reset failed", e?.message || "Try again.");
+      if (__DEV__) console.warn("[sign-in] resetPassword error:", e?.message);
+      Alert.alert(tt("auth.resetFailed"), tt("auth.resetFailedBody"));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleAppleSignIn() {
+    if (appleLoading || loading) return;
+    setAppleLoading(true);
+    try {
+      const { raw, hashed } = await generateNonce();
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashed,
+      });
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: credential.identityToken,
+        nonce: raw,
+      });
+
+      if (error) throw error;
+
+      // Apple only returns name on first sign-in — persist if available
+      const u = data?.session?.user ?? data?.user ?? null;
+      if (u && credential.fullName?.givenName) {
+        const displayName = [
+          credential.fullName.givenName,
+          credential.fullName.familyName,
+        ]
+          .filter(Boolean)
+          .join(" ");
+        supabase
+          .from("profiles")
+          .upsert({ id: u.id, display_name: displayName }, { onConflict: "id" })
+          .catch(() => {});
+      }
+
+      onAuthSuccess(u, "apple");
+    } catch (e) {
+      // ERR_CANCELED = user dismissed the sheet — not an error
+      if (e?.code === "ERR_REQUEST_CANCELED") return;
+      if (__DEV__) console.warn("[sign-in] Apple sign-in error:", e?.message);
+      Alert.alert(tt("auth.signInFailed"), tt("auth.appleSignInFailedBody"));
+    } finally {
+      setAppleLoading(false);
     }
   }
 
@@ -154,8 +210,8 @@ export default function LoginScreen() {
 
             {/* Mode toggle */}
             <View style={s.modeRow}>
-              <ModePill label="Sign In" active={mode === "signin"} onPress={() => switchMode("signin")} disabled={loading} s={s} />
-              <ModePill label="Sign Up" active={mode === "signup"} onPress={() => switchMode("signup")} disabled={loading} s={s} />
+              <ModePill label="Sign In" active={mode === "signin"} onPress={() => switchMode("signin")} disabled={loading || appleLoading} s={s} />
+              <ModePill label="Sign Up" active={mode === "signup"} onPress={() => switchMode("signup")} disabled={loading || appleLoading} s={s} />
             </View>
 
             <View style={s.card}>
@@ -176,7 +232,7 @@ export default function LoginScreen() {
                 autoCorrect={false}
                 keyboardType="email-address"
                 style={s.input}
-                editable={!loading}
+                editable={!loading && !appleLoading}
                 returnKeyType="next"
               />
 
@@ -193,7 +249,7 @@ export default function LoginScreen() {
                   autoCorrect={false}
                   secureTextEntry={!showPw}
                   style={[s.input, s.passwordInput]}
-                  editable={!loading}
+                  editable={!loading && !appleLoading}
                   returnKeyType="done"
                   onSubmitEditing={handlePrimary}
                 />
@@ -255,10 +311,10 @@ export default function LoginScreen() {
 
                 <Pressable
                   onPress={handlePrimary}
-                  disabled={!canSubmit || loading}
+                  disabled={!canSubmit || loading || appleLoading}
                   style={({ pressed }) => [
                     s.fab,
-                    (!canSubmit || loading) && s.fabDisabled,
+                    (!canSubmit || loading || appleLoading) && s.fabDisabled,
                     pressed && canSubmit && !loading && s.fabPressed,
                   ]}
                 >
@@ -270,6 +326,35 @@ export default function LoginScreen() {
                 </Pressable>
               </View>
             </View>
+
+            {/* Apple Sign In — iOS only, App Store requirement */}
+            {Platform.OS === "ios" && (
+              <View style={s.socialRow}>
+                <View style={s.dividerRow}>
+                  <View style={s.dividerLine} />
+                  <Text style={s.dividerText}>or</Text>
+                  <View style={s.dividerLine} />
+                </View>
+                {appleLoading ? (
+                  <View style={s.appleLoading}>
+                    <ActivityIndicator color={theme.text} />
+                  </View>
+                ) : (
+                  <AppleAuthentication.AppleAuthenticationButton
+                    buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                    buttonStyle={
+                      theme.bg === "#0B0F17" || theme.bg2 === "#070A10"
+                        ? AppleAuthentication.AppleAuthenticationButtonStyle.WHITE
+                        : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+                    }
+                    cornerRadius={14}
+                    style={s.appleButton}
+                    onPress={handleAppleSignIn}
+                  />
+                )}
+              </View>
+            )}
+
           </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
@@ -294,19 +379,15 @@ function ModePill({ label, active, onPress, disabled, s }) {
 }
 
 function makeStyles(t) {
-  // Determine if we're in light mode by checking text colour brightness
   const isDark = t.bg === "#0B0F17" || t.bg2 === "#070A10";
 
-  // Explicit colours that work in both modes
   const inputBg = isDark ? "#070A10" : "#F0F4FF";
   const cardBg  = isDark ? "#161B24" : "#FFFFFF";
   const safeBg  = isDark ? "#070A10" : "#F5F7FF";
 
-  // Active pill: always accent colour with white text
   const pillActiveBg   = t.accent;
   const pillActiveText = "#FFFFFF";
 
-  // FAB: always accent with white icon
   const fabBg = t.accent;
 
   return StyleSheet.create({
@@ -406,5 +487,18 @@ function makeStyles(t) {
     gap10: { height: 10 },
     gap14: { height: 14 },
     gap18: { height: 18 },
+
+    socialRow: { marginTop: 16 },
+    dividerRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
+    dividerLine: { flex: 1, height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" },
+    dividerText: { color: t.tertiary, fontSize: 12, fontWeight: "600" },
+    appleButton: { width: "100%", height: 52 },
+    appleLoading: {
+      height: 52,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: 14,
+      backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+    },
   });
 }

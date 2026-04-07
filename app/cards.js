@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../lib/theme';
 import { useStore } from '../lib/store';
@@ -57,6 +58,7 @@ export default function Cards() {
             <FlatList
               data={cards}
               keyExtractor={c => c.id}
+              getItemLayout={(_, index) => ({ length: 57, offset: 57 * index, index })}
               renderItem={({ item }) => (
                 <View style={{ paddingVertical: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <View>
@@ -68,7 +70,7 @@ export default function Cards() {
                   <TouchableOpacity onPress={() => {
                     Alert.alert('Delete card', `Remove ${item.label}?`, [
                       { text: 'Cancel', style: 'cancel' },
-                      { text: 'Delete', style: 'destructive', onPress: () => deleteCard(item.id) },
+                      { text: 'Delete', style: 'destructive', onPress: () => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); deleteCard(item.id); } },
                     ]);
                   }}>
                     <Text style={{ color: '#EF4444', fontWeight: '800' }}>Delete</Text>

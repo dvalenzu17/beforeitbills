@@ -1,0 +1,50 @@
+workflows:
+  ios-release:
+    name: iOS Release → TestFlight
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: AppStoreConnect  # name this whatever you set in Codemagic UI
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier:
+          - com.beforeitbills.app
+          - com.beforeitbills.app.ShareExtension
+          - com.beforeitbills.app.SubsWidget
+      node: 20.18.0
+      xcode: 16.1
+      cocoapods: default
+      groups:
+        - bib_env  # create this group in Codemagic UI with the vars below
+
+    scripts:
+      - name: Install JS dependencies
+        script: npm ci
+
+      - name: Expo prebuild
+        script: npx expo prebuild --platform ios --clean
+
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          pod install
+
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/BeforeItBills.xcworkspace \
+            --scheme BeforeItBills
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers

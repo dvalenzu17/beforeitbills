@@ -6,7 +6,10 @@
     "save": "Guardar",
     "v1Label": "Versión preliminar",
     "v1Body": "Esta es una interfaz básica para iterar rápido. La lógica real y la integración con el servidor vienen después.",
-    "backToFeatures": "Volver a funciones"
+    "backToFeatures": "Volver a funciones",
+    "syncing": "Sincronizando…",
+    "back": "Atrás",
+    "share": "Compartir"
   },
   "tabs": {
     "home": "Inicio",
@@ -32,7 +35,8 @@
     "resetSentBody": "Revisa tu bandeja de entrada.",
     "resetFailed": "Error al enviar",
     "resetFailedBody": "Inténtalo de nuevo.",
-    "enterEmailFirst": "Ingresa tu correo primero"
+    "enterEmailFirst": "Ingresa tu correo primero",
+    "appleSignInFailedBody": "El inicio con Apple falló. Inténtalo de nuevo o usa tu correo."
   },
   "features": {
     "title": "Centro de funciones",
@@ -123,6 +127,26 @@
     "urgentCount": "{{n}} urgente",
     "newFromInbox": "{{n}} nuevo de la bandeja"
   },
+  "conflict": {
+    "title": "Conflicto de sincronización",
+    "titlePlural": "{{n}} conflictos de sincronización",
+    "subtitle": "Este elemento fue editado en dos dispositivos. Elige qué versión conservar.",
+    "unknownItem": "Suscripción",
+    "thisDevice": "Este dispositivo",
+    "otherDevice": "Otro dispositivo",
+    "keepMine": "Guardar la mía",
+    "useTheirs": "Usar la suya",
+    "skipForNow": "Saltar por ahora"
+  },
+  "search": {
+    "placeholder": "Buscar suscripciones y gastos…",
+    "startTyping": "Escribe para buscar en todos los elementos",
+    "noResults": "Sin resultados para \"{{q}}\"",
+    "result": "resultado",
+    "results": "resultados",
+    "kindSubscription": "Suscripción",
+    "kindBill": "Gasto"
+  },
   "insights": {
     "subtitle": "Tu gasto recurrente, en palabras simples.",
     "connectTitle": "Conectar Gmail (solo lectura)",
@@ -191,7 +215,14 @@
     "projected": "{{amount}} proyectado",
     "noDataYet": "Agrega una suscripción para ver las gráficas",
     "addManually": "Agregar manualmente",
-    "scanInbox": "Analizar bandeja"
+    "scanInbox": "Analizar bandeja",
+    "forecast": "Pronóstico de gasto",
+    "forecastSub": "Proyección a 12 meses · toca para inspeccionar",
+    "forecastAnnual": "A este ritmo: {{amount}}/año",
+    "monthTrend": "Mes a mes",
+    "monthTrendSub": "Últimos 6 meses",
+    "flatVsLastMonth": "Estable respecto al mes pasado",
+    "vsLastMonth": "{{pct}}% respecto al mes pasado"
   },
   "account": {
     "freePill": "GRATIS",
@@ -413,9 +444,16 @@
     "remind3dSub": "Tiempo suficiente para actuar sin olvidar.",
     "remind1d": "1 día antes",
     "remind1dSub": "Recordatorio de último momento.",
-    "footnote": "Los recordatorios se envían a las 9 AM del día correspondiente.",
+    "sectionTime": "Hora del recordatorio",
+    "timeLabel": "Enviar recordatorios a las",
+    "timeSub": "Todos los recordatorios se envían a esta hora.",
+    "footnote": "Los recordatorios se envían a las {{time}} del día correspondiente. Solo recibirás avisos de los elementos con fecha de renovación.",
     "onAlert": "Recordatorios activados",
+    "onBody": "Te avisaremos {{days}} día(s) antes de cada cargo, a las {{time}}.",
     "offAlert": "Recordatorios desactivados",
+    "offBody": "No recibirás recordatorios de renovación.",
+    "blockedTitle": "Notificaciones bloqueadas",
+    "blockedBody": "Ve a Configuración → BeforeItBills → Notificaciones y permite las notificaciones, luego inténtalo de nuevo.",
     "save": "Guardar"
   },
   "settings": {
@@ -438,9 +476,37 @@
     "privacyTermsSub": "Documentos legales",
     "about": "Acerca de",
     "aboutSub": "Versión y créditos",
+    "sectionSecurity": "Seguridad",
+    "biometricLock": "Bloqueo biométrico",
+    "biometricLockSub": "Face ID o huella digital",
     "sectionAdvanced": "Avanzado",
     "resetData": "Restablecer datos locales",
-    "resetDataSub": "Borrar suscripciones y recordatorios"
+    "resetDataSub": "Borrar suscripciones y recordatorios",
+    "sectionShortcuts": "Acciones rápidas",
+    "shortcutsTitle": "Atajos en pantalla de inicio",
+    "shortcutsSub": "Mantén pulsado el icono para acceder rápidamente",
+    "shortcutsAvailable": "3 atajos disponibles",
+    "shortcutsUnavailable": "Reconstruye la app para activar atajos"
+  },
+  "shortcuts": {
+    "addTitle": "Añadir suscripción",
+    "addSub": "Registrar un nuevo cargo recurrente",
+    "spendingTitle": "Ver gastos",
+    "spendingSub": "Consulta tu gasto mensual",
+    "scanTitle": "Escanear bandeja",
+    "scanSub": "Buscar suscripciones en tu correo"
+  },
+  "biometricLock": {
+    "title": "Bloqueo biométrico",
+    "toggle": "Requerir biometría al abrir",
+    "toggleSub": "Face ID, huella digital o PIN del dispositivo",
+    "description": "Cuando está activado, se te pedirá que te autentiques cada vez que abras la app o vuelvas desde el fondo.",
+    "unavailable": "Este dispositivo no tiene autenticación biométrica configurada.",
+    "failTitle": "Autenticación requerida",
+    "failBody": "Debes autenticarte para activar el bloqueo biométrico.",
+    "lockedTitle": "BeforeItBills está bloqueada",
+    "unlock": "Desbloquear",
+    "authenticating": "Autenticando…"
   },
   "recurring_screen": {
     "title": "Todo recurrente",
@@ -457,7 +523,16 @@
     "sortAmount": "Orden: $↓",
     "sortNext": "Orden: próximo",
     "sortName": "Orden: A→Z",
+    "sortCustom": "Reordenar",
+    "dragHint": "Mantén pulsado ≡ para arrastrar",
     "results": "{{n}} resultados",
+    "swipeEdit": "Editar",
+    "swipeArchive": "Archivar",
+    "swipeDelete": "Eliminar",
+    "contextCancel": "Cancelar suscripción",
+    "deleteAlertTitle": "¿Eliminar elemento?",
+    "deleteAlertBody": "{{name}} se eliminará permanentemente de tu lista.",
+    "deleteAlertConfirm": "Eliminar",
     "nothingTracked": "Nada registrado aún",
     "nothingTrackedBody": "Agrega un gasto recurrente para empezar.",
     "addRecurring": "Agregar recurrente",

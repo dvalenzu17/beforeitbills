@@ -1,5 +1,5 @@
 // app/(tabs)/insights.js
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, View, Text, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -8,6 +8,7 @@ import { PanGestureHandler } from "react-native-gesture-handler";
 import { useTranslation } from "react-i18next";
 
 import Screen from "../../components/Screen";
+import { BiBRefreshControl, BiBRefreshBanner } from "../../components/BiBRefreshControl";
 import Card from "../../components/Card";
 import PressableScale from "../../components/PressableScale";
 import RecapSheet from "../../components/RecapSheet";
@@ -36,6 +37,38 @@ function stableMonthly(x) {
   return (Number(x?.effectiveAmount) || 0) * cadenceFactor(x?.cadence || "monthly");
 }
 function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+// Returns the total spend expected in the month that is `monthOffset` away from now.
+// Monthly/weekly subs contribute their stableMonthly every month.
+// Quarterly/yearly subs contribute their full effectiveAmount only in their renewal months.
+function computeSpendForMonth(recurring, monthOffset) {
+  const now = new Date();
+  let targetMonth = now.getMonth() + monthOffset;
+  let targetYear = now.getFullYear() + Math.floor(targetMonth / 12);
+  targetMonth = ((targetMonth % 12) + 12) % 12;
+
+  let total = 0;
+  for (const x of recurring) {
+    if (x.active === false) continue;
+    const cadence = x.cadence || "monthly";
+
+    if (cadence === "monthly" || cadence === "weekly") {
+      total += stableMonthly(x);
+    } else {
+      const nd = x.nextDate ? new Date(x.nextDate) : null;
+      if (!nd || Number.isNaN(nd.getTime())) {
+        total += stableMonthly(x); // fallback: spread across months
+        continue;
+      }
+      const monthDiff = (targetYear - nd.getFullYear()) * 12 + (targetMonth - nd.getMonth());
+      const period = cadence === "quarterly" ? 3 : 12;
+      if (monthDiff % period === 0) {
+        total += Number(x.effectiveAmount) || 0;
+      }
+    }
+  }
+  return total;
+}
 function pickName(x) { return x?.title || x?.merchant || x?.name || "Unknown"; }
 function pickDomain(x) {
   return x?.domain || x?.fromDomain || x?.merchantDomain || x?.brandDomain || "";
@@ -118,6 +151,7 @@ export default function Insights() {
   const emailConnected = useEmailImportStore((s) => !!s.connectedProvider);
   const [recapOpen, setRecapOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -128,6 +162,20 @@ export default function Insights() {
       else await loadSubsLocal?.();
       setLoading(false);
     })();
+  }, [user]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadMail?.();
+      await loadBills?.();
+      if (user) await fetchSubs?.();
+      else await loadSubsLocal?.();
+    } catch (e) {
+      if (__DEV__) console.warn("[insights] refresh failed:", e?.message);
+    } finally {
+      setRefreshing(false);
+    }
   }, [user]);
 
   const recurring = useMemo(
@@ -191,6 +239,18 @@ export default function Insights() {
     return Array.from(m.values()).filter(g => g.length >= 2);
   }, [recurring]);
 
+  // 12 months forward for forecast card
+  const forecastData = useMemo(
+    () => Array.from({ length: 12 }, (_, i) => ({ monthOffset: i, spend: computeSpendForMonth(recurring, i) })),
+    [recurring]
+  );
+
+  // 6 months back → current month for trend card (indices 0..5, monthOffset -5..0)
+  const monthTrendData = useMemo(
+    () => Array.from({ length: 6 }, (_, i) => ({ monthOffset: i - 5, spend: computeSpendForMonth(recurring, i - 5) })),
+    [recurring]
+  );
+
   if (loading) {
     return (
       <Screen>
@@ -207,7 +267,11 @@ export default function Insights() {
       <ScrollView
         contentContainerStyle={{ padding: SPACING.screen, paddingBottom: 92, gap: SPACING.cardGap }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <BiBRefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
+        <BiBRefreshBanner refreshing={refreshing} />
         {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" }}>
           <View>
@@ -245,10 +309,20 @@ export default function Insights() {
 
         {/* STAT PILLS */}
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <StatPill title={tt("insights.monthlyBurn")} value={formatMoney(monthlyBurn, "USD")} icon="activity" onPress={() => r.push("/recurring")} />
-          <StatPill title={tt("insights.trials7d")} value={String(trialsEnding.length)} icon="clock" onPress={() => r.push("/recurring?filter=trials")} />
-          <StatPill title={tt("insights.next30")} value={formatMoney(next30, "USD")} icon="calendar" onPress={() => r.push("/calendar")} />
+          <StatPill title={tt("insights.monthlyBurn")} value={formatMoney(monthlyBurn, "USD")} rawValue={monthlyBurn} icon="activity" onPress={() => r.push("/recurring")} />
+          <StatPill title={tt("insights.trials7d")} value={String(trialsEnding.length)} rawValue={trialsEnding.length} icon="clock" onPress={() => r.push("/recurring?filter=trials")} />
+          <StatPill title={tt("insights.next30")} value={formatMoney(next30, "USD")} rawValue={next30} icon="calendar" onPress={() => r.push("/calendar")} />
         </View>
+
+        {/* FORECAST */}
+        {recurring.length > 0 && (
+          <ForecastCard data={forecastData} tt={tt} />
+        )}
+
+        {/* MONTH TREND */}
+        {recurring.length > 0 && (
+          <MonthTrendCard data={monthTrendData} tt={tt} />
+        )}
 
         {/* OPTIMIZE */}
         <FeatureCard
@@ -327,16 +401,59 @@ export default function Insights() {
 
 /* ─── UI components ──────────────────────────────────────────────── */
 
-function StatPill({ title, value, icon, onPress }) {
+// Counts up from 0 on mount, then animates between values on change.
+function useCountUp(target, duration = 600) {
+  const [display, setDisplay] = useState(0);
+  const prev = useRef(0);
+  const raf = useRef(null);
+
+  useEffect(() => {
+    const from = prev.current;
+    const to = target;
+    prev.current = target;
+    if (from === to) return;
+
+    const start = Date.now();
+    function tick() {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setDisplay(from + (to - from) * ease);
+      if (progress < 1) raf.current = requestAnimationFrame(tick);
+    }
+    raf.current = requestAnimationFrame(tick);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [target, duration]);
+
+  return display;
+}
+
+function StatPill({ title, value, rawValue, icon, onPress }) {
   const t = useTheme();
+  // rawValue is a number; value is the already-formatted string for non-numeric fallback
+  const animated = useCountUp(typeof rawValue === "number" ? rawValue : 0);
+  // Re-format using the same shape as the passed value (money vs integer)
+  const displayValue = typeof rawValue === "number"
+    ? (String(value).includes(".") || String(value).startsWith("$")
+        ? formatMoney(animated, "USD")
+        : String(Math.round(animated)))
+    : value;
+
   return (
-    <PressableScale onPress={onPress} style={{ flex: 1, borderRadius: 18, borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface, padding: 12, ...t.shadowSm }}>
+    <PressableScale
+      onPress={onPress}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${displayValue}`}
+      style={{ flex: 1, borderRadius: 18, borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface, padding: 12, ...t.shadowSm }}
+    >
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <Feather name={icon} size={16} color={t.subtext} />
         <Feather name="chevron-right" size={16} color={t.tertiary} />
       </View>
       <T.Sub style={{ marginTop: 8 }}>{title}</T.Sub>
-      <T.H2 style={{ marginTop: 4, fontSize: 16 }}>{value}</T.H2>
+      <T.H2 style={{ marginTop: 4, fontSize: 16 }}>{displayValue}</T.H2>
     </PressableScale>
   );
 }
@@ -360,7 +477,14 @@ function FeatureCard({ title, subtitle, right, children, onPress }) {
 function InsightRow({ icon, title, subtitle, onPress }) {
   const t = useTheme();
   return (
-    <PressableScale onPress={onPress} style={{ padding: 12, borderRadius: 18, borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface2, flexDirection: "row", alignItems: "center", gap: 12 }}>
+    <PressableScale
+      onPress={onPress}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={subtitle}
+      style={{ padding: 12, borderRadius: 18, borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface2, flexDirection: "row", alignItems: "center", gap: 12 }}
+    >
       <View style={{ width: 38, height: 38, borderRadius: 14, borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface, alignItems: "center", justifyContent: "center" }}>
         <Feather name={icon} size={16} color={t.text} />
       </View>
@@ -475,8 +599,15 @@ function ChartCarousel({ weeklyBuckets, recurring, monthlyBurn, tt }) {
 
         {/* dots */}
         <View style={{ flexDirection: "row", gap: 6, marginTop: 12, alignSelf: "center" }}>
-          {[0, 1, 2].map(i => (
-            <PressableScale key={i} onPress={() => setIdx(i)}>
+          {[0, 1, 2].map((i) => (
+            <PressableScale
+              key={i}
+              onPress={() => setIdx(i)}
+              accessible={true}
+              accessibilityRole="tab"
+              accessibilityLabel={chartTitles[i]}
+              accessibilityState={{ selected: i === idx }}
+            >
               <View style={{ width: i === idx ? 18 : 8, height: 8, borderRadius: 99, backgroundColor: i === idx ? t.accent : t.hairline }} />
             </PressableScale>
           ))}
@@ -508,7 +639,7 @@ function WeeklyBarChart({ values, tt }) {
           const h = Math.max(8, pct * 100);
           const isActive = i === active;
           return (
-            <PressableScale key={i} onPress={() => setSelected(i)} style={{ alignItems: "center", flex: 1 }}>
+            <PressableScale key={i} onPress={() => setSelected(i)} accessible={true} accessibilityRole="button" accessibilityLabel={`Week ${i + 1}: ${formatMoney(v, "USD")}`} style={{ alignItems: "center", flex: 1 }}>
               <View style={{
                 width: isActive ? 14 : 12, height: h, borderRadius: 100,
                 backgroundColor: isActive ? t.accent : t.accent + "66",
@@ -571,6 +702,132 @@ function SmoothLineChart({ values, tt }) {
         <T.Sub style={{ fontSize: 11 }}>{tt("insights.projected").replace("{{amount}}", formatMoney(activeValue, "USD"))}</T.Sub>
       </View>
     </View>
+  );
+}
+
+function MiniBarChart({ data, selected, onSelect, accentFn }) {
+  const t = useTheme();
+  const maxSpend = Math.max(...data.map((d) => d.spend), 1);
+  const now = new Date();
+
+  function monthLabel(offset) {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset);
+    return d.toLocaleDateString("default", { month: "short" });
+  }
+
+  return (
+    <View style={{ flexDirection: "row", alignItems: "flex-end", height: 90, gap: 3, marginTop: 10 }}>
+      {data.map((d, i) => {
+        const pct = d.spend / maxSpend;
+        const h = Math.max(6, pct * 68);
+        const color = accentFn(i, d, t);
+        return (
+          <PressableScale
+            key={i}
+            onPress={() => onSelect(i)}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={`${monthLabel(d.monthOffset)}: ${formatMoney(d.spend, "USD")}`}
+            style={{ flex: 1, alignItems: "center", justifyContent: "flex-end" }}
+          >
+            <View style={{ width: "100%", height: h, borderRadius: 6, backgroundColor: color }} />
+            <T.Sub style={{ fontSize: 9, marginTop: 3 }} numberOfLines={1}>
+              {monthLabel(d.monthOffset)}
+            </T.Sub>
+          </PressableScale>
+        );
+      })}
+    </View>
+  );
+}
+
+function ForecastCard({ data, tt }) {
+  const t = useTheme();
+  const [selected, setSelected] = useState(0);
+
+  const annualTotal = data.reduce((s, d) => s + d.spend, 0);
+  const now = new Date();
+  function monthLabel(offset) {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset);
+    return d.toLocaleDateString("default", { month: "short" });
+  }
+
+  return (
+    <Card>
+      <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+        <T.H2 style={{ fontSize: 16 }}>{tt("insights.forecast")}</T.H2>
+        <T.Sub style={{ fontWeight: "800", flexShrink: 1, textAlign: "right" }}>
+          {tt("insights.forecastAnnual").replace("{{amount}}", formatMoney(annualTotal, "USD"))}
+        </T.Sub>
+      </View>
+      <T.Sub style={{ marginTop: 4 }}>{tt("insights.forecastSub")}</T.Sub>
+      <View style={{ marginTop: 10, alignItems: "center" }}>
+        <T.Sub>{monthLabel(data[selected].monthOffset)}</T.Sub>
+        <T.H2 style={{ fontSize: 20 }}>{formatMoney(data[selected].spend, "USD")}</T.H2>
+      </View>
+      <MiniBarChart
+        data={data}
+        selected={selected}
+        onSelect={setSelected}
+        accentFn={(i, _d, t) => (i === selected ? t.accent : t.accent + "44")}
+      />
+    </Card>
+  );
+}
+
+function MonthTrendCard({ data, tt }) {
+  const t = useTheme();
+  const [selected, setSelected] = useState(5); // default = current month
+
+  const current = data[5]?.spend ?? 0;
+  const lastMonth = data[4]?.spend ?? 0;
+  const deltaPct = lastMonth > 0.5 ? ((current - lastMonth) / lastMonth) * 100 : 0;
+  const deltaUp = deltaPct > 0;
+
+  const deltaStr =
+    Math.abs(deltaPct) < 1
+      ? tt("insights.flatVsLastMonth")
+      : tt("insights.vsLastMonth").replace("{{pct}}", (deltaUp ? "+" : "") + Math.round(deltaPct));
+
+  const now = new Date();
+  function monthLabel(offset) {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset);
+    return d.toLocaleDateString("default", { month: "short" });
+  }
+
+  return (
+    <Card>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <T.H2 style={{ fontSize: 16, flex: 1 }}>{tt("insights.monthTrend")}</T.H2>
+        <View
+          style={{
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: 99,
+            backgroundColor: deltaUp ? "#7F1D1D22" : "#064E3B22",
+          }}
+        >
+          <Text style={{ fontSize: 11, fontWeight: "800", color: deltaUp ? "#F87171" : "#34D399" }}>
+            {deltaStr}
+          </Text>
+        </View>
+      </View>
+      <T.Sub style={{ marginTop: 4 }}>{tt("insights.monthTrendSub")}</T.Sub>
+      <View style={{ marginTop: 10, alignItems: "center" }}>
+        <T.Sub>{monthLabel(data[selected].monthOffset)}</T.Sub>
+        <T.H2 style={{ fontSize: 20 }}>{formatMoney(data[selected].spend, "USD")}</T.H2>
+      </View>
+      <MiniBarChart
+        data={data}
+        selected={selected}
+        onSelect={setSelected}
+        accentFn={(i, d, t) => {
+          if (i === selected) return t.accent;
+          if (d.monthOffset === 0) return t.accent + "88";
+          return t.accent + "33";
+        }}
+      />
+    </Card>
   );
 }
 
