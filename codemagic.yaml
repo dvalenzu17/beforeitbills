@@ -28,6 +28,7 @@ workflows:
 
       - name: Set up keychain and fetch signing files
         script: |
+          set -e
           keychain initialize
           for BUNDLE_ID in \
             com.beforeitbills.app \
@@ -45,15 +46,13 @@ workflows:
 
       - name: Debug signing state
         script: |
-          echo "=== Provisioning profiles ==="
-          ls ~/Library/MobileDevice/Provisioning\ Profiles/ 2>/dev/null || echo "none found"
-          for f in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
-            echo "--- $f ---"
-            security cms -D -i "$f" 2>/dev/null | grep -A2 -E "Name|UUID|application-groups|aps-environment|com.apple.developer.applesignin|Entitlements" | head -40
-          done
+          echo "=== Find ALL provisioning profiles on disk ==="
+          find /Users/builder /tmp -name "*.mobileprovision" 2>/dev/null || echo "none found anywhere"
+          echo "=== Find ALL p12 certificates on disk ==="
+          find /Users/builder /tmp -name "*.p12" 2>/dev/null || echo "none found"
           echo "=== Xcode build settings (provisioning) ==="
           xcodebuild -workspace ios/BeforeItBills.xcworkspace -scheme BeforeItBills -showBuildSettings 2>/dev/null \
-            | grep -E "PROVISIONING_PROFILE|CODE_SIGN|BUNDLE_IDENTIFIER" | head -40
+            | grep -E "PROVISIONING_PROFILE|CODE_SIGN|BUNDLE_IDENTIFIER" | head -60
 
       - name: Build IPA
         script: |
