@@ -8,9 +8,6 @@ workflows:
       app_store_connect: AppStoreConnect  
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.beforeitbills.app
       node: 20.18.0
       xcode: 16.1
       cocoapods: default
@@ -28,6 +25,21 @@ workflows:
         script: |
           cd ios
           pod install
+
+      - name: Set up keychain and fetch signing files
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files com.beforeitbills.app \
+            --type IOS_APP_STORE \
+            --create
+          app-store-connect fetch-signing-files com.beforeitbills.app.ShareExtension \
+            --type IOS_APP_STORE \
+            --create
+          app-store-connect fetch-signing-files com.beforeitbills.app.SubsWidget \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
 
       - name: Build IPA
         script: |
