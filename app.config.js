@@ -23,12 +23,13 @@ module.exports = {
 
     ios: {
       bundleIdentifier: "com.beforeitbills.app",
-      buildNumber: "17", //increasing build #
+      buildNumber: "18", //increasing build #
       userInterfaceStyle: "automatic",
       supportsTablet: false,
       config: {
         usesNonExemptEncryption: false,
       },
+    
       entitlements: {
         "aps-environment": "production",
         "com.apple.security.application-groups": ["group.com.beforeitbills.app"],
@@ -78,6 +79,9 @@ module.exports = {
           sounds: [],
         },
       ],
+      "expo-font",
+      "expo-router",
+      "expo-sharing",
       "./plugins/withIosWidget",
       "expo-quick-actions",
       "expo-apple-authentication",
