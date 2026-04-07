@@ -55,7 +55,12 @@
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); print\\(''''expo:'''', p[''''version'''']\\); print\\(''''rn peer:'''', p.get\\(''''peerDependencies'''',{}\\).get\\(''''react-native'''',''''?''''\\)\\)\")",
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); print\\(''''react-native:'''', p[''''version'''']\\)\")",
       "Bash(npm show:*)",
-      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''react-native dep:'''', d.get\\(''''react-native'''',''''not pinned''''\\)\\)\")"
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''react-native dep:'''', d.get\\(''''react-native'''',''''not pinned''''\\)\\)\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k,'''':'''',v\\) for k,v in d.items\\(\\) if ''''react'''' in k.lower\\(\\) or ''''hermes'''' in k.lower\\(\\)]\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''hermes-engine:'''', d.get\\(''''hermes-engine'''',''''not found''''\\)\\)\")",
+      "Bash(find node_modules/react-native/sdks -name *hermes*)",
+      "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); print\\(''''expected RN:'''', p.get\\(''''dependencies'''',{}\\).get\\(''''react-native'''',''''?''''\\)\\)\")",
+      "Bash(npm view:*)"
     ]
   }
 }
