@@ -35,10 +35,11 @@ workflows:
             com.beforeitbills.app.SubsWidget; do
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
               --type IOS_APP_STORE \
+              --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
               --create
           done
           keychain add-certificates
-          xcode-project use-profiles
+          cd ios && xcode-project use-profiles
 
       - name: Build IPA
         script: |
