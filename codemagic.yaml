@@ -26,17 +26,19 @@ workflows:
       - name: Set up keychain and fetch signing files
         script: |
           keychain initialize
-          app-store-connect fetch-signing-files com.beforeitbills.app \
-            --type IOS_APP_STORE \
-            --create
-          app-store-connect fetch-signing-files com.beforeitbills.app.ShareExtension \
-            --type IOS_APP_STORE \
-            --create
-          app-store-connect fetch-signing-files com.beforeitbills.app.SubsWidget \
-            --type IOS_APP_STORE \
-            --create
+          for BUNDLE_ID in \
+            com.beforeitbills.app \
+            com.beforeitbills.app.ShareExtension \
+            com.beforeitbills.app.SubsWidget; do
+            app-store-connect fetch-signing-files "$BUNDLE_ID" \
+              --type IOS_APP_STORE \
+              --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+              --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+              --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
+              --create
+          done
           keychain add-certificates
-          xcode-project use-profiles
+          xcode-project use-profiles --project-path ios/BeforeItBills.xcodeproj
 
       - name: Build IPA
         script: |
