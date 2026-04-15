@@ -18,6 +18,15 @@ workflows:
       - name: Install JS dependencies
         script: npm ci --legacy-peer-deps
 
+      - name: Patch react-native-svg for RN 0.85
+        script: |
+          sed -i '' \
+            's/observerCoordinator\.removeObserver(\*_imageResponseObserverProxy)/observerCoordinator.removeObserver(_imageResponseObserverProxy)/g' \
+            node_modules/react-native-svg/apple/Elements/RNSVGImage.mm
+          sed -i '' \
+            's/observerCoordinator\.addObserver(\*_imageResponseObserverProxy)/observerCoordinator.addObserver(_imageResponseObserverProxy)/g' \
+            node_modules/react-native-svg/apple/Elements/RNSVGImage.mm
+
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --clean
 
@@ -84,6 +93,15 @@ workflows:
     scripts:
       - name: Install JS dependencies
         script: npm ci --legacy-peer-deps
+
+      - name: Patch react-native-svg for RN 0.85
+        script: |
+          sed -i '' \
+            's/observerCoordinator\.removeObserver(\*_imageResponseObserverProxy)/observerCoordinator.removeObserver(_imageResponseObserverProxy)/g' \
+            node_modules/react-native-svg/apple/Elements/RNSVGImage.mm
+          sed -i '' \
+            's/observerCoordinator\.addObserver(\*_imageResponseObserverProxy)/observerCoordinator.addObserver(_imageResponseObserverProxy)/g' \
+            node_modules/react-native-svg/apple/Elements/RNSVGImage.mm
 
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --clean
