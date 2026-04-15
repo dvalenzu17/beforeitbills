@@ -33,7 +33,6 @@ post_install do |installer|
   end
 end
 EOF
-
       - name: Install CocoaPods
         script: |
           cd ios
