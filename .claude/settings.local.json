@@ -64,7 +64,15 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''''expo:'''', d.get\\(''''dependencies'''',{}\\).get\\(''''expo'''',''''''''\\)\\); print\\(''''RN:'''', d.get\\(''''dependencies'''',{}\\).get\\(''''react-native'''',''''''''\\)\\)\")",
       "WebSearch",
       "WebFetch(domain:docs.expo.dev)",
-      "WebFetch(domain:expo.dev)"
+      "WebFetch(domain:expo.dev)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''''scripts:'''', list\\(d.get\\(''''scripts'''',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(claude-flow --version)",
+      "Bash(npx claude-flow:*)",
+      "Bash(claude mcp:*)",
+      "Bash(python3:*)",
+      "Bash(npx --prefix /c/dev/sublytics js-yaml /c/dev/sublytics/codemagic.yaml)",
+      "Bash(npx js-yaml:*)",
+      "Bash(find /c/dev/sublytics/node_modules/expo -name bundledNativeModules*)"
     ]
   }
 }
