@@ -16,7 +16,7 @@ workflows:
 
     scripts:
       - name: Install JS dependencies
-        script: npm ci
+        script: npm ci --legacy-peer-deps
 
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --clean
@@ -71,7 +71,7 @@ workflows:
 
     scripts:
       - name: Install JS dependencies
-        script: npm ci
+        script: npm ci --legacy-peer-deps
 
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --clean
