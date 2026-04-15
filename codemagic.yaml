@@ -23,16 +23,8 @@ workflows:
 
       - name: Patch Podfile for Xcode 26
         script: |
-          cat >> ios/Podfile << 'EOF'
+          printf '\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["ENABLE_USER_SCRIPT_SANDBOXING"] = "NO"\n    end\n  end\nend\n' >> ios/Podfile
 
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
-    end
-  end
-end
-EOF
       - name: Install CocoaPods
         script: |
           cd ios
@@ -90,16 +82,7 @@ EOF
 
       - name: Patch Podfile for Xcode 26
         script: |
-          cat >> ios/Podfile << 'EOF'
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
-    end
-  end
-end
-EOF
+          printf '\npost_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings["ENABLE_USER_SCRIPT_SANDBOXING"] = "NO"\n    end\n  end\nend\n' >> ios/Podfile
 
       - name: Install CocoaPods
         script: |
