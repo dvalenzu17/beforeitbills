@@ -28,7 +28,7 @@
         "autoIncrement": "versionCode"
       },
       "ios": {
-        "image": "macos-sequoia-15.6-xcode-26.2"
+        "image": "latest"
       },
       "env": {
         "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": "@EXPO_PUBLIC_REVENUECAT_ANDROID_KEY",
@@ -45,7 +45,7 @@
         "autoIncrement": "versionCode"
       },
       "ios": {
-        "image": "macos-sequoia-15.6-xcode-26.2",
+        "image": "latest",
         "autoIncrement": "buildNumber"
       },
       "env": {
