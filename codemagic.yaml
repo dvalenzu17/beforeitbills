@@ -9,21 +9,25 @@ workflows:
 
     environment:
       node: 20
-      xcode: 15.4
+      xcode: 26.0.1
       cocoapods: default
       groups:
         - bib_env
 
     scripts:
       - name: Install JS dependencies
-        script: npm ci
+        script: npm ci --legacy-peer-deps
+
+      # 🔑 THIS is the missing piece
+      - name: Generate iOS project (Expo prebuild on macOS)
+        script: npx expo prebuild --platform ios --clean
 
       - name: Install CocoaPods
         script: |
           cd ios
           pod install
 
-      - name: Set up keychain and fetch signing files
+      - name: Set up signing
         script: |
           set -e
           keychain initialize
@@ -35,8 +39,7 @@ workflows:
               --type IOS_APP_ADHOC \
               --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
               --create \
-              --delete-stale-profiles \
-              --log-api-calls
+              --delete-stale-profiles
           done
           keychain add-certificates
           cd ios && xcode-project use-profiles
@@ -45,15 +48,10 @@ workflows:
         script: |
           xcode-project build-ipa \
             --workspace ios/BeforeItBills.xcworkspace \
-            --scheme BeforeItBills || {
-            echo "=== XCODE BUILD ERRORS ==="
-            find /tmp/xcodebuild_logs -name "*.log" 2>/dev/null | xargs grep -h " error:" 2>/dev/null | grep -v "^#" | head -80
-            exit 1
-          }
+            --scheme BeforeItBills
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
 
 
   ios-release:
@@ -66,21 +64,24 @@ workflows:
 
     environment:
       node: 20
-      xcode: 15.4
+      xcode: 26.0.1
       cocoapods: default
       groups:
         - bib_env
 
     scripts:
       - name: Install JS dependencies
-        script: npm ci
+        script: npm ci --legacy-peer-deps
+
+      - name: Generate iOS project (Expo prebuild on macOS)
+        script: npx expo prebuild --platform ios --clean
 
       - name: Install CocoaPods
         script: |
           cd ios
           pod install
 
-      - name: Set up keychain and fetch signing files
+      - name: Set up signing
         script: |
           set -e
           keychain initialize
@@ -92,8 +93,7 @@ workflows:
               --type IOS_APP_STORE \
               --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
               --create \
-              --delete-stale-profiles \
-              --log-api-calls
+              --delete-stale-profiles
           done
           keychain add-certificates
           cd ios && xcode-project use-profiles
@@ -102,15 +102,10 @@ workflows:
         script: |
           xcode-project build-ipa \
             --workspace ios/BeforeItBills.xcworkspace \
-            --scheme BeforeItBills || {
-            echo "=== XCODE BUILD ERRORS ==="
-            find /tmp/xcodebuild_logs -name "*.log" 2>/dev/null | xargs grep -h " error:" 2>/dev/null | grep -v "^#" | head -80
-            exit 1
-          }
+            --scheme BeforeItBills
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
