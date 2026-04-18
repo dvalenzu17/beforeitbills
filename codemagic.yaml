@@ -1,6 +1,6 @@
 workflows:
   ios-dev-client:
-    name: iOS Dev Client → Ad Hoc
+    name: iOS Dev Client → App Store
     max_build_duration: 90
     instance_type: mac_mini_m2
 
@@ -36,7 +36,7 @@ workflows:
             com.beforeitbills.app.ShareExtension \
             com.beforeitbills.app.SubsWidget; do
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_ADHOC \
+              --type IOS_APP_STORE \
               --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
               --create \
               --delete-stale-profiles
