@@ -52,6 +52,14 @@ module.exports = {
 
     plugins: [
       [
+        "@sentry/react-native/expo",
+        {
+          // uploadSourceMaps handled via SENTRY_DISABLE_AUTO_UPLOAD env var in eas.json
+          // org/project resolved from SENTRY_ORG / SENTRY_PROJECT env vars at build time
+          uploadSourceMaps: false,
+        },
+      ],
+      [
         "expo-build-properties",
         {
           ios: {
