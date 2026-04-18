@@ -72,7 +72,14 @@
       "Bash(python3:*)",
       "Bash(npx --prefix /c/dev/sublytics js-yaml /c/dev/sublytics/codemagic.yaml)",
       "Bash(npx js-yaml:*)",
-      "Bash(find /c/dev/sublytics/node_modules/expo -name bundledNativeModules*)"
+      "Bash(find /c/dev/sublytics/node_modules/expo -name bundledNativeModules*)",
+      "Bash(grep -r \"from ''''expo-\" app/ lib/ components/ --include=\"*.js\" -h)",
+      "Bash(grep -r \"from ''''@\" app/ lib/ components/ --include=\"*.js\" -h)",
+      "Bash(grep -r \"from ''''react-native-\" app/ lib/ components/ --include=\"*.js\" -h)",
+      "Bash(grep -r \"from ''''@expo/\" app/ lib/ components/ --include=\"*.js\" -h)",
+      "Bash(grep -rh \"from ''''moti\\\\|from ''''i18next\\\\|from ''''react-i18next\\\\|from ''''@supabase\\\\|from ''''@tanstack\\\\|from ''''react-native-reanimated\\\\|from ''''react-native-gesture\\\\|from ''''react-native-screens\\\\|from ''''react-native-purchases\\\\|from ''''@sentry\\\\|from ''''posthog\\\\|from ''''expo-secure-store\\\\|from ''''expo-quick-actions''''\" app/ lib/ components/ --include=\"*.js\")",
+      "Bash(node -e \"console.log\\(require\\(''./node_modules/babel-plugin-module-resolver/package.json''\\).version\\)\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''''deps:'''', len\\(d[''''dependencies'''']\\)\\); print\\(''''devDeps:'''', list\\(d.get\\(''''devDependencies'''',{}\\).keys\\(\\)\\)\\)\")"
     ]
   }
 }
