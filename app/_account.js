@@ -30,8 +30,8 @@ export default function Account() {
   async function doRestore() {
     try {
       const cloud = await restoreSubs();
-      subs.forEach(s => deleteSub(s.id));
-      cloud.forEach(s => addSub(s));
+      (subs || []).forEach(s => deleteSub(s.id));
+      (cloud || []).forEach(s => addSub(s));
       alert('Restored from cloud.');
     } catch (e) { alert(String(e?.message ?? e)); }
   }

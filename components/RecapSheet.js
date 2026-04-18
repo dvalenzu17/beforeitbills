@@ -108,7 +108,7 @@ export default function RecapSheet({ visible, onClose }) {
   }, [recs]);
 
   const totalMonthly = useMemo(
-    () => subs.reduce((s, x) => s + (Number(x.amount) || 0), 0),
+    () => (subs || []).reduce((s, x) => s + (Number(x.amount) || 0), 0),
     [subs]
   );
 
@@ -264,7 +264,7 @@ export default function RecapSheet({ visible, onClose }) {
               </SectionCard>
             ) : null}
 
-            {subs.map((s) => {
+            {(subs || []).map((s) => {
               const a = answers[String(s.id)] || {};
               const usageDays = String(a.usageDays ?? '');
               const divisor = s?.shared ? (Number(s?.sharedCount) || 1) : 1;

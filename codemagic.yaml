@@ -84,7 +84,7 @@ workflows:
       app_store_connect: AppStoreConnect
 
     environment:
-      node: 20.18.0
+      node: 20.20
       xcode: 26.0.1
       cocoapods: default
       groups:

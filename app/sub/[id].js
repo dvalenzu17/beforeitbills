@@ -32,7 +32,7 @@ const updateSub = useStore(s => s.updateSub)
 const archiveSub = useStore(s => s.archiveSub)
 const deleteSub = useStore(s => s.deleteSub)
 
-const sub = useMemo(()=>subs.find(s=>String(s.id)===String(id)),[subs,id])
+const sub = useMemo(()=>subs?.find(s=>String(s.id)===String(id)),[subs,id])
 
 const [merchant,setMerchant] = useState(sub?.merchant || "")
 const [price,setPrice] = useState(String(sub?.price || ""))

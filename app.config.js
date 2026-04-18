@@ -56,7 +56,7 @@ module.exports = {
         "expo-build-properties",
         {
           ios: {
-            deploymentTarget: "16.0",
+            deploymentTarget: "16.4",
             appleTeamId: "4RWRT2WU2H",
           },
         },

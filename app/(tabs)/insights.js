@@ -180,7 +180,7 @@ export default function Insights() {
 
   const recurring = useMemo(
     () => recordingActive && recordingPersona
-      ? recordingPersona.recurring
+      ? recordingPersona.recurring || []
       : getRecurring?.() || [],
     [recordingActive, recordingPersona, getRecurring, subs, bills]
   );

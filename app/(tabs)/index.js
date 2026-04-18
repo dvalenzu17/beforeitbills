@@ -341,7 +341,7 @@ export default function Home() {
 
   const recurring = useMemo(
     () => recordingActive && recordingPersona
-      ? recordingPersona.recurring
+      ? recordingPersona.recurring || []
       : getRecurring?.() || [],
     [recordingActive, recordingPersona, getRecurring, subs, bills]
   );
@@ -629,8 +629,8 @@ export default function Home() {
 
         {/* ── TRIALS ── */}
         {trialRadarItems.length > 0 && (() => {
-          const hasUrgent = trialRadarItems.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 3);
-          const hasCritical = trialRadarItems.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 1);
+          const hasUrgent = trialRadarItems?.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 3) ?? false;
+          const hasCritical = trialRadarItems?.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 1) ?? false;
           return (
           <HomeSection
             title={tt("home.trialsEndingSoon")}

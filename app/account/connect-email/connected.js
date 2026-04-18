@@ -106,7 +106,7 @@ export default function ConnectedEmail() {
   const didFastPass      = useEmailImportStore((x) => x.didFastPass);
   const resetFastPass    = useEmailImportStore((x) => x.resetFastPass);
 
-  const hasGmail = connectedAccounts.some((a) => a.provider === "gmail");
+  const hasGmail = connectedAccounts?.some((a) => a.provider === "gmail") ?? false;
 
   useEffect(() => {
     const sub = supabase.auth.onAuthStateChange(() => {
