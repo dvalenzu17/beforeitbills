@@ -41,7 +41,7 @@ import {
   clearPendingShare,
 } from "../modules/widget-bridge/index";
 
-WebBrowser.maybeCompleteAuthSession();
+try { WebBrowser.maybeCompleteAuthSession(); } catch {}
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
