@@ -22,7 +22,7 @@ module.exports = {
 
     ios: {
       bundleIdentifier: "com.beforeitbills.app",
-      buildNumber: "51", //increasing build #
+      buildNumber: "52", //increasing build #
       userInterfaceStyle: "automatic",
       supportsTablet: false,
       config: {
@@ -86,6 +86,7 @@ module.exports = {
       "expo-quick-actions",
       "expo-apple-authentication",
       "./plugins/withShareExtension",
+      "./plugins/withPodfileDeploymentTarget",
     ],
 
     extra: {
