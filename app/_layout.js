@@ -23,6 +23,7 @@ import * as WebBrowser from "expo-web-browser";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AppState, Modal, View, Text, Pressable } from "react-native";
 import { initSentry } from "../lib/sentry";
+import { initNotificationHandler } from "../lib/notifications";
 import { usePurchasesStore } from "../lib/purchasesStore";
 import { registerPushToken } from "../lib/push";
 import { useBiometricLock } from "../lib/biometricLock";
@@ -310,6 +311,9 @@ export default function RootLayout() {
     (async () => {
       try {
         await ensureI18n();
+        // Install notification handler here (not at module-eval time) to avoid
+        // a void TurboModule throw race with Hermes Hades GC on iOS 26.
+        initNotificationHandler();
 
         if (SUPABASE_CONFIGURED && supabase) {
           const { data } = await supabase.auth.getSession();
