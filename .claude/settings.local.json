@@ -80,7 +80,9 @@
       "Bash(grep -rh \"from ''''moti\\\\|from ''''i18next\\\\|from ''''react-i18next\\\\|from ''''@supabase\\\\|from ''''@tanstack\\\\|from ''''react-native-reanimated\\\\|from ''''react-native-gesture\\\\|from ''''react-native-screens\\\\|from ''''react-native-purchases\\\\|from ''''@sentry\\\\|from ''''posthog\\\\|from ''''expo-secure-store\\\\|from ''''expo-quick-actions''''\" app/ lib/ components/ --include=\"*.js\")",
       "Bash(node -e \"console.log\\(require\\(''./node_modules/babel-plugin-module-resolver/package.json''\\).version\\)\")",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(''''deps:'''', len\\(d[''''dependencies'''']\\)\\); print\\(''''devDeps:'''', list\\(d.get\\(''''devDependencies'''',{}\\).keys\\(\\)\\)\\)\")",
-      "Bash(node -e \"console.log\\(require\\(''./node_modules/react-native-worklets/package.json''\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\(''./node_modules/react-native-worklets/package.json''\\).version\\)\")",
+      "Bash(grep -rn for.*of.*.entries\\\\\\(\\\\\\) --include=*.js node_modules/@sentry/core/build/cjs/)",
+      "Bash(find node_modules/react-native-purchases -name *.podspec)"
     ]
   }
 }
