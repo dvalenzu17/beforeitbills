@@ -11,6 +11,7 @@ export default function PressableScale({
   disabled = false,
   haptic = "selection", // "selection" | "impactLight" | "impactMedium" | "none"
   scaleTo = 0.98,
+  testID,
   accessible,
   accessibilityRole,
   accessibilityLabel,
@@ -19,6 +20,7 @@ export default function PressableScale({
 }) {
   return (
     <MotiPressable
+      testID={testID}
       disabled={disabled}
       accessible={accessible}
       accessibilityRole={accessibilityRole}

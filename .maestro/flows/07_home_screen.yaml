@@ -24,7 +24,7 @@ appId: com.beforeitbills.app
 
 # Open search
 - tapOn:
-    accessibilityLabel: "Search"
+    label: "Search"
 - waitForAnimationToEnd
 - assertVisible: "Search subscriptions & bills…"
 - takeScreenshot: "07_home_search_open"

@@ -28,6 +28,7 @@ export default function ListItem({
 
   return (
     <PressableScale
+      testID={index != null ? `list-item-${index}` : undefined}
       haptic="selection"
       onPress={onPress}
       onLongPress={onLongPress}

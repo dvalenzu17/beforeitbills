@@ -1,0 +1,24 @@
+# Reusable: guarantees the app is on the sign-in screen.
+# If already logged in (keychain session), navigates to Account → signs out first.
+# Used by auth-specific tests that need to test the sign-in screen itself.
+appId: com.beforeitbills.app
+---
+- launchApp
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Home"
+    commands:
+      - tapOn: "Account"
+      - waitForAnimationToEnd
+      - scrollUntilVisible:
+          element:
+            text: "Sign out"
+          direction: DOWN
+      - tapOn: "Sign out"
+      - waitForAnimationToEnd
+      - tapOn: "Sign out"
+      - waitForAnimationToEnd
+- assertVisible:
+    text: "Welcome back"
+    timeout: 10000
