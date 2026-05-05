@@ -1,0 +1,19 @@
+# Master flow — runs all BeforeItBills automated tests in sequence.
+# Usage: maestro test -e TEST_EMAIL=x -e TEST_PASSWORD=y .maestro/run_all.yaml
+appId: com.beforeitbills.app
+---
+- runFlow: flows/01_auth_signin.yaml
+- runFlow: flows/02_auth_wrong_password.yaml
+- runFlow: flows/03_auth_forgot_password.yaml
+- runFlow: flows/05_onboarding_skip.yaml
+- runFlow: flows/06_onboarding_selections.yaml
+- runFlow: flows/07_home_screen.yaml
+- runFlow: flows/08_add_subscription.yaml
+- runFlow: flows/09_subscription_detail.yaml
+- runFlow: flows/10_insights_tab.yaml
+- runFlow: flows/11_account_screen.yaml
+- runFlow: flows/12_price_alerts.yaml
+- runFlow: flows/13_search.yaml
+- runFlow: flows/14_deep_link.yaml
+- runFlow: flows/15_session_persist.yaml
+- runFlow: flows/04_auth_signout.yaml

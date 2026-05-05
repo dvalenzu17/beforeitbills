@@ -12,18 +12,19 @@ import Card from "../../components/Card";
 import Button from "../../components/Button";
 import { Screen, HeaderRow } from "../../components/_ui";
 import { supabase } from "../../lib/supabase";
+import { usePurchasesStore } from "../../lib/purchasesStore";
 
 import {
   EMAIL_SCAN_FREE_CAP,
   getEmailsScannedCount,
-  getEmailsRemaining,
+  getEmailsRemainingForUser,
   setEmailsScannedCount,
 } from "../../lib/emailScanPreview";
 
 const SCAN_TRANSPORT =
   process.env.EXPO_PUBLIC_SCAN_TRANSPORT === "backend" ? "backend" : "mock";
 
-function RangeOption({ id, title, subtitle, active, onSelect, t }) {
+function RangeOption({ id, title, subtitle, active, onSelect, locked, t }) {
   return (
     <Pressable
       onPress={() => onSelect(id)}
@@ -33,9 +34,17 @@ function RangeOption({ id, title, subtitle, active, onSelect, t }) {
         borderWidth: 1,
         borderColor: active ? t.accent : t.hairline,
         backgroundColor: active ? t.surface2 : t.bg2 || t.bg,
+        opacity: locked ? 0.65 : 1,
       }}
     >
-      <Text style={{ color: t.text, fontWeight: "900" }}>{title}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ color: t.text, fontWeight: "900" }}>{title}</Text>
+        {locked && (
+          <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: "#6366F1" }}>
+            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "900", letterSpacing: 0.8 }}>PRO</Text>
+          </View>
+        )}
+      </View>
       <Text style={{ color: t.subtext, marginTop: 4 }}>{subtitle}</Text>
     </Pressable>
   );
@@ -47,7 +56,10 @@ export default function ScanSetup() {
   const toast = useToast();
   const { t: tt } = useTranslation();
 
-  const [range, setRange] = useState("year");
+  const isPro = usePurchasesStore((s) => s.isPro);
+
+  // Free users default to 90-day range; pro users can use any range.
+  const [range, setRange] = useState(isPro ? "year" : "90");
   const [includePromos, setIncludePromos] = useState(false);
 
   const [used, setUsed] = useState(0);
@@ -58,16 +70,29 @@ export default function ScanSetup() {
     (async () => {
       setChecking(true);
       const u = await getEmailsScannedCount();
-      const rem = await getEmailsRemaining();
+      const rem = await getEmailsRemainingForUser(isPro);
       setUsed(u);
       setRemaining(rem);
       setChecking(false);
     })();
-  }, []);
+  }, [isPro]);
+
+  // If user loses pro while on this screen, reset to free range.
+  useEffect(() => {
+    if (!isPro && (range === "year" || range === "all")) setRange("90");
+  }, [isPro]);
+
+  function selectRange(id) {
+    if (!isPro && (id === "year" || id === "all")) {
+      r.push("/account/upgrade");
+      return;
+    }
+    setRange(id);
+  }
 
   const start = async () => {
-    const rem = await getEmailsRemaining();
-    if (rem <= 0) {
+    const rem = await getEmailsRemainingForUser(isPro);
+    if (!isPro && rem <= 0) {
       toast.show({ message: `Preview limit reached (0/${EMAIL_SCAN_FREE_CAP} remaining).` });
       return;
     }
@@ -97,7 +122,7 @@ export default function ScanSetup() {
       range,
       promos: includePromos,
       transport: effectiveTransport,
-      limit: rem,
+      limit: isPro ? undefined : rem,
       accessToken,
     });
 
@@ -107,14 +132,16 @@ export default function ScanSetup() {
         scanId,
         range,
         promos: includePromos ? "1" : "0",
-        limit: String(rem),
-        usedStart: String(EMAIL_SCAN_FREE_CAP - rem),
+        ...(isPro ? {} : {
+          limit: String(rem),
+          usedStart: String(EMAIL_SCAN_FREE_CAP - rem),
+        }),
       },
     });
   };
 
   const barPct = Math.max(0, Math.min(100, (used / EMAIL_SCAN_FREE_CAP) * 100));
-  const limitReached = remaining <= 0;
+  const limitReached = !isPro && remaining <= 0;
 
   // If preview limit is hit during onboarding, show a clear alternative path
   if (!checking && limitReached) {
@@ -175,44 +202,46 @@ export default function ScanSetup() {
 
         <View style={{ height: 14 }} />
 
-        <Card>
-          <Text style={{ color: t.text, fontWeight: "900" }}>Preview mode</Text>
-          <Text style={{ color: t.subtext, marginTop: 6, lineHeight: 18 }}>
-            You get {EMAIL_SCAN_FREE_CAP} free email scans to preview results.
-          </Text>
+        {!isPro && (
+          <Card>
+            <Text style={{ color: t.text, fontWeight: "900" }}>Preview mode</Text>
+            <Text style={{ color: t.subtext, marginTop: 6, lineHeight: 18 }}>
+              You get {EMAIL_SCAN_FREE_CAP} free email scans to preview results.
+            </Text>
 
-          <View style={{ height: 12 }} />
+            <View style={{ height: 12 }} />
 
-          <View
-            style={{
-              height: 8,
-              borderRadius: 999,
-              backgroundColor: t.surface2,
-              overflow: "hidden",
-              borderWidth: 1,
-              borderColor: t.hairline,
-            }}
-          >
             <View
               style={{
-                width: `${barPct}%`,
-                height: "100%",
-                backgroundColor: t.accent,
-                opacity: 0.6,
+                height: 8,
+                borderRadius: 999,
+                backgroundColor: t.surface2,
+                overflow: "hidden",
+                borderWidth: 1,
+                borderColor: t.hairline,
               }}
-            />
-          </View>
+            >
+              <View
+                style={{
+                  width: `${barPct}%`,
+                  height: "100%",
+                  backgroundColor: t.accent,
+                  opacity: 0.6,
+                }}
+              />
+            </View>
 
-          <Text style={{ color: t.subtext, marginTop: 10 }}>
-            {remaining} remaining · {used}/{EMAIL_SCAN_FREE_CAP} used
-          </Text>
+            <Text style={{ color: t.subtext, marginTop: 10 }}>
+              {remaining} remaining · {used}/{EMAIL_SCAN_FREE_CAP} used
+            </Text>
 
-          <View style={{ height: 10 }} />
+            <View style={{ height: 10 }} />
 
-          <Text style={{ color: t.tertiary, fontWeight: "600" }}>
-            What we look for: receipts, invoices, renewal dates, and subscription keywords.
-          </Text>
-        </Card>
+            <Text style={{ color: t.tertiary, fontWeight: "600" }}>
+              What we look for: receipts, invoices, renewal dates, and subscription keywords.
+            </Text>
+          </Card>
+        )}
 
         <View style={{ height: 12 }} />
 
@@ -223,23 +252,26 @@ export default function ScanSetup() {
               title={tt("ob.range90")}
               subtitle={tt("ob.range90Sub")}
               active={range === "90"}
-              onSelect={setRange}
+              onSelect={selectRange}
+              locked={false}
               t={t}
             />
             <RangeOption
               id="year"
               title={tt("ob.rangeYear")}
-              subtitle={tt("ob.rangeYearSub")}
+              subtitle={isPro ? tt("ob.rangeYearSub") : "Pro — scan the last 12 months"}
               active={range === "year"}
-              onSelect={setRange}
+              onSelect={selectRange}
+              locked={!isPro}
               t={t}
             />
             <RangeOption
               id="all"
               title={tt("ob.rangeAll")}
-              subtitle={tt("ob.rangeAllSub")}
+              subtitle={isPro ? tt("ob.rangeAllSub") : "Pro — scan your entire inbox history"}
               active={range === "all"}
-              onSelect={setRange}
+              onSelect={selectRange}
+              locked={!isPro}
               t={t}
             />
           </View>

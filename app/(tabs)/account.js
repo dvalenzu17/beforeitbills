@@ -1,6 +1,6 @@
 // app/(tabs)/account.js
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, View, TouchableOpacity, Image, Alert } from "react-native";
+import { ActivityIndicator, ScrollView, View, TouchableOpacity, Image, Alert, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -71,16 +71,30 @@ export default function Account() {
   async function pickAvatar(fromCamera) {
     try {
       if (fromCamera) {
-        const camPerm = await ImagePicker.requestCameraPermissionsAsync();
-        if (camPerm.status !== "granted") {
-          Alert.alert(tt("account.cameraTitle"), tt("account.cameraPerm"));
-          return;
+        const existing = await ImagePicker.getCameraPermissionsAsync();
+        if (existing.status !== "granted") {
+          if (!existing.canAskAgain) {
+            Alert.alert(tt("account.cameraTitle"), tt("account.cameraPerm"));
+            return;
+          }
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert(tt("account.cameraTitle"), tt("account.cameraPerm"));
+            return;
+          }
         }
       } else {
-        const libPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (libPerm.status !== "granted") {
-          Alert.alert(tt("account.photosTitle"), tt("account.photosPerm"));
-          return;
+        const existing = await ImagePicker.getMediaLibraryPermissionsAsync();
+        if (existing.status !== "granted") {
+          if (!existing.canAskAgain) {
+            Alert.alert(tt("account.photosTitle"), tt("account.photosPerm"));
+            return;
+          }
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert(tt("account.photosTitle"), tt("account.photosPerm"));
+            return;
+          }
         }
       }
 
@@ -96,14 +110,13 @@ export default function Account() {
       await updateProfile({ avatarUri: localUri });
 
       // Upload to Supabase Storage so the URL works on any device / after reinstall.
-      // Falls back to the local URI gracefully if storage isn't configured.
+      // Failures are silent — user sees the photo immediately via the local URI.
       if (SUPABASE_CONFIGURED && supabase && user) {
         setUploadingAvatar(true);
         try {
           const ext = localUri.split(".").pop()?.toLowerCase().replace(/[^a-z]/g, "") || "jpg";
           const path = `avatars/${user.id}.${ext}`;
 
-          // Fetch the file as a blob
           const fetchRes = await fetch(localUri);
           const blob = await fetchRes.blob();
 
@@ -120,23 +133,19 @@ export default function Account() {
               .getPublicUrl(path);
             const publicUrl = urlData?.publicUrl;
             if (publicUrl) {
-              // Replace the local file path with the permanent public URL
               await updateProfile({ avatarUri: publicUrl });
             }
           } else {
             if (__DEV__) console.warn("[account] avatar upload error:", uploadErr?.message);
-            Alert.alert(tt("personal.uploadFailedTitle"), tt("personal.uploadFailedBody"));
           }
         } catch (e) {
           if (__DEV__) console.warn("[account] avatar upload failed:", e?.message);
-          Alert.alert(tt("personal.uploadFailedTitle"), tt("personal.uploadFailedBody"));
         } finally {
           setUploadingAvatar(false);
         }
       }
     } catch (e) {
       if (__DEV__) console.warn("[account] pickAvatar failed:", e?.message);
-      Alert.alert(tt("account.photoTitle"), tt("personal.uploadFailedBody"));
     }
   }
 
@@ -159,6 +168,9 @@ export default function Account() {
 
   const appInfoItems = [
     { label: tt("account.items.settings.label") || "Settings", subtext: tt("account.items.settings.subtext") || "Language, notifications, data", icon: "settings-outline", route: "/account/settings" },
+    isPro
+      ? { label: "Priority support", subtext: "Direct line to our team", icon: "chatbubble-outline", onPress: () => Linking.openURL("mailto:support@beforeitbills.com") }
+      : { label: "Priority support", subtext: "Available on Pro", icon: "chatbubble-outline", route: "/account/upgrade" },
     { label: tt("account.items.help.label"), subtext: tt("account.items.help.subtext"), icon: "help-circle-outline", route: "/account/help" },
     { label: tt("account.items.legals.label"), subtext: tt("account.items.legals.subtext"), icon: "document-text-outline", route: "/account/legals" },
     { label: tt("account.items.export.label"), subtext: tt("account.items.export.subtext"), icon: "download-outline", route: "/account/export" },
@@ -208,8 +220,8 @@ export default function Account() {
       {items.map((item, idx) => (
         <TouchableOpacity
           key={item.label}
-          onPress={() => item.route && router.push(item.route)}
-          activeOpacity={item.route ? 0.85 : 1}
+          onPress={() => item.onPress ? item.onPress() : item.route && router.push(item.route)}
+          activeOpacity={item.route || item.onPress ? 0.85 : 1}
           style={{
             paddingHorizontal: SPACING.screen,
             paddingVertical: 16,

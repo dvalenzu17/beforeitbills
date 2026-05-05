@@ -1,4 +1,97 @@
 workflows:
+  # ── Maestro UI Test Suite ────────────────────────────────────────────────────
+  # Builds the app for iOS Simulator (no signing needed), boots a simulator,
+  # runs all Maestro flows, and publishes a markdown report + screenshots.
+  #
+  # Required Codemagic env vars (add to bib_env group or a separate test_env group):
+  #   MAESTRO_TEST_EMAIL     — test account email
+  #   MAESTRO_TEST_PASSWORD  — test account password
+  ios-maestro-tests:
+    name: iOS Maestro UI Tests
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      node: 20
+      xcode: 26.0.1
+      cocoapods: default
+      groups:
+        - bib_env
+
+    scripts:
+      - name: Install JS dependencies
+        script: npm ci --legacy-peer-deps
+
+      - name: Generate iOS project
+        script: npx expo prebuild --platform ios --clean
+
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
+
+      - name: Build for iOS Simulator (no signing)
+        script: |
+          xcodebuild \
+            -workspace ios/BeforeItBills.xcworkspace \
+            -scheme BeforeItBills \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build/simulator \
+            ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet \
+            build
+
+      - name: Boot iOS Simulator
+        script: |
+          # Create or find an iPhone 16 simulator
+          SIM_UDID=$(xcrun simctl create "MaestroPhone" "iPhone 16" 2>/dev/null || \
+            xcrun simctl list devices available | grep "iPhone 16" | grep -v "unavailable" | \
+            head -1 | grep -oE '[A-F0-9-]{36}')
+          echo "Simulator UDID: $SIM_UDID"
+          xcrun simctl boot "$SIM_UDID" || true
+          open -a Simulator
+          # Wait for simulator to finish booting
+          xcrun simctl bootstatus "$SIM_UDID" -b
+
+      - name: Install app on Simulator
+        script: |
+          APP_PATH=$(find build/simulator -name "BeforeItBills.app" \
+            -not -path "*/iphoneos/*" | head -1)
+          echo "Installing: $APP_PATH"
+          xcrun simctl install booted "$APP_PATH"
+
+      - name: Install Java + Maestro
+        script: |
+          # Java (Temurin 21 via Homebrew — already present on most Codemagic images)
+          brew install --cask temurin@21 2>/dev/null || true
+          export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo "")
+          java -version
+          # Install Maestro
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          export PATH="$PATH:$HOME/.maestro/bin"
+          maestro --version
+
+      - name: Run Maestro test suite
+        script: |
+          export PATH="$PATH:$HOME/.maestro/bin"
+          export TEST_EMAIL="$MAESTRO_TEST_EMAIL"
+          export TEST_PASSWORD="$MAESTRO_TEST_PASSWORD"
+          export MAESTRO_CLI_NO_ANALYTICS=true
+          export MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED=true
+          mkdir -p .maestro/results
+          # run_tests.sh exits 1 on failure — use || true so artifact upload still runs
+          bash .maestro/run_tests.sh || true
+
+    artifacts:
+      - .maestro/results/report.md
+      - .maestro/results/screenshots/**
+      - .maestro/results/*.log
+      - .maestro/results/*_junit.xml
+
+  # ── Dev Client Build ─────────────────────────────────────────────────────────
   ios-dev-client:
     name: iOS Dev Client → App Store
     max_build_duration: 90

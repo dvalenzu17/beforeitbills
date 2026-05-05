@@ -1,0 +1,38 @@
+# TEST: Email / password sign in
+# Verifies the sign-in form submits successfully and lands on the home screen.
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- takeScreenshot: "01_auth_signin_start"
+
+# Sign-in screen visible
+- assertVisible: "Welcome back"
+- assertVisible: "Sign In"
+- assertVisible: "Sign Up"
+
+# Mode pill is Sign In by default
+- assertVisible: "Sign in to continue."
+
+# Enter credentials
+- tapOn:
+    id: "auth-email-input"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    id: "auth-password-input"
+- inputText: ${TEST_PASSWORD}
+- hideKeyboard
+- takeScreenshot: "01_auth_signin_filled"
+
+# Submit
+- tapOn:
+    id: "auth-submit-btn"
+- waitForAnimationToEnd
+
+# Skip onboarding if shown
+- runFlow: utils/skip_onboarding.yaml
+
+# Should be on home screen
+- assertVisible: "Home"
+- takeScreenshot: "01_auth_signin_success"

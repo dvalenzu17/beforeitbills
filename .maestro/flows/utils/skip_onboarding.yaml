@@ -1,0 +1,46 @@
+# Reusable: skip through the onboarding carousel if it appears.
+# Safe to call even if onboarding is already complete — all taps are optional.
+appId: com.beforeitbills.app
+---
+- waitForAnimationToEnd
+# Slide 1 — Hook (no Skip yet, just Next)
+- tapOn:
+    text: "Next"
+    optional: true
+- waitForAnimationToEnd
+# Slides 2–6 — tap Skip to fast-forward
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd
+# Slide 7 — Quick win (Get started / Skip)
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd
+# Slide 8 — CTA: decline trial
+- tapOn:
+    text: "Not now"
+    optional: true
+- waitForAnimationToEnd
+# Scan setup screen — skip past it if shown
+- tapOn:
+    text: "Skip"
+    optional: true
+- waitForAnimationToEnd

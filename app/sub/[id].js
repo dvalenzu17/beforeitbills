@@ -6,7 +6,8 @@ TextInput,
 ScrollView,
 TouchableOpacity,
 Switch,
-Alert
+Alert,
+Linking
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { Feather } from "@expo/vector-icons"
@@ -268,22 +269,20 @@ Click “Manage plan” → “Cancel”.
 <Button
 title="Open cancel page"
 variant="secondary"
-onPress={()=>{}}
+onPress={()=>{
+  const url = sub.domain
+    ? `https://${sub.domain}`
+    : `https://www.google.com/search?q=${encodeURIComponent(merchant + " cancel subscription")}`
+  Linking.openURL(url)
+}}
 />
 
 <Button
 title="Support"
 variant="secondary"
-onPress={()=>{}}
+onPress={()=>Linking.openURL("mailto:support@beforeitbills.com")}
 />
 
-</View>
-
-<View style={{marginTop:12}}>
-<Button
-title="Start 24h confirm timer"
-onPress={()=>{}}
-/>
 </View>
 
 </Card>

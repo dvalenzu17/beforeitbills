@@ -1,0 +1,31 @@
+# TEST: Sign out clears state and returns to sign-in screen
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+
+# Navigate to Account tab
+- tapOn: "Account"
+- waitForAnimationToEnd
+- takeScreenshot: "04_signout_account_tab"
+
+# Scroll down to Sign out button
+- scrollUntilVisible:
+    element:
+      text: "Sign out"
+    direction: DOWN
+- tapOn: "Sign out"
+- waitForAnimationToEnd
+- takeScreenshot: "04_signout_confirm_alert"
+
+# Confirm dialog
+- assertVisible: "Sign out"
+- tapOn: "Sign out"
+- waitForAnimationToEnd
+- takeScreenshot: "04_signout_success"
+
+# Should be back on sign-in screen
+- assertVisible: "Welcome back"

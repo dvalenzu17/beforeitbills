@@ -31,6 +31,7 @@ import { useOnboardingStore } from "../../lib/onboardingStore";
 import { useToast } from "../../components/ToastProvider";
 import { track } from "../../lib/analytics";
 import { formatMoney } from "../../lib/utils";
+import { fmtDateShort } from "../../lib/formatters";
 
 import { SPACING } from "../../lib/ui/tokens";
 import { VStack } from "../../components/ui/Stack";
@@ -127,7 +128,7 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
 }
 
 // ── Action card ───────────────────────────────────────────────────────────────
-function ActionCard({ t, item, onPress }) {
+function ActionCard({ t, item, onPress, featured }) {
   const iconMap = {
     recap: { icon: "bar-chart-2", color: t.accent },
     recommendation: { icon: "scissors", color: "#FF3B30" },
@@ -135,6 +136,42 @@ function ActionCard({ t, item, onPress }) {
     bill: { icon: "file-text", color: "#64D2FF" },
   };
   const { icon, color } = iconMap[item.kind] || { icon: "zap", color: t.accent };
+
+  // Featured = "one clear action" hero card (recommendation/urgent kind)
+  if (featured) {
+    return (
+      <PressableScale
+        haptic="impactMedium"
+        onPress={onPress}
+        style={{ borderRadius: 18, overflow: "hidden" }}
+      >
+        <LinearGradient
+          colors={[color + "CC", color + "88"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            padding: 18,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <View style={{
+            width: 44, height: 44, borderRadius: 13,
+            backgroundColor: "rgba(0,0,0,0.18)",
+            alignItems: "center", justifyContent: "center",
+          }}>
+            <Feather name={icon} size={20} color="#fff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>{item.title}</Text>
+            <Text style={{ color: "rgba(255,255,255,0.8)", marginTop: 3, fontSize: 13 }}>{item.detail}</Text>
+          </View>
+          <Feather name="arrow-right" size={18} color="rgba(255,255,255,0.9)" />
+        </LinearGradient>
+      </PressableScale>
+    );
+  }
 
   return (
     <PressableScale
@@ -378,7 +415,7 @@ export default function Home() {
       amount: x.effectiveAmount,
       currency: x.currency || "USD",
       cadence: x.cadence,
-      subtitle: `${x.cadence} · renews ${x.nextDate || "—"}`,
+      subtitle: `${x.cadence} · renews ${fmtDateShort(x.nextDate)}`,
       nextDate: x.nextDate,
       domain: x.domain || x.fromDomain || "",
       sharedCount: Number(x.sharedCount ?? 1) || 1,
@@ -392,7 +429,7 @@ export default function Home() {
       name: x.title || x.merchant || x.name || "",
       amount: x.effectiveAmount,
       currency: x.currency || "USD",
-      subtitle: `bill · due ${x.nextDate || "—"}`,
+      subtitle: `bill · due ${fmtDateShort(x.nextDate)}`,
       nextDate: x.nextDate,
       domain: x.domain || "",
       sharedCount: Number(x.sharedCount ?? 1) || 1,
@@ -561,10 +598,10 @@ export default function Home() {
                   <Text style={{ fontSize: 24 }}>🎉</Text>
                   <View>
                     <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
-                      You've saved {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(savings.totalSaved)}/mo
+                      {tt("home.savedAmount", { amount: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(savings.totalSaved) })}
                     </Text>
                     <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 }}>
-                      From {savings.entries?.length || 0} cancelled subscription{savings.entries?.length !== 1 ? "s" : ""}
+                      {tt("home.cancelledCount", { count: savings.entries?.length || 0 })}
                     </Text>
                   </View>
                 </View>
@@ -605,7 +642,7 @@ export default function Home() {
             left={<Feather name="plus" size={16} color="#fff" />}
           />
         </MotiView>
-        {/* ── NEXT ACTIONS ── */}
+        {/* ── NEXT ACTIONS — first recommendation shown as hero "one clear action" ── */}
         {actionFeed.length > 0 && (
           <MotiView
             from={{ opacity: 0, translateY: 10 }}
@@ -619,6 +656,7 @@ export default function Home() {
                     key={`${a.kind}-${idx}`}
                     t={t}
                     item={a}
+                    featured={idx === 0 && a.kind === "recommendation"}
                     onPress={() => a.href ? r.push(a.href) : null}
                   />
                 ))}
@@ -726,6 +764,7 @@ export default function Home() {
         onArchive={async () => {
           if (!contextItem) return;
           try {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
             const result = contextItem.kind === "bill"
               ? await updateBill?.(contextItem.id, { active: false })
               : await updateSub?.(contextItem.id, { active: false });

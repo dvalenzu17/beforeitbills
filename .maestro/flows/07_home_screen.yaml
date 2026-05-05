@@ -1,0 +1,63 @@
+# TEST: Home screen — key elements visible, tab navigation, search, pull-to-refresh
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+- takeScreenshot: "07_home_start"
+
+# Core home elements
+- assertVisible: "Home"
+- assertVisible:
+    text: "Add recurring expense"
+    optional: true
+- assertVisible:
+    text: "Upcoming"
+    optional: true
+
+# Tab bar present
+- assertVisible: "Insights"
+- assertVisible: "Account"
+
+# Open search
+- tapOn:
+    accessibilityLabel: "Search"
+- waitForAnimationToEnd
+- assertVisible: "Search subscriptions & bills…"
+- takeScreenshot: "07_home_search_open"
+- back
+- waitForAnimationToEnd
+
+# Pull-to-refresh (swipe down from top of scroll view)
+- scroll:
+    direction: DOWN
+    duration: 500
+- waitForAnimationToEnd
+- takeScreenshot: "07_home_after_refresh"
+
+# "Add recurring expense" button navigates correctly
+- tapOn: "Add recurring expense"
+- waitForAnimationToEnd
+- takeScreenshot: "07_home_add_recurring"
+- back
+- waitForAnimationToEnd
+
+# Tab navigation — switch to Insights
+- tapOn: "Insights"
+- waitForAnimationToEnd
+- assertVisible: "Insights"
+- takeScreenshot: "07_home_insights_tab"
+
+# Switch to Account
+- tapOn: "Account"
+- waitForAnimationToEnd
+- assertVisible: "Account"
+- takeScreenshot: "07_home_account_tab"
+
+# Return to Home
+- tapOn: "Home"
+- waitForAnimationToEnd
+- assertVisible: "Home"

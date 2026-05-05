@@ -1,0 +1,16 @@
+# Reusable: sign in with email/password test credentials.
+# Caller must ensure app is launched and on the sign-in screen.
+# Uses env vars: TEST_EMAIL, TEST_PASSWORD
+appId: com.beforeitbills.app
+---
+- assertVisible: "Welcome back"
+- tapOn:
+    id: "auth-email-input"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    id: "auth-password-input"
+- inputText: ${TEST_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth-submit-btn"
+- waitForAnimationToEnd

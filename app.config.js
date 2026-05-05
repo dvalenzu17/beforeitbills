@@ -14,21 +14,24 @@ module.exports = {
       backgroundColor: "#0D1B3E",
     },
 
-    updates: {
-      fallbackToCacheTimeout: 0,
-    },
-
     assetBundlePatterns: ["**/*"],
 
     ios: {
       bundleIdentifier: "com.beforeitbills.app",
-      buildNumber: "57", //increasing build #
+      buildNumber: "58",
       userInterfaceStyle: "automatic",
       supportsTablet: false,
       config: {
         usesNonExemptEncryption: false,
       },
-    
+
+      infoPlist: {
+        NSFaceIDUsageDescription: "BeforeItBills uses Face ID to keep your financial data private.",
+        NSCameraUsageDescription: "BeforeItBills uses your camera to update your profile photo.",
+        NSPhotoLibraryUsageDescription: "BeforeItBills accesses your photo library to let you choose a profile photo.",
+        NSUserTrackingUsageDescription: "We use tracking data to improve the app experience and show relevant content.",
+      },
+
       entitlements: {
         "aps-environment": "production",
         "com.apple.security.application-groups": ["group.com.beforeitbills.app"],
@@ -57,7 +60,7 @@ module.exports = {
           ios: {
             deploymentTarget: "16.0",
             appleTeamId: "4RWRT2WU2H",
-            newArchEnabled: false,
+            newArchEnabled: true,
           },
         },
       ],
@@ -81,13 +84,13 @@ module.exports = {
       ],
       "expo-font",
       "expo-router",
-      "expo-sharing",
       "./plugins/withIosWidget",
       "expo-quick-actions",
       "expo-apple-authentication",
       "./plugins/withShareExtension",
       "./plugins/withPodfileDeploymentTarget",
       "./plugins/withTurboModuleIOS26Patch",
+      "./plugins/withPrivacyManifest",
     ],
 
     extra: {
@@ -107,7 +110,10 @@ module.exports = {
                 },
                 {
                   targetName: "SubsWidget",
-                  bundleIdentifier: "com.beforeitbills.app.SubsWidget"
+                  bundleIdentifier: "com.beforeitbills.app.SubsWidget",
+                  entitlements: {
+                    "com.apple.security.application-groups": ["group.com.beforeitbills.app"]
+                  }
                 }
               ]
             }

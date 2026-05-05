@@ -35,7 +35,8 @@
     "resetFailed": "Falha ao enviar",
     "resetFailedBody": "Tente novamente.",
     "enterEmailFirst": "Digite seu e-mail primeiro",
-    "appleSignInFailedBody": "O login com Apple falhou. Tente novamente ou use seu e-mail."
+    "appleSignInFailedBody": "O login com Apple falhou. Tente novamente ou use seu e-mail.",
+    "googleSignInFailedBody": "Falha no login com Google. Tente novamente ou use seu e-mail."
   },
   "features": {
     "title": "Hub de Recursos",
@@ -77,8 +78,13 @@
     "body": "You saved / you’ll pay / what changed + shareable highlights."
   },
   "search": {
-    "title": "Smart search + filters",
-    "body": "Filter by category, cost, renewal date, trial, provider, confidence."
+    "placeholder": "Buscar assinaturas e contas…",
+    "startTyping": "Digite para pesquisar em todos os itens",
+    "noResults": "Nenhum resultado para \"{{q}}\"",
+    "result": "resultado",
+    "results": "resultados",
+    "kindSubscription": "Assinatura",
+    "kindBill": "Conta"
   },
   "manual": {
     "title": "Manual add + upload receipt/PDF",
@@ -113,7 +119,28 @@
     "subSubtitle": "{{cadence}} · {{date}}",
     "fromManualEntries": "de entradas manuais",
     "urgentCount": "{{n}} urgente",
-    "newFromInbox": "{{n}} novo da caixa"
+    "newFromInbox": "{{n}} novo da caixa",
+    "savedAmount": "Você economizou {{amount}}/mês",
+    "cancelledCount": "De {{count}} assinatura cancelada",
+    "cancelledCountPlural": "De {{count}} assinaturas canceladas"
+  },
+  "streak": {
+    "day": "dia",
+    "days": "dias",
+    "started": "Sequência iniciada!",
+    "keepGoing": "Continue assim!",
+    "onARoll": "Você está em sequência!",
+    "onFire": "Você está em chamas!",
+    "legendStatus": "Status lendário 🏆",
+    "toNext": "mais {{n}} dia para chegar a {{milestone}} 🎯",
+    "toNextPlural": "mais {{n}} dias para chegar a {{milestone}} 🎯",
+    "best": "Melhor: {{n}} dias"
+  },
+  "social": {
+    "title": "Atividade da comunidade",
+    "trackingLabel": "rastreando\nassinaturas",
+    "avgSavedLabel": "economia média\npor mês",
+    "cancelledLabel": "canceladas\nesta semana"
   },
   "conflict": {
     "title": "Conflito de sincronização",
@@ -125,15 +152,6 @@
     "keepMine": "Manter a minha",
     "useTheirs": "Usar a deles",
     "skipForNow": "Ignorar por agora"
-  },
-  "search": {
-    "placeholder": "Buscar assinaturas e contas…",
-    "startTyping": "Digite para pesquisar em todos os itens",
-    "noResults": "Nenhum resultado para \"{{q}}\"",
-    "result": "resultado",
-    "results": "resultados",
-    "kindSubscription": "Assinatura",
-    "kindBill": "Conta"
   },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
@@ -200,122 +218,132 @@
         "subtext": "Todas as telas V1"
       },
       "upgrade": {
-        "label": "Upgrade",
-        "subtextPro": "You’re already Pro",
-        "subtextFree": "Unlock premium features"
+        "label": "Fazer upgrade",
+        "subtextPro": "Você já é Pro",
+        "subtextFree": "Desbloquear recursos premium"
       },
       "personal": {
-        "label": "Personal Information",
-        "subtext": "Name, email, username"
+        "label": "Informações pessoais",
+        "subtext": "Nome, e-mail, usuário"
       },
       "security": {
-        "label": "Login & Security",
-        "subtext": "Password, sessions, 2FA"
+        "label": "Login e segurança",
+        "subtext": "Senha, sessões, 2FA"
       },
       "notifications": {
-        "label": "Notifications",
-        "subtext": "Renewals + reminders"
+        "label": "Notificações",
+        "subtext": "Renovações + lembretes"
       },
       "connected": {
-        "label": "Connected Accounts",
-        "subtext": "Mail scan settings"
+        "label": "Contas conectadas",
+        "subtext": "Configurações de varredura"
       },
       "help": {
-        "label": "Help",
-        "subtext": "FAQs + contact"
+        "label": "Ajuda",
+        "subtext": "Perguntas + contato"
       },
       "legals": {
-        "label": "Legals",
-        "subtext": "Privacy + terms"
+        "label": "Legal",
+        "subtext": "Privacidade + termos"
       },
       "export": {
-        "label": "Export Data",
-        "subtext": "Download your data"
+        "label": "Exportar dados",
+        "subtext": "Baixar seus dados"
       },
       "about": {
-        "label": "About",
-        "subtext": "Version + credits"
+        "label": "Sobre",
+        "subtext": "Versão + créditos"
+      },
+      "lang": {
+        "title": "Idioma"
+      },
+      "settings": {
+        "label": "Configurações",
+        "subtext": "Idioma, notificações, dados"
       }
     }
   },
   "ob": {
-    "langTitle": "Escolha seu idioma",
-    "langBody": "Você pode mudar isso a qualquer momento em Conta.",
-    "promiseTitle": "Acompanhe cada assinatura.",
-    "promiseBody": "Cancele o lixo. Fique com o que presta.",
-    "b1Title": "Conecte o email → achamos recibos",
-    "b1Body": "Escaneamos confirmações e renovações para detectar assinaturas.",
-    "b2Title": "Prova em cada item",
-    "b2Body": "Toque em uma assinatura para ver o email exato que criou aquilo.",
-    "b3Title": "Você controla tudo",
-    "b3Body": "Acesso só leitura. Desconecte quando quiser.",
+    "skip": "Pular",
+    "next": "Próximo",
     "getStarted": "Começar",
-    "tryWithout": "Usar sem conectar",
-  
-    "privacyTitle": "Privacidade e confiança",
-    "privacyBody": "Simples: só recibos, só leitura, suas regras.",
-    "p1Title": "Varredura só leitura",
-    "p1Body": "Não enviamos emails. Só lemos para encontrar recibos.",
-    "p2Title": "Recibos e confirmações",
-    "p2Body": "Focamos em sinais de cobrança/renovação, não nas suas mensagens pessoais.",
-    "p3Title": "Apague e desconecte quando quiser",
-    "p3Body": "Você pode desconectar e excluir seus dados a qualquer momento.",
-  
-    "connectTitle": "Conecte sua caixa de entrada",
-    "connectBody": "Opcional — mas libera detecção automática.",
-    "connectHint": "Leva ~1–3 min. Você pode usar o app enquanto escaneia.",
-    "connectGmail": "Conectar Gmail",
-    "connectOutlook": "Conectar Outlook",
-    "skipForNow": "Pular por agora",
-  
-    "scanSetupTitle": "Configurar varredura",
-    "scanSetupBody": "Escolha um período. Períodos maiores acham mais assinaturas.",
-    "range90": "Últimos 90 dias",
-    "range90Sub": "Mais rápido. Pode perder assinaturas antigas.",
-    "rangeYear": "Último 1 ano (recomendado)",
-    "rangeYearSub": "Melhor equilíbrio entre velocidade e cobertura.",
-    "rangeAll": "Tudo",
-    "rangeAllSub": "Mais lento. Mais completo.",
-    "includePromos": "Incluir promoções/marketing",
-    "includePromosSub": "Pode achar mais, mas adiciona ruído.",
-    "startScan": "Iniciar varredura",
-  
-    "scanningTitle": "Escaneando…",
-    "scanningSub": "Período: {{range}}",
-    "emailsScanned": "Emails escaneados: {{n}}",
-    "receiptsFound": "Recibos encontrados: {{n}}",
-    "subsDetected": "Assinaturas detectadas: {{n}}",
-    "scanningHint": "Você pode ver resultados assim que aparecer o primeiro.",
-    "viewResults": "Ver resultados",
-    "keepScanning": "Continuar escaneando",
-    "stop": "Parar",
-  
-    "resultsTitle": "Primeiros resultados",
-    "resultsBody": "Revise o que achamos e confirme para melhorar a precisão.",
-    "resultsMeta": "Renova em {{renewal}} · Confiança: {{conf}}",
-    "confirmItems": "Confirmar itens",
-  
-    "confirmTitle": "Confirmar assinaturas",
-    "confirmSub": "{{n}} de {{total}}",
-    "tapToProof": "Prova (trecho do email):",
-    "yesSub": "Sim, é assinatura",
-    "notSub": "Não é assinatura",
-  
-    "goalsTitle": "O que você quer fazer?",
-    "goalsBody": "Isso personaliza seu painel.",
-    "goalCut": "Reduzir gasto mensal",
-    "goalCutSub": "Encontrar baixo valor e duplicados.",
-    "goalTrials": "Acompanhar trials",
-    "goalTrialsSub": "Lembretes antes de cobrar.",
-    "goalHikes": "Evitar aumentos de preço",
-    "goalHikesSub": "Detectar aumentos e sugerir ação.",
-  
-    "notifTitle": "Ativar alertas",
-    "notifBody": "Lembretes de trials + renovações (sem spam).",
-    "notifB1": "Trials acabando",
-    "notifB2": "Renovações e mudanças de preço",
-    "enableAlerts": "Ativar alertas",
-    "notNow": "Agora não"
+    "pickOne": "Escolha um para continuar",
+    "hook": {
+      "stat": "12",
+      "statLabel": "assinaturas",
+      "statSub": "A pessoa média paga por 12 assinaturas.",
+      "halfForgotten": "Metade são esquecidas."
+    },
+    "problem": {
+      "title": "Soa familiar?",
+      "subtitle": "Você não é desorganizado. As assinaturas são feitas para ser difíceis de rastrear.",
+      "p1": "Você é cobrado sem nem saber para quê.",
+      "p2": "Testes gratuitos viram pagos enquanto você não está prestando atenção.",
+      "p3": "O Netflix subiu de preço. Você descobriu no extrato.",
+      "p4": "Você paga por duplicatas. Dois planos de nuvem. Três serviços de streaming."
+    },
+    "personalize": {
+      "title": "O que mais te afeta?",
+      "subtitle": "Vamos focar no que mais importa para você.",
+      "opt1": "Pago por coisas que esqueci",
+      "opt2": "Armadilhas de teste continuam me pegando",
+      "opt3": "Meus preços continuam subindo",
+      "opt4": "Só quero ver tudo em um lugar"
+    },
+    "solution": {
+      "title_forgot": "Nunca perca o controle novamente",
+      "body_forgot": "Escaneamos sua caixa de entrada e mostramos cada cobrança antes de chegar no seu cartão. Até as de 2 anos atrás.",
+      "title_trials": "Vença as armadilhas de teste",
+      "body_trials": "Sinalizamos cada teste prestes a virar pago, com a data exata para cancelar.",
+      "title_prices": "Capture cada aumento de preço",
+      "body_prices": "No momento em que um e-mail de cobrança mostra um valor maior que da última vez, te avisamos.",
+      "title_clarity": "Sua central de assinaturas",
+      "body_clarity": "Toda cobrança recorrente, uma tela. Valores, datas, o que fazer. Sem precisar procurar.",
+      "note": "Feito para isso. Funciona em 60 segundos."
+    },
+    "outcomes": {
+      "title": "Não recursos. Resultados.",
+      "subtitle": "É isso que realmente muda para você.",
+      "o1": "Saiba seu gasto mensal exato antes de sair da sua conta",
+      "o2": "Cancele o que esqueceu — em menos de 60 segundos",
+      "o3": "Nunca perca um teste vencendo ou um aumento silencioso de preço",
+      "o4": "Pare de pagar por serviços que não usa mais"
+    },
+    "magic": {
+      "title": "É assim que parece",
+      "liveDemo": "Prévia ao vivo",
+      "priceBadge": "↑ Aumento de preço",
+      "trialBadge": "⚠ Teste terminando em breve",
+      "forgotBadge": "Esquecido por 18 meses"
+    },
+    "success": {
+      "title": "Você é Pro! 🎉",
+      "pill": "Teste gratuito de 7 dias iniciado",
+      "unlockedLabel": "AGORA DESBLOQUEADO",
+      "cta": "Começar"
+    },
+    "quickwin": {
+      "title": "Adicione um que você reconhece",
+      "subtitle": "Toque em qualquer um que você paga. Leva 5 segundos.",
+      "addedTitle": "Aí está.",
+      "addedBody": "Essa é sua primeira vitória. Imagine dezenas mais."
+    },
+    "cta": {
+      "title": "Comece a ver tudo",
+      "subtitle": "Você encontrou sua primeira assinatura em segundos. Espere até escanearmos toda a sua caixa.",
+      "trial": "Testar grátis por 7 dias",
+      "trialSub": "Depois $4,99/mês. Cancele quando quiser.",
+      "noThanks": "Continuar com recursos básicos",
+      "notNow": "Agora não",
+      "loading": "Processando…",
+      "trialPill": "· 7 dias grátis",
+      "unlockedLabel": "O QUE VOCÊ DESBLOQUEIA",
+      "bullet5": "Profundidade de análise ilimitada",
+      "bullet1": "Detecção automática do Gmail",
+      "bullet2": "Alertas de aumento de preços",
+      "bullet3": "Radar de testes",
+      "bullet4": "Resumo mensal de gastos"
+    }
   },
   "scanActivity": {
     "title": "Atividade de varredura",

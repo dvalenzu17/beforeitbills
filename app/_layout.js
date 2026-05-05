@@ -397,7 +397,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (!navReady) return;
     if (!authReady) return;
-    if (onboardingDone === null) return;
 
     const rootSegment = Array.isArray(segments) ? segments[0] : null;
     const inAuth = rootSegment === "(auth)";
@@ -409,10 +408,15 @@ export default function RootLayout() {
       segments?.[0] === "oauth-success";
     if (isOAuthCallback) return;
 
+    // Check unauthenticated state BEFORE the onboardingDone null guard so that
+    // sign-out always navigates to the sign-in screen even while onboardingDone
+    // is being reset to null.
     if (SUPABASE_CONFIGURED && !user) {
       if (!inAuth) router.replace("/(auth)/sign-in");
       return;
     }
+
+    if (onboardingDone === null) return;
 
     if (!onboardingDone) {
       if (!inOnboarding) router.replace("/(onboarding)");

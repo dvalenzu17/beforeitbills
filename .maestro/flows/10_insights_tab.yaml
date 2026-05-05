@@ -1,0 +1,44 @@
+# TEST: Insights tab — renders without crash, key sections visible, scroll works
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+
+- tapOn: "Insights"
+- waitForAnimationToEnd
+- takeScreenshot: "10_insights_open"
+
+# Header
+- assertVisible: "Insights"
+
+# Core cards (at least one should be visible)
+- assertVisible:
+    text: "Monthly burn"
+    optional: true
+- assertVisible:
+    text: "Upcoming"
+    optional: true
+
+# Scroll through the tab — should not crash
+- scrollUntilVisible:
+    element:
+      text: "Optimize"
+    direction: DOWN
+    timeout: 8000
+    optional: true
+- takeScreenshot: "10_insights_scrolled"
+
+- scrollUntilVisible:
+    element:
+      text: "Spending forecast"
+    direction: DOWN
+    timeout: 8000
+    optional: true
+- takeScreenshot: "10_insights_forecast"
+
+# No crash — still on Insights screen
+- assertVisible: "Insights"

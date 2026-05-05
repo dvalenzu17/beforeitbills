@@ -1,0 +1,55 @@
+# TEST: Onboarding with selections — pick a problem, pick a quick-win service,
+#       verify solution slide updates, decline trial.
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- waitForAnimationToEnd
+
+# Slide 1
+- tapOn: "Next"
+- waitForAnimationToEnd
+
+# Slide 2 — Problem awareness
+- assertVisible: "Sound familiar?"
+- tapOn: "Next"
+- waitForAnimationToEnd
+
+# Slide 3 — Personalize: select a problem (Next unlocks after selection)
+- assertVisible: "What hits closest to home?"
+- tapOn: "I'm paying for things I forgot about"
+- waitForAnimationToEnd
+- tapOn: "Next"
+- waitForAnimationToEnd
+
+# Slide 4 — Solution should reflect the choice
+- assertVisible: "Never lose track again"
+- tapOn: "Next"
+- waitForAnimationToEnd
+
+# Slide 5 — Outcomes
+- assertVisible: "Not features. Results."
+- tapOn: "Next"
+- waitForAnimationToEnd
+
+# Slide 6 — Live demo
+- assertVisible: "Here's what it looks like"
+- tapOn: "Next"
+- waitForAnimationToEnd
+
+# Slide 7 — Quick win: tap a service chip
+- assertVisible: "Add one you recognize"
+- tapOn: "Netflix"
+- waitForAnimationToEnd
+- assertVisible: "There it is."
+- takeScreenshot: "06_onboarding_quickwin"
+- tapOn: "Get started"
+- waitForAnimationToEnd
+
+# Slide 8 — CTA: decline trial
+- assertVisible: "Start free 7-day trial"
+- tapOn: "Not now"
+- waitForAnimationToEnd
+- takeScreenshot: "06_onboarding_declined_trial"

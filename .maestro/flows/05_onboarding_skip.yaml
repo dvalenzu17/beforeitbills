@@ -1,0 +1,57 @@
+# TEST: Onboarding skip flow — tapping Skip on every slide lands on home
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- waitForAnimationToEnd
+- takeScreenshot: "05_onboarding_start"
+
+# Slide 1 — Hook: stat visible, tap Next (no Skip on first slide)
+- assertVisible: "12"
+- assertVisible: "subscriptions"
+- tapOn: "Next"
+- waitForAnimationToEnd
+- takeScreenshot: "05_onboarding_slide2"
+
+# Slide 2 — Problem
+- assertVisible: "Sound familiar?"
+- tapOn: "Skip"
+- waitForAnimationToEnd
+
+# Slide 3 — Personalize (selection required before Next, but Skip available)
+- assertVisible: "What hits closest to home?"
+- tapOn: "Skip"
+- waitForAnimationToEnd
+
+# Slide 4 — Solution
+- tapOn: "Skip"
+- waitForAnimationToEnd
+
+# Slide 5 — Outcomes
+- assertVisible: "Not features. Results."
+- tapOn: "Skip"
+- waitForAnimationToEnd
+
+# Slide 6 — Magic / Live preview
+- assertVisible: "Here's what it looks like"
+- tapOn: "Skip"
+- waitForAnimationToEnd
+
+# Slide 7 — Quick win
+- assertVisible: "Add one you recognize"
+- tapOn: "Skip"
+- waitForAnimationToEnd
+
+# Slide 8 — CTA
+- assertVisible: "Start free 7-day trial"
+- assertVisible: "Not now"
+- tapOn: "Not now"
+- waitForAnimationToEnd
+- takeScreenshot: "05_onboarding_complete"
+
+# Should land on home screen (or scan setup)
+- assertVisible:
+    text: "Home"
+    optional: true

@@ -1,0 +1,23 @@
+# TEST: Session persistence — kill app and reopen, user stays signed in
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+
+# Verify on home
+- assertVisible: "Home"
+- takeScreenshot: "15_session_signed_in"
+
+# Kill and relaunch WITHOUT clearing state
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+- takeScreenshot: "15_session_after_relaunch"
+
+# Should still be signed in — home screen, not sign-in screen
+- assertVisible: "Home"
+- assertNotVisible: "Welcome back"
