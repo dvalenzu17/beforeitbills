@@ -106,6 +106,7 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: "Home",
+            tabBarTestID: "tab-home",
             tabBarIcon: ({ color, size, focused }) => (
               <MotiView
                 animate={{ scale: focused ? 1.18 : 1 }}
@@ -120,6 +121,7 @@ export default function TabsLayout() {
           name="insights"
           options={{
             title: "Insights",
+            tabBarTestID: "tab-insights",
             tabBarIcon: ({ color, size, focused }) => (
               <MotiView
                 animate={{ scale: focused ? 1.18 : 1 }}
@@ -138,6 +140,7 @@ export default function TabsLayout() {
           name="account"
           options={{
             title: "Account",
+            tabBarTestID: "tab-account",
             tabBarIcon: ({ color, size, focused }) => (
               <MotiView
                 animate={{ scale: focused ? 1.18 : 1 }}

@@ -8,7 +8,8 @@ appId: com.beforeitbills.app
 - runFlow: utils/skip_onboarding.yaml
 - waitForAnimationToEnd
 
-- tapOn: "Insights"
+- tapOn:
+    id: "tab-insights"
 - waitForAnimationToEnd
 - takeScreenshot: "10_insights_open"
 

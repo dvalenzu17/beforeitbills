@@ -9,8 +9,9 @@ appId: com.beforeitbills.app
 - runFlow: utils/skip_onboarding.yaml
 - waitForAnimationToEnd
 
-# Navigate to price alerts (accessible from Account or a menu link)
-- tapOn: "Account"
+# Navigate to price alerts (accessible from Account)
+- tapOn:
+    id: "tab-account"
 - waitForAnimationToEnd
 
 # Look for price alerts entry in account

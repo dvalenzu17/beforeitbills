@@ -10,17 +10,12 @@ appId: com.beforeitbills.app
 - takeScreenshot: "07_home_start"
 
 # Core home elements
-- assertVisible: "Home"
-- assertVisible:
-    text: "Add recurring expense"
-    optional: true
+- extendedWaitUntil:
+    visible: "Add recurring expense"
+    timeout: 10000
 - assertVisible:
     text: "Upcoming"
     optional: true
-
-# Tab bar present
-- assertVisible: "Insights"
-- assertVisible: "Account"
 
 # Open search
 - tapOn:
@@ -32,7 +27,7 @@ appId: com.beforeitbills.app
 - waitForAnimationToEnd
 
 # Pull-to-refresh (swipe down from top of scroll view)
-- scroll:
+- swipe:
     direction: DOWN
     duration: 500
 - waitForAnimationToEnd
@@ -46,18 +41,21 @@ appId: com.beforeitbills.app
 - waitForAnimationToEnd
 
 # Tab navigation — switch to Insights
-- tapOn: "Insights"
+- tapOn:
+    id: "tab-insights"
 - waitForAnimationToEnd
 - assertVisible: "Insights"
 - takeScreenshot: "07_home_insights_tab"
 
 # Switch to Account
-- tapOn: "Account"
+- tapOn:
+    id: "tab-account"
 - waitForAnimationToEnd
 - assertVisible: "Account"
 - takeScreenshot: "07_home_account_tab"
 
 # Return to Home
-- tapOn: "Home"
+- tapOn:
+    id: "tab-home"
 - waitForAnimationToEnd
-- assertVisible: "Home"
+- assertVisible: "Add recurring expense"

@@ -1,5 +1,5 @@
 # TEST: Account screen — profile visible, settings items navigate correctly,
-#       language change updates strings, sign-out button present
+#       sign-out button present
 appId: com.beforeitbills.app
 ---
 - launchApp:
@@ -9,7 +9,8 @@ appId: com.beforeitbills.app
 - runFlow: utils/skip_onboarding.yaml
 - waitForAnimationToEnd
 
-- tapOn: "Account"
+- tapOn:
+    id: "tab-account"
 - waitForAnimationToEnd
 - takeScreenshot: "11_account_open"
 

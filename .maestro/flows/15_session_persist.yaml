@@ -9,7 +9,7 @@ appId: com.beforeitbills.app
 - waitForAnimationToEnd
 
 # Verify on home
-- assertVisible: "Home"
+- assertVisible: "Add recurring expense"
 - takeScreenshot: "15_session_signed_in"
 
 # Kill and relaunch WITHOUT clearing state
@@ -19,5 +19,7 @@ appId: com.beforeitbills.app
 - takeScreenshot: "15_session_after_relaunch"
 
 # Should still be signed in — home screen, not sign-in screen
-- assertVisible: "Home"
+- extendedWaitUntil:
+    visible: "Add recurring expense"
+    timeout: 10000
 - assertNotVisible: "Welcome back"

@@ -27,7 +27,7 @@ appId: com.beforeitbills.app
 - assertNotVisible: "undefined"
 
 # Clear and try another query
-- clearText
+- eraseText: 100
 - inputText: "zzz_nonexistent_zzz"
 - waitForAnimationToEnd
 - takeScreenshot: "13_search_empty_state"
@@ -41,4 +41,4 @@ appId: com.beforeitbills.app
 - hideKeyboard
 - back
 - waitForAnimationToEnd
-- assertVisible: "Home"
+- assertVisible: "Add recurring expense"

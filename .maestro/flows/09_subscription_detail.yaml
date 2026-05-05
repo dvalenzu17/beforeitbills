@@ -27,7 +27,7 @@ appId: com.beforeitbills.app
 - assertNotVisible: "T00:00:00"
 - assertNotVisible: "T00:00:00.000Z"
 
-# Verify brand logo / name area and back navigation works
+# Verify back navigation works
 - back
 - waitForAnimationToEnd
-- assertVisible: "Home"
+- assertVisible: "Add recurring expense"

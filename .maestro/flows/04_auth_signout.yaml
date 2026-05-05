@@ -8,7 +8,8 @@ appId: com.beforeitbills.app
 - runFlow: utils/skip_onboarding.yaml
 
 # Navigate to Account tab
-- tapOn: "Account"
+- tapOn:
+    id: "tab-account"
 - waitForAnimationToEnd
 - takeScreenshot: "04_signout_account_tab"
 
@@ -22,10 +23,11 @@ appId: com.beforeitbills.app
 - takeScreenshot: "04_signout_confirm_alert"
 
 # Confirm dialog
-- assertVisible: "Sign out"
 - tapOn: "Sign out"
 - waitForAnimationToEnd
 - takeScreenshot: "04_signout_success"
 
 # Should be back on sign-in screen
-- assertVisible: "Welcome back"
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 10000
