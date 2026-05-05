@@ -114,7 +114,8 @@
       "Bash(export PATH=\"$PATH\":\"$HOME/.maestro/bin\")",
       "Bash(maestro --version)",
       "Bash(maestro device:*)",
-      "Bash(maestro list-devices:*)"
+      "Bash(maestro list-devices:*)",
+      "Bash(unzip -o \"beforeitbills_1_artifacts.zip\" -d \"beforeitbills_1_artifacts\")"
     ]
   }
 }

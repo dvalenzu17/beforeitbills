@@ -66,7 +66,6 @@ for FLOW in "${FLOWS[@]}"; do
       --output "$RESULTS_DIR/${FLOW_NAME}_junit.xml" \
       -e TEST_EMAIL="$TEST_EMAIL" \
       -e TEST_PASSWORD="$TEST_PASSWORD" \
-      --screenshot-dir "$SCREENSHOTS_DIR" \
       "$FLOW" > "$RESULTS_DIR/${FLOW_NAME}.log" 2>&1; then
     echo "✅ PASS"
     PASS=$((PASS + 1))
