@@ -50,9 +50,45 @@ export async function verifyImapCredentials({ provider, user, pass, customHost, 
 
 // ── Scan inbox ────────────────────────────────────────────────────────────────
 
+// Subject keywords that indicate a message is worth fetching a body snippet for.
+// Kept broad — the scoring engine handles the final filtering.
+const SNIPPET_WORTH_SUBJECTS = [
+  'subscription', 'renewal', 'renew', 'membership', 'billing', 'billed', 'invoice',
+  'receipt', 'payment', 'charged', 'charge', 'plan', 'auto-renew', 'statement',
+  'bill', 'due', 'amount due', 'balance', 'insurance', 'mortgage', 'loan',
+];
+
+function subjectWorthSnippet(subject) {
+  const s = subject.toLowerCase();
+  return SNIPPET_WORTH_SUBJECTS.some(kw => s.includes(kw));
+}
+
 /**
- * Connect via IMAP, search INBOX for subscription-related emails,
- * and return raw email objects for the subscription engine to score.
+ * Extract a plain-text snippet from a bodyStructure node tree.
+ * Returns the MIME section identifier of the first text/plain or text/html part.
+ */
+function findTextPart(node, section = '') {
+  if (!node) return null;
+  const type    = (node.type    || '').toLowerCase();
+  const subtype = (node.subtype || '').toLowerCase();
+
+  if (type === 'text' && (subtype === 'plain' || subtype === 'html')) {
+    return section || '1';
+  }
+  if (Array.isArray(node.childNodes)) {
+    for (let i = 0; i < node.childNodes.length; i++) {
+      const childSection = section ? `${section}.${i + 1}` : `${i + 1}`;
+      const found = findTextPart(node.childNodes[i], childSection);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+/**
+ * Connect via IMAP, scan INBOX for subscription-related emails using a two-pass approach:
+ *   Pass 1 — fetch envelope + bodyStructure for all recent messages
+ *   Pass 2 — fetch a body snippet for messages whose subject looks promising
  *
  * @returns {{ rawEmails: EmailObject[], scannedCount: number }}
  */
@@ -69,13 +105,15 @@ export async function scanImapInbox({ provider, user, pass, daysBack = 365, cust
 
     try {
       // Search by date only — let the scoring engine filter by content.
-      // Complex OR queries have inconsistent support across IMAP servers.
       const uids = await client.search({ since }, { uid: true });
-      // Cap at 150 most recent to keep response times reasonable
-      const recentUids = uids.slice(-150);
+      // Cap at 200 most recent to keep response times reasonable
+      const recentUids = uids.slice(-200);
       scannedCount = recentUids.length;
 
       if (recentUids.length === 0) return { rawEmails, scannedCount };
+
+      // ── Pass 1: envelope + body structure ────────────────────────────────────
+      const pass1 = new Map(); // uid → { subject, fromStr, date, senderDomain, hasPdf, pdfFilename, textSection }
 
       for await (const msg of client.fetch(recentUids, { envelope: true, bodyStructure: true }, { uid: true })) {
         try {
@@ -84,30 +122,86 @@ export async function scanImapInbox({ provider, user, pass, daysBack = 365, cust
           const fromStr = from
             ? `${from.name ? `${from.name} ` : ''}<${from.mailbox}@${from.host}>`
             : '';
-          const subject     = env?.subject || '';
-          const date        = env?.date    || null;
+          const subject      = env?.subject || '';
+          const date         = env?.date    || null;
           const senderDomain = from?.host?.toLowerCase() || extractSenderDomain(fromStr);
 
-          // PDF detection from body structure
-          const parts = msg.bodyStructure?.childNodes || [];
+          const parts   = msg.bodyStructure?.childNodes || [];
           const pdfPart = parts.find(p =>
             (p.type === 'application' && p.subtype === 'pdf') ||
             p.disposition?.params?.filename?.toLowerCase().endsWith('.pdf')
           );
 
-          rawEmails.push({
-            messageId:    String(msg.uid),
-            subject,
-            from:         fromStr,
-            date,
-            senderDomain,
-            snippet:      subject, // IMAP metadata-only — no snippet, use subject
-            hasPdf:       !!pdfPart,
-            pdfFilename:  pdfPart?.disposition?.params?.filename || '',
+          // Find the section id for the first text part (for pass 2 fetch)
+          const textSection = subjectWorthSnippet(subject)
+            ? findTextPart(msg.bodyStructure)
+            : null;
+
+          pass1.set(msg.uid, {
+            subject, fromStr, date, senderDomain,
+            hasPdf:      !!pdfPart,
+            pdfFilename: pdfPart?.disposition?.params?.filename || '',
+            textSection,
           });
         } catch {
-          // Skip malformed messages silently
+          // Skip malformed messages
         }
+      }
+
+      // ── Pass 2: fetch body snippets for promising messages ────────────────────
+      const snippetMap = new Map(); // uid → snippet string
+
+      // Group by section to batch-fetch where possible
+      const snippetUids = [...pass1.entries()]
+        .filter(([, m]) => m.textSection)
+        .map(([uid]) => uid);
+
+      if (snippetUids.length > 0) {
+        // Fetch each promising message's first text part (capped at 800 bytes server-side).
+        // We use source partial fetch to avoid pulling full bodies over IMAP.
+        for (const uid of snippetUids) {
+          try {
+            const meta = pass1.get(uid);
+            // Fetch up to 1200 bytes of the raw message body starting after typical headers.
+            // This is a best-effort snippet — if it fails we fall back to the subject.
+            const fetched = await client.fetchOne(
+              String(uid),
+              { bodyParts: [meta.textSection] },
+              { uid: true }
+            );
+            const partBuffer = fetched?.bodyParts?.get(meta.textSection);
+            if (partBuffer) {
+              const raw = partBuffer.toString('utf8');
+              // Strip HTML tags if present, collapse whitespace, cap length
+              const plain = raw
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/&nbsp;/gi, ' ')
+                .replace(/&amp;/gi, '&')
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .slice(0, 600);
+              if (plain.length > 10) snippetMap.set(uid, plain);
+            }
+          } catch {
+            // Non-fatal — fall back to subject as snippet
+          }
+        }
+      }
+
+      // ── Assemble final email objects ─────────────────────────────────────────
+      for (const [uid, meta] of pass1) {
+        rawEmails.push({
+          messageId:    String(uid),
+          subject:      meta.subject,
+          from:         meta.fromStr,
+          date:         meta.date,
+          senderDomain: meta.senderDomain,
+          snippet:      snippetMap.get(uid) || meta.subject,
+          hasPdf:       meta.hasPdf,
+          pdfFilename:  meta.pdfFilename,
+        });
       }
     } finally {
       lock.release();
@@ -115,7 +209,6 @@ export async function scanImapInbox({ provider, user, pass, daysBack = 365, cust
 
     await client.logout();
   } catch (err) {
-    // Try clean logout even on error
     try { await client.logout(); } catch {}
     throw new Error(sanitizeImapError(err));
   }

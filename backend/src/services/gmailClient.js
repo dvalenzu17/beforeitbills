@@ -91,12 +91,17 @@ export async function listMessages(accessToken, { daysBack = 180 } = {}) {
     '(',
       'subject:subscription OR subject:renewal OR subject:"auto-renew" OR',
       'subject:membership OR subject:"billing cycle" OR subject:"your plan" OR',
-      'subject:invoice OR subject:receipt',
+      'subject:invoice OR subject:receipt OR subject:payment OR',
+      'subject:charged OR subject:billing OR subject:"your subscription" OR',
+      'subject:"payment confirmation" OR subject:"payment received" OR',
+      'subject:"thanks for subscribing" OR subject:"thank you for subscribing" OR',
+      'subject:"your membership" OR subject:"account charged" OR subject:billed',
     ')',
     `-subject:"order confirmation" -subject:"your order" -subject:shipped`,
     `-subject:delivered -subject:delivery -subject:tracking`,
     `-subject:"security code" -subject:"verify your" -subject:"confirm your email"`,
     `-subject:"sign in" -subject:password -subject:refund -subject:"gift card"`,
+    `-subject:"order shipped" -subject:"order has shipped" -subject:"order tracking"`,
     `after:${afterStr}`,
   ].join(' ');
 
@@ -115,9 +120,9 @@ export async function listMessages(accessToken, { daysBack = 180 } = {}) {
   ].join(' ');
 
   const [subList, billList] = await Promise.all([
-    gmailFetch(`${GMAIL_BASE}/messages?q=${encodeURIComponent(subQuery)}&maxResults=50`,
+    gmailFetch(`${GMAIL_BASE}/messages?q=${encodeURIComponent(subQuery)}&maxResults=100`,
       { headers: { Authorization: `Bearer ${accessToken}` } }, 15_000),
-    gmailFetch(`${GMAIL_BASE}/messages?q=${encodeURIComponent(billQuery)}&maxResults=30`,
+    gmailFetch(`${GMAIL_BASE}/messages?q=${encodeURIComponent(billQuery)}&maxResults=50`,
       { headers: { Authorization: `Bearer ${accessToken}` } }, 15_000),
   ]);
 
