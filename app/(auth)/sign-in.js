@@ -83,7 +83,14 @@ export default function LoginScreen() {
 
   function onAuthSuccess(u, method) {
     setUser(u);
-    setAuthReady(true);
+    if (method === "email_signup") {
+      // For new sign-ups, pause the routing gate so the SIGNED_IN auth listener
+      // can evaluate onboardingDone for the new user before routing — prevents
+      // stale onboardingDone from a previous user sending new users to /(tabs).
+      setAuthReady(false);
+    } else {
+      setAuthReady(true);
+    }
     if (u) {
       track("signed_in", { method });
       identify(u.id, { email: u.email });
@@ -157,7 +164,7 @@ export default function LoginScreen() {
     try {
       await GoogleSignin.hasPlayServices();
       const { raw, hashed } = await generateNonce();
-      const response = await GoogleSignin.signIn({ nonce: hashed });
+      const response = await GoogleSignin.signIn({ nonce: raw });
       const idToken = response?.data?.idToken;
       if (!idToken) throw new Error("No ID token returned from Google");
 
@@ -199,7 +206,7 @@ export default function LoginScreen() {
 
       if (error) throw error;
 
-      // Apple only returns name on first sign-in — persist if available
+      // Apple only returns name on first sign-in - persist if available
       const u = data?.session?.user ?? data?.user ?? null;
       if (u && credential.fullName?.givenName) {
         const displayName = [
@@ -216,7 +223,7 @@ export default function LoginScreen() {
 
       onAuthSuccess(u, "apple");
     } catch (e) {
-      // ERR_CANCELED = user dismissed the sheet — not an error
+      // ERR_CANCELED = user dismissed the sheet - not an error
       if (e?.code === "ERR_REQUEST_CANCELED") return;
       if (__DEV__) console.warn("[sign-in] Apple sign-in error:", e?.message);
       Alert.alert(tt("auth.signInFailed"), tt("auth.appleSignInFailedBody"));
@@ -389,7 +396,7 @@ export default function LoginScreen() {
                 )}
               </Pressable>
 
-              {/* Apple Sign In — iOS only */}
+              {/* Apple Sign In - iOS only */}
               {Platform.OS === "ios" && (
                 appleLoading ? (
                   <View style={[s.appleLoading, { marginTop: 10 }]}>
