@@ -132,19 +132,19 @@ export default function ConnectedEmail() {
       [
         {
           text: tt("mailScan.scan6m"),
-          onPress: () => scanAccount(account.id, { daysBack: 180 }).catch((e) => {
+          onPress: () => scanAccount(account.id, { daysBack: 180, force: true }).catch((e) => {
             if (__DEV__) console.warn("[connected] scan failed:", e?.message);
           }),
         },
         {
           text: tt("mailScan.scan1y"),
-          onPress: () => scanAccount(account.id, { daysBack: 365 }).catch((e) => {
+          onPress: () => scanAccount(account.id, { daysBack: 365, force: true }).catch((e) => {
             if (__DEV__) console.warn("[connected] scan failed:", e?.message);
           }),
         },
         {
           text: tt("mailScan.scan2y"),
-          onPress: () => scanAccount(account.id, { daysBack: 730 }).catch((e) => {
+          onPress: () => scanAccount(account.id, { daysBack: 730, force: true }).catch((e) => {
             if (__DEV__) console.warn("[connected] scan failed:", e?.message);
           }),
         },
@@ -269,7 +269,7 @@ export default function ConnectedEmail() {
           />
         ))}
 
-        {/* Scan all — only shown when multiple accounts */}
+        {/* Scan all - only shown when multiple accounts */}
         {connectedAccounts.length > 1 ? (
           <Button
             title={tt("mailScan.scanAll")}
