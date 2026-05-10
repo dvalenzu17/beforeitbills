@@ -115,14 +115,31 @@ export default function ConnectedEmail() {
     return () => sub.data.subscription.unsubscribe();
   }, []);
 
+  function handleScanError(err) {
+    const code = err?.message;
+    if (code === "gmail_auth_expired") {
+      Alert.alert(
+        tt("mailScan.gmailAuthExpiredTitle"),
+        tt("mailScan.gmailAuthExpiredBody"),
+        [
+          { text: tt("common.cancel"), style: "cancel" },
+          { text: tt("mailScan.gmailReconnect"), onPress: onConnectGmail },
+        ]
+      );
+      return;
+    }
+    if (code === "rate_limited") {
+      toast.show({ message: tt("mailScan.scanRateLimited") });
+      return;
+    }
+    toast.show({ message: tt("mailScan.scanFailed") });
+  }
+
   // Auto-scan Gmail on first connect (FastPass)
   useEffect(() => {
     if (!hasGmail) return;
     if (didFastPass) return;
-    runGmailFastPass?.().catch((err) => {
-      if (__DEV__) console.warn("[FastPass] scan failed:", err?.message);
-      toast.show({ message: __DEV__ ? (err?.message || "Scan failed") : tt("mailScan.scanFailed") });
-    });
+    runGmailFastPass?.().catch(handleScanError);
   }, [hasGmail, didFastPass]);
 
   function onScan(account) {
@@ -132,21 +149,15 @@ export default function ConnectedEmail() {
       [
         {
           text: tt("mailScan.scan6m"),
-          onPress: () => scanAccount(account.id, { daysBack: 180, force: true }).catch((e) => {
-            if (__DEV__) console.warn("[connected] scan failed:", e?.message);
-          }),
+          onPress: () => scanAccount(account.id, { daysBack: 180, force: true }).catch(handleScanError),
         },
         {
           text: tt("mailScan.scan1y"),
-          onPress: () => scanAccount(account.id, { daysBack: 365, force: true }).catch((e) => {
-            if (__DEV__) console.warn("[connected] scan failed:", e?.message);
-          }),
+          onPress: () => scanAccount(account.id, { daysBack: 365, force: true }).catch(handleScanError),
         },
         {
           text: tt("mailScan.scan2y"),
-          onPress: () => scanAccount(account.id, { daysBack: 730, force: true }).catch((e) => {
-            if (__DEV__) console.warn("[connected] scan failed:", e?.message);
-          }),
+          onPress: () => scanAccount(account.id, { daysBack: 730, force: true }).catch(handleScanError),
         },
         { text: tt("common.cancel"), style: "cancel" },
       ]
@@ -160,15 +171,11 @@ export default function ConnectedEmail() {
       [
         {
           text: tt("mailScan.scan6m"),
-          onPress: () => scanAllAccounts({ daysBack: 180 }).catch((e) => {
-            if (__DEV__) console.warn("[connected] scanAll failed:", e?.message);
-          }),
+          onPress: () => scanAllAccounts({ daysBack: 180 }).catch(handleScanError),
         },
         {
           text: tt("mailScan.scan1y"),
-          onPress: () => scanAllAccounts({ daysBack: 365 }).catch((e) => {
-            if (__DEV__) console.warn("[connected] scanAll failed:", e?.message);
-          }),
+          onPress: () => scanAllAccounts({ daysBack: 365 }).catch(handleScanError),
         },
         { text: tt("common.cancel"), style: "cancel" },
       ]

@@ -134,7 +134,9 @@
     "newFromInbox": "{{n}} nuevo de la bandeja",
     "savedAmount": "Has ahorrado {{amount}}/mes",
     "cancelledCount": "De {{count}} suscripción cancelada",
-    "cancelledCountPlural": "De {{count}} suscripciones canceladas"
+    "cancelledCountPlural": "De {{count}} suscripciones canceladas",
+    "connectEmail": "Conecta tu correo",
+    "checkEmails": "Revisa tus correos"
   },
   "streak": {
     "day": "día",
@@ -392,6 +394,15 @@
       "bullet2": "Alertas de aumento de precios",
       "bullet3": "Radar de pruebas",
       "bullet4": "Resumen mensual de gastos"
+    },
+    "gmail": {
+      "title": "Ahora encontremos el resto",
+      "subtitle": "Conecta Gmail para detectar automáticamente suscripciones desde tu bandeja de entrada.",
+      "connected": "Gmail conectado",
+      "continue": "Continuar",
+      "connect": "Conectar Gmail",
+      "connecting": "Conectando...",
+      "skip": "Saltar por ahora"
     }
   },
   "lang": {
@@ -677,6 +688,10 @@
     "lastScan": "Último escaneo",
     "notYet": "Aún no escaneado",
     "scanFailed": "Falló el escaneo. Toca 'Escanear bandeja' para reintentar.",
+    "gmailAuthExpiredTitle": "Gmail desconectado",
+    "gmailAuthExpiredBody": "Tu conexión de Gmail expiró. Vuelve a conectar para continuar.",
+    "gmailReconnect": "Reconectar Gmail",
+    "scanRateLimited": "Demasiados escaneos. Espera 15 minutos antes de intentar de nuevo.",
     "disconnect": "Desconectar",
     "disconnectConfirmTitle": "¿Desconectar {{provider}}?",
     "disconnectConfirmBody": "Detendrás la detección automática. Tus elementos guardados se mantienen.",

@@ -134,7 +134,9 @@
     "newFromInbox": "{{n}} new from inbox",
     "savedAmount": "You've saved {{amount}}/mo",
     "cancelledCount": "From {{count}} cancelled subscription",
-    "cancelledCountPlural": "From {{count}} cancelled subscriptions"
+    "cancelledCountPlural": "From {{count}} cancelled subscriptions",
+    "connectEmail": "Connect your email",
+    "checkEmails": "Check your emails"
   },
   "streak": {
     "day": "day",
@@ -391,6 +393,15 @@
       "bullet2": "Price increase alerts",
       "bullet3": "Trial radar",
       "bullet4": "Monthly insights digest"
+    },
+    "gmail": {
+      "title": "Now let's find the rest",
+      "subtitle": "Connect Gmail to automatically detect subscriptions from your inbox.",
+      "connected": "Gmail connected",
+      "continue": "Continue",
+      "connect": "Connect Gmail",
+      "connecting": "Connecting...",
+      "skip": "Skip for now"
     }
   },
   "lang": {
@@ -676,6 +687,10 @@
     "lastScan": "Last scan",
     "notYet": "Not scanned yet",
     "scanFailed": "Scan failed. Tap 'Scan inbox' to retry.",
+    "gmailAuthExpiredTitle": "Gmail disconnected",
+    "gmailAuthExpiredBody": "Your Gmail connection expired. Reconnect to resume scanning.",
+    "gmailReconnect": "Reconnect Gmail",
+    "scanRateLimited": "Too many scans. Please wait 15 minutes before trying again.",
     "disconnect": "Disconnect",
     "disconnectConfirmTitle": "Disconnect {{provider}}?",
     "disconnectConfirmBody": "You'll stop auto-detection. Your saved recurring items stay.",

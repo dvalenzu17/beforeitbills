@@ -122,7 +122,9 @@
     "newFromInbox": "{{n}} nouveau de la boîte",
     "savedAmount": "Vous avez économisé {{amount}}/mois",
     "cancelledCount": "De {{count}} abonnement annulé",
-    "cancelledCountPlural": "De {{count}} abonnements annulés"
+    "cancelledCountPlural": "De {{count}} abonnements annulés",
+    "connectEmail": "Connectez votre e-mail",
+    "checkEmails": "Vérifier vos e-mails"
   },
   "streak": {
     "day": "jour",
@@ -343,6 +345,15 @@
       "bullet2": "Alertes d'augmentation de prix",
       "bullet3": "Radar d'essais",
       "bullet4": "Récapitulatif mensuel"
+    },
+    "gmail": {
+      "title": "Maintenant trouvons le reste",
+      "subtitle": "Connectez Gmail pour détecter automatiquement les abonnements depuis votre boîte mail.",
+      "connected": "Gmail connecté",
+      "continue": "Continuer",
+      "connect": "Connecter Gmail",
+      "connecting": "Connexion...",
+      "skip": "Ignorer pour l'instant"
     }
   },
   "scanActivity": {
@@ -367,6 +378,10 @@
     "lastScan": "Dernière analyse",
     "notYet": "Pas encore analysé",
     "scanFailed": "Échec de l'analyse. Appuyez sur 'Analyser la boîte' pour réessayer.",
+    "gmailAuthExpiredTitle": "Gmail déconnecté",
+    "gmailAuthExpiredBody": "Votre connexion Gmail a expiré. Reconnectez pour reprendre.",
+    "gmailReconnect": "Reconnecter Gmail",
+    "scanRateLimited": "Trop d'analyses. Veuillez attendre 15 minutes avant de réessayer.",
     "disconnect": "Déconnecter",
     "disconnectConfirmTitle": "Déconnecter {{provider}} ?",
     "disconnectConfirmBody": "La détection automatique s'arrêtera. Vos éléments enregistrés restent.",

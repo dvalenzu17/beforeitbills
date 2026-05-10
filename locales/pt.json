@@ -122,7 +122,9 @@
     "newFromInbox": "{{n}} novo da caixa",
     "savedAmount": "Você economizou {{amount}}/mês",
     "cancelledCount": "De {{count}} assinatura cancelada",
-    "cancelledCountPlural": "De {{count}} assinaturas canceladas"
+    "cancelledCountPlural": "De {{count}} assinaturas canceladas",
+    "connectEmail": "Conecte seu e-mail",
+    "checkEmails": "Verificar e-mails"
   },
   "streak": {
     "day": "dia",
@@ -343,6 +345,15 @@
       "bullet2": "Alertas de aumento de preços",
       "bullet3": "Radar de testes",
       "bullet4": "Resumo mensal de gastos"
+    },
+    "gmail": {
+      "title": "Agora vamos encontrar o resto",
+      "subtitle": "Conecte o Gmail para detectar assinaturas automaticamente da sua caixa de entrada.",
+      "connected": "Gmail conectado",
+      "continue": "Continuar",
+      "connect": "Conectar Gmail",
+      "connecting": "Conectando...",
+      "skip": "Pular por agora"
     }
   },
   "scanActivity": {
@@ -367,6 +378,10 @@
     "lastScan": "Última varredura",
     "notYet": "Ainda não varrido",
     "scanFailed": "Falha na varredura. Toque em 'Varrer caixa de entrada' para tentar novamente.",
+    "gmailAuthExpiredTitle": "Gmail desconectado",
+    "gmailAuthExpiredBody": "Sua conexão com o Gmail expirou. Reconecte para retomar.",
+    "gmailReconnect": "Reconectar Gmail",
+    "scanRateLimited": "Muitas varreduras. Aguarde 15 minutos antes de tentar novamente.",
     "disconnect": "Desconectar",
     "disconnectConfirmTitle": "Desconectar {{provider}}?",
     "disconnectConfirmBody": "A detecção automática será interrompida. Seus itens salvos permanecem.",
