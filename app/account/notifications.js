@@ -264,7 +264,7 @@ export default function NotificationsScreen() {
       >
         {/* Master toggle */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("notif.sectionReminders")}
           </Text>
           <Group t={t}>
@@ -279,11 +279,11 @@ export default function NotificationsScreen() {
           </Group>
         </View>
 
-        {/* Timing — only shown when enabled */}
+        {/* Timing - only shown when enabled */}
         {renewalsEnabled && (
           <>
             <View>
-              <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+              <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
                 {tt("notif.sectionTiming")}
               </Text>
               <Group t={t}>
@@ -313,7 +313,7 @@ export default function NotificationsScreen() {
             </View>
 
             <View>
-              <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+              <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
                 {tt("notif.sectionTime")}
               </Text>
               <Group t={t}>

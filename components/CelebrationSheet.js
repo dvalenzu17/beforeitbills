@@ -51,7 +51,7 @@ function fmtMoney(amount, currency) {
 export default function CelebrationSheet({ visible, onDismiss, entry }) {
   const t = useTheme();
 
-  // Stable particles — regenerate only when sheet opens
+  // Stable particles - regenerate only when sheet opens
   const particles = useMemo(() => buildParticles(60), [visible]);
 
   if (!visible || !entry) return null;

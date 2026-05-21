@@ -1,0 +1,1134 @@
+{
+  "C:\\dev\\sublytics\\app.config.js": {
+    "mtime": 1778094831.9696572,
+    "hash": "217167bd259ee6b15d5fe741006ac79a"
+  },
+  "C:\\dev\\sublytics\\babel.config.js": {
+    "mtime": 1775523913.8114576,
+    "hash": "9652e27651ac4f409a28bb4fcfbb086f"
+  },
+  "C:\\dev\\sublytics\\metro.config.js": {
+    "mtime": 1775523914.1731515,
+    "hash": "16a8b30f97b85c6349ee915d973454e2"
+  },
+  "C:\\dev\\sublytics\\android\\build.gradle": {
+    "mtime": 1776474430.960956,
+    "hash": "55cec08c744fbe7b1f1294009fe3f65d"
+  },
+  "C:\\dev\\sublytics\\android\\gradlew": {
+    "mtime": 1776474420.4905677,
+    "hash": "0f2f3ef1a19bcef677e682d5457fc215"
+  },
+  "C:\\dev\\sublytics\\android\\settings.gradle": {
+    "mtime": 1776474430.8104246,
+    "hash": "ebbd94ec14c41628a830cf7984054c4f"
+  },
+  "C:\\dev\\sublytics\\android\\app\\build.gradle": {
+    "mtime": 1776474430.962961,
+    "hash": "f1d05d9ddd8665ce188093723acbea6b"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\java\\com\\beforeitbills\\app\\MainActivity.kt": {
+    "mtime": 1776474430.9559479,
+    "hash": "f46fabec5d0a58451942cb0b4abd7907"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\java\\com\\beforeitbills\\app\\MainApplication.kt": {
+    "mtime": 1776474426.1781368,
+    "hash": "359bb1aff8c04fdd35b121c7602bf4e5"
+  },
+  "C:\\dev\\sublytics\\app\\add-bill.js": {
+    "mtime": 1775523913.6948845,
+    "hash": "a6cea329861be042857a133565fce29d"
+  },
+  "C:\\dev\\sublytics\\app\\add-recurring.js": {
+    "mtime": 1778079783.7353778,
+    "hash": "5c4c4f6ea44bee1e73e2329688004601"
+  },
+  "C:\\dev\\sublytics\\app\\add.js": {
+    "mtime": 1775523913.6988814,
+    "hash": "9d1afa2121517dc967954266df44b815"
+  },
+  "C:\\dev\\sublytics\\app\\bills.js": {
+    "mtime": 1775523913.7089212,
+    "hash": "eafc454543c8fddb0c8ffa2832374268"
+  },
+  "C:\\dev\\sublytics\\app\\brand.js": {
+    "mtime": 1778080369.36445,
+    "hash": "ce28f7bfdb934a3515edfb620b29ab9e"
+  },
+  "C:\\dev\\sublytics\\app\\calendar.js": {
+    "mtime": 1778079783.73739,
+    "hash": "75306a9ebb9d7f47495336b32da5c2ca"
+  },
+  "C:\\dev\\sublytics\\app\\callback.js": {
+    "mtime": 1778079783.7383952,
+    "hash": "a5e54e778d451cb943b1fdd6e85ba116"
+  },
+  "C:\\dev\\sublytics\\app\\cancel-center.js": {
+    "mtime": 1778079783.739355,
+    "hash": "a856b6c7e270eb6741f45698fa606e90"
+  },
+  "C:\\dev\\sublytics\\app\\cards.js": {
+    "mtime": 1775523913.722885,
+    "hash": "def14f2b7e60f2493e56de26ed6441f5"
+  },
+  "C:\\dev\\sublytics\\app\\import-csv.js": {
+    "mtime": 1775523913.7309456,
+    "hash": "04c8fbeba881f1c50418564f36040c2e"
+  },
+  "C:\\dev\\sublytics\\app\\import-mail.js": {
+    "mtime": 1769355705.2614992,
+    "hash": "bc6a48b3c678c4d80d8f5770d9911c75"
+  },
+  "C:\\dev\\sublytics\\app\\index.js": {
+    "mtime": 1778079783.7403898,
+    "hash": "4c3fbab2fc152504039272cf79d1c97d"
+  },
+  "C:\\dev\\sublytics\\app\\manual-add.js": {
+    "mtime": 1775523913.735924,
+    "hash": "d711ad7c5c7c4b454868c33971cf8899"
+  },
+  "C:\\dev\\sublytics\\app\\oauth-success.js": {
+    "mtime": 1775523913.739883,
+    "hash": "2a16f28bffa1001c3ee7b0e4b6d808ab"
+  },
+  "C:\\dev\\sublytics\\app\\optimize.js": {
+    "mtime": 1778077497.2855115,
+    "hash": "fb72da0f6c6beaae709940021f18bbb1"
+  },
+  "C:\\dev\\sublytics\\app\\price-alerts.js": {
+    "mtime": 1778079783.7504237,
+    "hash": "6086f2b9a58d7c0c190c61deea32d54c"
+  },
+  "C:\\dev\\sublytics\\app\\progressive-scan.js": {
+    "mtime": 1775523913.7468827,
+    "hash": "c2460f5c46adbc59e91384a2db8847c9"
+  },
+  "C:\\dev\\sublytics\\app\\recurring.js": {
+    "mtime": 1778081870.397072,
+    "hash": "50a024cc14a73c48045913530f61dac3"
+  },
+  "C:\\dev\\sublytics\\app\\search.js": {
+    "mtime": 1775523913.7579372,
+    "hash": "b510a192c8e0fe80f1128c0c13af53d8"
+  },
+  "C:\\dev\\sublytics\\app\\settle.js": {
+    "mtime": 1769355705.2872725,
+    "hash": "45c073954b07fdffacef3f60f5ba947d"
+  },
+  "C:\\dev\\sublytics\\app\\subs.js": {
+    "mtime": 1775523913.7669256,
+    "hash": "f022f4321ff05fdbc544a614e952bd76"
+  },
+  "C:\\dev\\sublytics\\app\\_account.js": {
+    "mtime": 1776470527.808945,
+    "hash": "85e931d4357bbaa9a295940a33ff0767"
+  },
+  "C:\\dev\\sublytics\\app\\_error.js": {
+    "mtime": 1775523913.564778,
+    "hash": "790aa90f99638e6d1a98b7ec87041859"
+  },
+  "C:\\dev\\sublytics\\app\\_index.js": {
+    "mtime": 1775523913.5667279,
+    "hash": "ddce08884b6eae5a801555f637cacfae"
+  },
+  "C:\\dev\\sublytics\\app\\_insights.js": {
+    "mtime": 1769355705.3038194,
+    "hash": "672fdebbb68c11f4083c16f380fd7351"
+  },
+  "C:\\dev\\sublytics\\app\\_layout.js": {
+    "mtime": 1778095347.2966328,
+    "hash": "aefae5e2656fb2d5747280141c3d82cd"
+  },
+  "C:\\dev\\sublytics\\app\\(auth)\\sign-in.js": {
+    "mtime": 1778101889.5258932,
+    "hash": "7b46f5e4d9bfdd0612cfe96bd1e6f1fb"
+  },
+  "C:\\dev\\sublytics\\app\\(auth)\\_layout.js": {
+    "mtime": 1769355705.3187082,
+    "hash": "654948c71d29b73e3670245168629144"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\confirm.js": {
+    "mtime": 1775523913.5287094,
+    "hash": "85b96fad21fe2ac63bf6e3c941e13f3f"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\connect.js": {
+    "mtime": 1775523913.5297124,
+    "hash": "cfcd700d83d8b6960b3e9cef527c1da9"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\done.js": {
+    "mtime": 1778095410.9555686,
+    "hash": "bfcf2d1325ab6e5f9eae334df9228e5a"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\expectations.js": {
+    "mtime": 1778079783.756445,
+    "hash": "7ae7454d222acc622544a8a1fabcfe15"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\goals.js": {
+    "mtime": 1775523913.535777,
+    "hash": "802489a6d13d58916532a048d5d4d080"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\index.js": {
+    "mtime": 1775523913.536708,
+    "hash": "ffd5098d7428af14e7ef0a8cfe809678"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\language.js": {
+    "mtime": 1775523913.5387733,
+    "hash": "cc3140a317882e3aca8a6cdfcd4300c5"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\notifications.js": {
+    "mtime": 1778079783.7584226,
+    "hash": "06d10904c8a802698af60db74bcb0710"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\privacy.js": {
+    "mtime": 1775523913.5417483,
+    "hash": "2d5fb4b26aef8974d429bb469e7c9ff0"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\results.js": {
+    "mtime": 1778079783.7594306,
+    "hash": "b1ef9eb98a564fc28181ee98bdeb4808"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\scan-setup.js": {
+    "mtime": 1778079783.7594306,
+    "hash": "2e9f1e635db2d79df4c3e5c9df94f59e"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\scan.js": {
+    "mtime": 1775523913.547777,
+    "hash": "0b462d0fc83fb586ba8ca0a161606e59"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\scanning.js": {
+    "mtime": 1778079783.760983,
+    "hash": "f6e2f321aee4e6645a6da0c6f13bd65b"
+  },
+  "C:\\dev\\sublytics\\app\\(onboarding)\\_layout.js": {
+    "mtime": 1775523913.5267062,
+    "hash": "078c89d2463862c1cf6792fdcbf021f1"
+  },
+  "C:\\dev\\sublytics\\app\\(tabs)\\account.js": {
+    "mtime": 1778079783.7619967,
+    "hash": "454e02606c8a373edfddb95ab570cffd"
+  },
+  "C:\\dev\\sublytics\\app\\(tabs)\\index.js": {
+    "mtime": 1778095465.2354577,
+    "hash": "1afac796c6283df307622b4fa9647288"
+  },
+  "C:\\dev\\sublytics\\app\\(tabs)\\insights.js": {
+    "mtime": 1778080407.5212636,
+    "hash": "a35bd37b80ee83ef3640a80d357a9347"
+  },
+  "C:\\dev\\sublytics\\app\\(tabs)\\recap.js": {
+    "mtime": 1775523913.5637107,
+    "hash": "553fdf44df37fe6be5fb5daf6430b502"
+  },
+  "C:\\dev\\sublytics\\app\\(tabs)\\_layout.js": {
+    "mtime": 1778079783.767051,
+    "hash": "2f6034ac2d438530ab5fc882def10e06"
+  },
+  "C:\\dev\\sublytics\\app\\account\\about.js": {
+    "mtime": 1775523913.5717077,
+    "hash": "091cad305dc6e9ea0f14a6119323ee32"
+  },
+  "C:\\dev\\sublytics\\app\\account\\biometric-lock.js": {
+    "mtime": 1775523913.5737085,
+    "hash": "031c735a204b069706b5acc0824b6cdf"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connected.js": {
+    "mtime": 1775523913.631354,
+    "hash": "65006310f4832541030983bbab57c43a"
+  },
+  "C:\\dev\\sublytics\\app\\account\\diagnostics.js": {
+    "mtime": 1775523913.633355,
+    "hash": "7c49b598d402acd3d6b31fd9c659659e"
+  },
+  "C:\\dev\\sublytics\\app\\account\\export.js": {
+    "mtime": 1775523913.6763544,
+    "hash": "cd8b562a265e805512c631032574fa53"
+  },
+  "C:\\dev\\sublytics\\app\\account\\help.js": {
+    "mtime": 1775523913.6793633,
+    "hash": "8e79d4770a2597a475dff0cbc6bd52bb"
+  },
+  "C:\\dev\\sublytics\\app\\account\\legals.js": {
+    "mtime": 1775523913.681362,
+    "hash": "abfe3add9193665ab0e4dd77f0f4e2af"
+  },
+  "C:\\dev\\sublytics\\app\\account\\notifications.js": {
+    "mtime": 1778079783.7700589,
+    "hash": "25431995003f9ae4ead1b1057bdd54f6"
+  },
+  "C:\\dev\\sublytics\\app\\account\\personal.js": {
+    "mtime": 1775523913.6863627,
+    "hash": "73a4a53b06b6a27d7b69d3407f486bdc"
+  },
+  "C:\\dev\\sublytics\\app\\account\\security.js": {
+    "mtime": 1778094422.607224,
+    "hash": "8d4efbb7e4afe4612c56340b68dd9821"
+  },
+  "C:\\dev\\sublytics\\app\\account\\settings.js": {
+    "mtime": 1775523913.6903603,
+    "hash": "1597ab760bdf64cce872ecdc5ef54c6e"
+  },
+  "C:\\dev\\sublytics\\app\\account\\upgrade.js": {
+    "mtime": 1777440045.125172,
+    "hash": "cff75344000d7d6694d8943f65cd14a2"
+  },
+  "C:\\dev\\sublytics\\app\\account\\whats-new.js": {
+    "mtime": 1775523913.6939454,
+    "hash": "f67797c07bc17a175da38ee6d6d8ffec"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connect-email\\activity.js": {
+    "mtime": 1778079016.8498993,
+    "hash": "cb16572055c4da55b1b58b5c62e5ed04"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connect-email\\connected.js": {
+    "mtime": 1778079783.7729983,
+    "hash": "dea8308dc4dd1e77721742dd386f702f"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connect-email\\edit.js": {
+    "mtime": 1775523913.5787587,
+    "hash": "715fd0c03976b4128c6921625e1f680c"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connect-email\\index.js": {
+    "mtime": 1778079783.7739935,
+    "hash": "9e4c1861e4e5e53b0f6ccc013200abee"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connect-email\\review.js": {
+    "mtime": 1775523913.6134076,
+    "hash": "4927227954cb3197d6ed1da7544f1a55"
+  },
+  "C:\\dev\\sublytics\\app\\account\\connect-email\\verify.js": {
+    "mtime": 1778079783.7749982,
+    "hash": "df93c765b1ae3d8b0104081f680981d1"
+  },
+  "C:\\dev\\sublytics\\app\\auth\\app-callback.js": {
+    "mtime": 1778079783.7759974,
+    "hash": "e0f4f23219342ef1e453e5644adeea41"
+  },
+  "C:\\dev\\sublytics\\app\\auth\\login-callback.js": {
+    "mtime": 1778079783.7770035,
+    "hash": "f4a37d7e4e326b2b1458c2091f67637a"
+  },
+  "C:\\dev\\sublytics\\app\\bill\\[id].js": {
+    "mtime": 1775523913.7068865,
+    "hash": "9583d6c250af6dda8270e8bddfefcc43"
+  },
+  "C:\\dev\\sublytics\\app\\dev-tools\\index.js": {
+    "mtime": 1778079783.7790043,
+    "hash": "246bbdbd19fba2f95ce6df205774546f"
+  },
+  "C:\\dev\\sublytics\\app\\recurring\\[kind]\\[id].js": {
+    "mtime": 1778079783.7810338,
+    "hash": "1ac06f6d9de4f3ccb08c84407b5db7e6"
+  },
+  "C:\\dev\\sublytics\\app\\sub\\[id].js": {
+    "mtime": 1777441605.4801104,
+    "hash": "50ed695785027fffab4de3b150ddfb53"
+  },
+  "C:\\dev\\sublytics\\backend\\index.js": {
+    "mtime": 1775523913.8234558,
+    "hash": "68898894d547c1e604041c84dbc18f44"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\server.js": {
+    "mtime": 1775523913.8574543,
+    "hash": "86154830459687c1dfa0e5c74358e3d7"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\db\\index.js": {
+    "mtime": 1775523913.833456,
+    "hash": "68bdad40fc6887cee7c444f80e74e543"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\lib\\auth.js": {
+    "mtime": 1775523913.836455,
+    "hash": "baf3c68faab0642e1ab0fe187e263978"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\lib\\fetchUtil.js": {
+    "mtime": 1775523913.837457,
+    "hash": "98eaec688bca39ed909b20abde73002e"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\routes\\accountRoutes.js": {
+    "mtime": 1775523913.842454,
+    "hash": "88ba78eb7257093f4025117b988aac6e"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\routes\\imapScanRoutes.js": {
+    "mtime": 1775523913.844455,
+    "hash": "cd5abeb276f5bc062d5d8d0d0ce96f58"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\routes\\oauthRoutes.js": {
+    "mtime": 1775523913.8454547,
+    "hash": "c17ac9470958f810364e1f838affd753"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\routes\\parseRoutes.js": {
+    "mtime": 1775523913.8514552,
+    "hash": "d9675859ed378cb029eda5dcb59160d1"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\routes\\scanRoutes.js": {
+    "mtime": 1775523913.8534565,
+    "hash": "0a557b8af72c025576d033b65ef93b49"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\routes\\subscriptionRoutes.js": {
+    "mtime": 1775523913.8554554,
+    "hash": "53b0507a3d81e99c717a3b838f11b110"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\anomalyDetector.js": {
+    "mtime": 1775523913.860454,
+    "hash": "321c68ff41702890efef4e56cab30fa4"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\crypto.js": {
+    "mtime": 1775523913.8624563,
+    "hash": "d98c2aabda1b4c339aa06143a3885566"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\dbPool.js": {
+    "mtime": 1775523913.8644588,
+    "hash": "94f7836b2cc92703b1c32e4e4b22863e"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\emailParser.js": {
+    "mtime": 1775523913.867456,
+    "hash": "5248d840a93a0e82ccebc5b0d2f6afe2"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\gmailClient.js": {
+    "mtime": 1775523913.8694744,
+    "hash": "83dc9823471811f416f494c4587d6b0f"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\imapClient.js": {
+    "mtime": 1775523913.871454,
+    "hash": "a9fe134a1524ee7bb351e5d66a8179be"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\messageCache.js": {
+    "mtime": 1775523913.8734553,
+    "hash": "5debe4557b260c7e243e5da284cf0ef1"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\modelFeatures.js": {
+    "mtime": 1775523913.875457,
+    "hash": "1b3d1d92be3deafe0c8623c08c9eedc4"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\retryUtil.js": {
+    "mtime": 1775523913.8764565,
+    "hash": "ae7d8d7b0e9a8980c92c83eecca8e9af"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\scanQueue.js": {
+    "mtime": 1775523913.8784635,
+    "hash": "b040a6c3d754085127d603b9441437b1"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\subscriptionEngine.js": {
+    "mtime": 1775523913.8804655,
+    "hash": "2659f815773d3364a98222cb1c3890a9"
+  },
+  "C:\\dev\\sublytics\\backend\\src\\services\\subscriptionModel.js": {
+    "mtime": 1775523913.8815112,
+    "hash": "c2bdad144954fc7872e7e5edfc54f946"
+  },
+  "C:\\dev\\sublytics\\components\\AdSlotCard.js": {
+    "mtime": 1778079783.7830017,
+    "hash": "67bb8bb35d75978da67afb96fbfd0578"
+  },
+  "C:\\dev\\sublytics\\components\\Amount.js": {
+    "mtime": 1769355705.6801805,
+    "hash": "c4b0b1d7e9ef70a7acb1a4453544d581"
+  },
+  "C:\\dev\\sublytics\\components\\BiBRefreshControl.js": {
+    "mtime": 1775523913.8894644,
+    "hash": "63bb91c3870af6f8ab22a1ac2ea3fd97"
+  },
+  "C:\\dev\\sublytics\\components\\BrandAvatar.js": {
+    "mtime": 1778079783.7840023,
+    "hash": "5c5634f0007f210460a556dee8467535"
+  },
+  "C:\\dev\\sublytics\\components\\BrandSkeleton.js": {
+    "mtime": 1775523913.8929732,
+    "hash": "7def6269f091e10ce82aa3e78a638d6c"
+  },
+  "C:\\dev\\sublytics\\components\\Button.js": {
+    "mtime": 1775523913.8959858,
+    "hash": "6e00344dbc0ffc8293159d0a8da32475"
+  },
+  "C:\\dev\\sublytics\\components\\CancelPlaybookCard.js": {
+    "mtime": 1769355705.6934412,
+    "hash": "b8fbaffbc7d3d0073747002735a854c6"
+  },
+  "C:\\dev\\sublytics\\components\\CandidateCard.js": {
+    "mtime": 1778079783.786001,
+    "hash": "e722feb95d485ec6ab4cb8a137a80652"
+  },
+  "C:\\dev\\sublytics\\components\\Card.js": {
+    "mtime": 1775523913.8999848,
+    "hash": "fb478e8ad8bfb5b0a72bd3ea8a9ccd7c"
+  },
+  "C:\\dev\\sublytics\\components\\CelebrationSheet.js": {
+    "mtime": 1778079783.7870038,
+    "hash": "f8ed50ccb62df81135f452d1fcc1e055"
+  },
+  "C:\\dev\\sublytics\\components\\ChecklistCard.js": {
+    "mtime": 1769355897.1572843,
+    "hash": "b695d90d531c7ca5597c9fb38998136a"
+  },
+  "C:\\dev\\sublytics\\components\\ConfidenceBreakdownSheet.js": {
+    "mtime": 1775523913.9049816,
+    "hash": "41781ce77c5f0786c72ac3503bb80997"
+  },
+  "C:\\dev\\sublytics\\components\\ConflictResolutionSheet.js": {
+    "mtime": 1778079783.789068,
+    "hash": "453f7f28bb1fecc6e47e7832550eb276"
+  },
+  "C:\\dev\\sublytics\\components\\ContextMenuSheet.js": {
+    "mtime": 1778079783.7900276,
+    "hash": "5aa97394cb29bb05501de21c7aee36f9"
+  },
+  "C:\\dev\\sublytics\\components\\DonutChart.js": {
+    "mtime": 1769355705.7097473,
+    "hash": "d81335f0a71c0a48ffbc532f6008a4b2"
+  },
+  "C:\\dev\\sublytics\\components\\EmptyState.js": {
+    "mtime": 1775523913.9119813,
+    "hash": "15bd48fa8a8549a2f1dea625dc32dffc"
+  },
+  "C:\\dev\\sublytics\\components\\EmptyStateCard.js": {
+    "mtime": 1775523913.9159844,
+    "hash": "193f7f15aad3f82954912110009038c3"
+  },
+  "C:\\dev\\sublytics\\components\\Glass.js": {
+    "mtime": 1775523913.919983,
+    "hash": "2cf8fb7a53dca6836045bbe55c136f0a"
+  },
+  "C:\\dev\\sublytics\\components\\GradientButton.js": {
+    "mtime": 1769355705.7194643,
+    "hash": "96f3d75b85888c72ef95e8b90942c9f5"
+  },
+  "C:\\dev\\sublytics\\components\\GradientHeader.js": {
+    "mtime": 1769355705.722449,
+    "hash": "be53c965f37ecac770aad5ad2715a311"
+  },
+  "C:\\dev\\sublytics\\components\\HomeSection.js": {
+    "mtime": 1775523913.9210415,
+    "hash": "4af0e6fc003e73fed36af9c63c0e8b6c"
+  },
+  "C:\\dev\\sublytics\\components\\HomeSkeleton.js": {
+    "mtime": 1775523913.9229941,
+    "hash": "cbec087db7863e68c61da9b7f53d9b0a"
+  },
+  "C:\\dev\\sublytics\\components\\LanguagePicker.js": {
+    "mtime": 1775523913.9250374,
+    "hash": "8db68bfec5696e71f47120c93831a33f"
+  },
+  "C:\\dev\\sublytics\\components\\LimitReachedSheet.js": {
+    "mtime": 1775523913.9270487,
+    "hash": "a3338bf883216eb836c82909041b3c92"
+  },
+  "C:\\dev\\sublytics\\components\\ListItem.js": {
+    "mtime": 1778021844.6193323,
+    "hash": "59ffd96b781aae70839a6ccb2ab866f5"
+  },
+  "C:\\dev\\sublytics\\components\\MonthlyDigestCard.js": {
+    "mtime": 1778080415.657983,
+    "hash": "65502e3fc7424cd694e0556c300e2ece"
+  },
+  "C:\\dev\\sublytics\\components\\NavHeader.js": {
+    "mtime": 1775523913.932989,
+    "hash": "92dde98a2d8f430078e01dc6e914df5d"
+  },
+  "C:\\dev\\sublytics\\components\\PasswordInput.js": {
+    "mtime": 1775523913.9349835,
+    "hash": "fd3bd3cc4d7b5b1b50457f55544a7bab"
+  },
+  "C:\\dev\\sublytics\\components\\PaywallSheet.js": {
+    "mtime": 1778095355.7678785,
+    "hash": "d6dd53f4177483651c953f42cc7e6a99"
+  },
+  "C:\\dev\\sublytics\\components\\PressableScale.js": {
+    "mtime": 1778079783.7960522,
+    "hash": "ee072c559513756a60fce3038e1c469d"
+  },
+  "C:\\dev\\sublytics\\components\\PrettyDonut.js": {
+    "mtime": 1769355705.8048637,
+    "hash": "d60f635bc217cb0826fbb3a15baf73eb"
+  },
+  "C:\\dev\\sublytics\\components\\ProofModal.js": {
+    "mtime": 1775523913.939984,
+    "hash": "e74830bb929a4cc948c893edf34f515b"
+  },
+  "C:\\dev\\sublytics\\components\\RecapSheet.js": {
+    "mtime": 1778079783.7980466,
+    "hash": "36ec3f89fce1864ac31a762be18fba16"
+  },
+  "C:\\dev\\sublytics\\components\\ReferralSheet.js": {
+    "mtime": 1775523913.9440434,
+    "hash": "df7bc501558609dd9233f646d2a47c61"
+  },
+  "C:\\dev\\sublytics\\components\\RowBar.js": {
+    "mtime": 1769355705.816917,
+    "hash": "75492c2c3920dbc0670d4ecda8558578"
+  },
+  "C:\\dev\\sublytics\\components\\ScanProgressCard.js": {
+    "mtime": 1775523913.947048,
+    "hash": "4c66cc68aac3665dda3800be5b9644d8"
+  },
+  "C:\\dev\\sublytics\\components\\ScanProgressSkeleton.js": {
+    "mtime": 1775523913.9479852,
+    "hash": "7e37c1e6391c5d81ecbf5833619c8d83"
+  },
+  "C:\\dev\\sublytics\\components\\ScanSummaryCard.js": {
+    "mtime": 1775523913.9510481,
+    "hash": "5140d6158ea04dd6b2bdeb737bb2783d"
+  },
+  "C:\\dev\\sublytics\\components\\Screen.js": {
+    "mtime": 1775523913.9540153,
+    "hash": "478bc6a3c5a28353f735f17a498da59d"
+  },
+  "C:\\dev\\sublytics\\components\\SearchSheet.js": {
+    "mtime": 1775523913.9560232,
+    "hash": "f658be0a771da61a671eb059afbb6571"
+  },
+  "C:\\dev\\sublytics\\components\\SectionHeader.js": {
+    "mtime": 1769355705.8569336,
+    "hash": "e313b1065c40aecf842acdf79c9e8c0e"
+  },
+  "C:\\dev\\sublytics\\components\\SetupCheckListCard.js": {
+    "mtime": 1778079783.8010526,
+    "hash": "463e7e14f8a35beae06a503db21daaea"
+  },
+  "C:\\dev\\sublytics\\components\\SharedBadge.js": {
+    "mtime": 1775523913.9600582,
+    "hash": "362a5e30fd74e41daad871ff39b6141f"
+  },
+  "C:\\dev\\sublytics\\components\\Skeleton.js": {
+    "mtime": 1775523913.9619844,
+    "hash": "e439b002da17956867bb298026e91993"
+  },
+  "C:\\dev\\sublytics\\components\\SocialProofBanner.js": {
+    "mtime": 1778079783.8020694,
+    "hash": "c86a60f9d9f9245d55813c4a9d70e186"
+  },
+  "C:\\dev\\sublytics\\components\\SoftAdCard.js": {
+    "mtime": 1778079783.803105,
+    "hash": "cec283daaeedb8d6355b2b066f20b865"
+  },
+  "C:\\dev\\sublytics\\components\\SoftCard.js": {
+    "mtime": 1775523913.9660995,
+    "hash": "210b0f802255f87e6fdaa2f15b9e3c1c"
+  },
+  "C:\\dev\\sublytics\\components\\SparkLine.js": {
+    "mtime": 1769355705.8760774,
+    "hash": "c860656619679cbcab160905d1768f1b"
+  },
+  "C:\\dev\\sublytics\\components\\SpotlightTutorial.js": {
+    "mtime": 1778079783.8051097,
+    "hash": "f028c36de7ec3c778ea69fc02817f8b8"
+  },
+  "C:\\dev\\sublytics\\components\\StreakCard.js": {
+    "mtime": 1777421486.1518664,
+    "hash": "eb994b0492bb09a4f636e87a1b1aafcf"
+  },
+  "C:\\dev\\sublytics\\components\\ThemeBackground.js": {
+    "mtime": 1775523913.9699812,
+    "hash": "3929c86cf6e871bc526d215827f82c21"
+  },
+  "C:\\dev\\sublytics\\components\\ToastProvider.js": {
+    "mtime": 1775523913.97201,
+    "hash": "f45c27cc51b74754e098c95c37ecafd0"
+  },
+  "C:\\dev\\sublytics\\components\\ToastProviders.js": {
+    "mtime": 1775523913.9730382,
+    "hash": "978da58e49c31b87d6011002b7ed0ed9"
+  },
+  "C:\\dev\\sublytics\\components\\TrialCard.js": {
+    "mtime": 1775523913.975984,
+    "hash": "ac9e549c5648bdc90ec8688b90a68c18"
+  },
+  "C:\\dev\\sublytics\\components\\TrialRadarCard.js": {
+    "mtime": 1775523913.9780476,
+    "hash": "4f935d62b8f57bdbd2316a5a9291dbd1"
+  },
+  "C:\\dev\\sublytics\\components\\TrustCopy.js": {
+    "mtime": 1775523913.979057,
+    "hash": "f8eb1dc641b8427fddfc8c7c26978c88"
+  },
+  "C:\\dev\\sublytics\\components\\UndoToast.js": {
+    "mtime": 1775523913.9821231,
+    "hash": "d1f9ec5b7543399a8d5de458e9be684a"
+  },
+  "C:\\dev\\sublytics\\components\\VerifyBanner.js": {
+    "mtime": 1775523913.9840555,
+    "hash": "293a89f495e98d5ca5b5b9b14d2719a9"
+  },
+  "C:\\dev\\sublytics\\components\\_ui.js": {
+    "mtime": 1775523913.986058,
+    "hash": "169986109bbb11a04f132cec6cdbc65d"
+  },
+  "C:\\dev\\sublytics\\components\\recurring\\RecurringForm.js": {
+    "mtime": 1778079783.8080986,
+    "hash": "09fc83c27fcf56184aa8f3a0b5b46eba"
+  },
+  "C:\\dev\\sublytics\\components\\subscriptions\\SubscriptionForm.js": {
+    "mtime": 1775523913.9920998,
+    "hash": "7cd445928c9d33b6f5b2448ddffc059b"
+  },
+  "C:\\dev\\sublytics\\components\\ui\\CardBase.js": {
+    "mtime": 1775523913.9945414,
+    "hash": "e18b5b75a6c347cc458750e832c7de4a"
+  },
+  "C:\\dev\\sublytics\\components\\ui\\Stack.js": {
+    "mtime": 1775523913.995533,
+    "hash": "9fd20d1b2d2aa9875b475d893d82c4d5"
+  },
+  "C:\\dev\\sublytics\\components\\ui\\Text.js": {
+    "mtime": 1775523913.998535,
+    "hash": "e0061769cca6e3acfacf0b047196dbef"
+  },
+  "C:\\dev\\sublytics\\components\\ui\\Tile.js": {
+    "mtime": 1775523913.9995265,
+    "hash": "6581b6ad60b33ba4872e9926fffd2bc4"
+  },
+  "C:\\dev\\sublytics\\ios-share-extension\\ShareViewController.swift": {
+    "mtime": 1775523914.0084834,
+    "hash": "071d9758f5c5ff074b7049b4665da683"
+  },
+  "C:\\dev\\sublytics\\ios-widget\\SubsWidget.swift": {
+    "mtime": 1777833453.5088568,
+    "hash": "65f79fb892bb0465d797033f6b23321a"
+  },
+  "C:\\dev\\sublytics\\ios-widget\\SubsWidgetBundle.swift": {
+    "mtime": 1777833462.4743176,
+    "hash": "f3245fcb61f56911e69cdb06f6e1d84d"
+  },
+  "C:\\dev\\sublytics\\lib\\ads.js": {
+    "mtime": 1775523914.016569,
+    "hash": "c5dc59492215ad88bccc974e062677f3"
+  },
+  "C:\\dev\\sublytics\\lib\\alerts.js": {
+    "mtime": 1769355705.9235904,
+    "hash": "fabd4d44412d88b2ac92d2a720afd578"
+  },
+  "C:\\dev\\sublytics\\lib\\analytics.js": {
+    "mtime": 1778079783.8110006,
+    "hash": "74d1138c95fadf616463058f5b7f98b4"
+  },
+  "C:\\dev\\sublytics\\lib\\arr.js": {
+    "mtime": 1769355705.9301684,
+    "hash": "ad56fcbc50ac825da92cb49cee52053c"
+  },
+  "C:\\dev\\sublytics\\lib\\authManager.js": {
+    "mtime": 1775523914.0265365,
+    "hash": "075056533fdbece82aaec55936c7749f"
+  },
+  "C:\\dev\\sublytics\\lib\\authState.js": {
+    "mtime": 1775523914.027487,
+    "hash": "ee19c70565e49771d6d3ccbde985f907"
+  },
+  "C:\\dev\\sublytics\\lib\\backup.js": {
+    "mtime": 1775523914.029487,
+    "hash": "97751982a9adf4b62f98a7074d8fb8be"
+  },
+  "C:\\dev\\sublytics\\lib\\billIcons.js": {
+    "mtime": 1775523914.0325558,
+    "hash": "8e6f6a4c93ad3561b5b782b557842803"
+  },
+  "C:\\dev\\sublytics\\lib\\biometricLock.js": {
+    "mtime": 1778079783.8119967,
+    "hash": "47117cad1d79e31411bf7be1377ef09e"
+  },
+  "C:\\dev\\sublytics\\lib\\calendar.js": {
+    "mtime": 1769355705.9418418,
+    "hash": "bff2c1a0972adb90c5c914dd08bb9b43"
+  },
+  "C:\\dev\\sublytics\\lib\\cashflow.js": {
+    "mtime": 1775523914.0395575,
+    "hash": "c02bc7defa943405f3123cac7c937b11"
+  },
+  "C:\\dev\\sublytics\\lib\\categories.js": {
+    "mtime": 1769355705.950147,
+    "hash": "a0256c95e08d1d26f2771c3775d85442"
+  },
+  "C:\\dev\\sublytics\\lib\\config.js": {
+    "mtime": 1778079783.8129964,
+    "hash": "f9a14aaf6dcbc959dec5b2bf855ec6da"
+  },
+  "C:\\dev\\sublytics\\lib\\dateMath.js": {
+    "mtime": 1775523914.0445273,
+    "hash": "e45399fdddf0fdf982519f6e6f4a5bdf"
+  },
+  "C:\\dev\\sublytics\\lib\\demoData.js": {
+    "mtime": 1775523914.0495276,
+    "hash": "236c9eb7a61ae75f7838e78d9bb8e3ce"
+  },
+  "C:\\dev\\sublytics\\lib\\emailImportClient.js": {
+    "mtime": 1778079783.8139956,
+    "hash": "514e6fa3813a2313025c176e86145857"
+  },
+  "C:\\dev\\sublytics\\lib\\emailImportStore.js": {
+    "mtime": 1778095421.729071,
+    "hash": "f8627bee73bdb019a88c03ae2eb4a692"
+  },
+  "C:\\dev\\sublytics\\lib\\emailScanPreview.js": {
+    "mtime": 1778079783.8159964,
+    "hash": "79a8be3a6931e3b188599fa0e13a9883"
+  },
+  "C:\\dev\\sublytics\\lib\\export.js": {
+    "mtime": 1769355705.9753852,
+    "hash": "feec8d0849f701725b8480ced7185f23"
+  },
+  "C:\\dev\\sublytics\\lib\\formatters.js": {
+    "mtime": 1778079783.816996,
+    "hash": "e3313957dcbfdf7ef4d53e5016862eec"
+  },
+  "C:\\dev\\sublytics\\lib\\gmail.js": {
+    "mtime": 1769355705.9821296,
+    "hash": "aac1d796cc7a4edaded51a8edcf7a19b"
+  },
+  "C:\\dev\\sublytics\\lib\\i18n.js": {
+    "mtime": 1775523914.0584867,
+    "hash": "975691d176acc7e2c301c83a5277d05c"
+  },
+  "C:\\dev\\sublytics\\lib\\instantValue.js": {
+    "mtime": 1778079783.8179975,
+    "hash": "bc384c0d63fb39107277d23a631b46d4"
+  },
+  "C:\\dev\\sublytics\\lib\\limits.js": {
+    "mtime": 1775523914.0644834,
+    "hash": "48dbc6c8c6d808e08fd057e754c67ffb"
+  },
+  "C:\\dev\\sublytics\\lib\\logger.js": {
+    "mtime": 1775523914.065538,
+    "hash": "b2a459fe9a22a941a689831261b28068"
+  },
+  "C:\\dev\\sublytics\\lib\\mail.js": {
+    "mtime": 1775523914.0684848,
+    "hash": "a60689fec12edba395113f31a827e88a"
+  },
+  "C:\\dev\\sublytics\\lib\\merchantConfirm.js": {
+    "mtime": 1775523914.0714917,
+    "hash": "35581b2ffa34095fab68fcf8e31f3609"
+  },
+  "C:\\dev\\sublytics\\lib\\nav.js": {
+    "mtime": 1775523914.0734866,
+    "hash": "bf6796ff8539945ba40dd7b782a85971"
+  },
+  "C:\\dev\\sublytics\\lib\\navigation.js": {
+    "mtime": 1775523914.075486,
+    "hash": "c56109bb6dab4ad8fd1d411865f6b314"
+  },
+  "C:\\dev\\sublytics\\lib\\notifications.js": {
+    "mtime": 1776655661.981837,
+    "hash": "07ef6d544ad6be1ef4b4b61154d8269f"
+  },
+  "C:\\dev\\sublytics\\lib\\notificationsEngine.js": {
+    "mtime": 1778079783.8189976,
+    "hash": "66ed5b102f26352f6010e5e0dd231b06"
+  },
+  "C:\\dev\\sublytics\\lib\\notify.js": {
+    "mtime": 1775523914.0835774,
+    "hash": "493b831107ed56618355a3780221a358"
+  },
+  "C:\\dev\\sublytics\\lib\\onboarding.js": {
+    "mtime": 1775523914.085495,
+    "hash": "277056f9b4ade06ef70f65b1ede570f8"
+  },
+  "C:\\dev\\sublytics\\lib\\onboardingGate.js": {
+    "mtime": 1778094271.2905715,
+    "hash": "68ca53e94411c7ba66299b87c32ef74d"
+  },
+  "C:\\dev\\sublytics\\lib\\onboardingStore.js": {
+    "mtime": 1775523914.090494,
+    "hash": "877816b30761fb3a8099f2054729887f"
+  },
+  "C:\\dev\\sublytics\\lib\\parseSubscription.js": {
+    "mtime": 1775523914.0930617,
+    "hash": "aa439fabe12ca941cbef7d01d009cc1f"
+  },
+  "C:\\dev\\sublytics\\lib\\playbooks.js": {
+    "mtime": 1776470428.1328604,
+    "hash": "402533443b06c4a898a060f94e75a844"
+  },
+  "C:\\dev\\sublytics\\lib\\purchases.js": {
+    "mtime": 1778100964.6312442,
+    "hash": "aa93aa867cd6eb57e34f92700f6775f2"
+  },
+  "C:\\dev\\sublytics\\lib\\purchases.mock.js": {
+    "mtime": 1775523914.097072,
+    "hash": "aabc91155c930062b7a449d47904c093"
+  },
+  "C:\\dev\\sublytics\\lib\\purchases.native.js": {
+    "mtime": 1778100979.010583,
+    "hash": "2ee5a30fbe9a962d99b543b811007c9a"
+  },
+  "C:\\dev\\sublytics\\lib\\purchasesBootstrap.js": {
+    "mtime": 1778079783.821997,
+    "hash": "b8e8b778b8a8957d4d1f051c567776dc"
+  },
+  "C:\\dev\\sublytics\\lib\\purchasesClient.js": {
+    "mtime": 1775523914.1031623,
+    "hash": "61d9ea0e74b941c8b070c9fd7c308490"
+  },
+  "C:\\dev\\sublytics\\lib\\purchasesStore.js": {
+    "mtime": 1778095297.2785242,
+    "hash": "46caab130c944ad98e38f47f0811101e"
+  },
+  "C:\\dev\\sublytics\\lib\\push.js": {
+    "mtime": 1778079783.823001,
+    "hash": "4f49e959fd368d5127bea4ea960f94b7"
+  },
+  "C:\\dev\\sublytics\\lib\\recapPrompt.js": {
+    "mtime": 1775523914.110085,
+    "hash": "db252fb8c15ca9b55ae18a3feb2e4ffe"
+  },
+  "C:\\dev\\sublytics\\lib\\recordingMode.js": {
+    "mtime": 1778079783.8239982,
+    "hash": "37209908efd4de0c053ed0ebbb83b026"
+  },
+  "C:\\dev\\sublytics\\lib\\recurringAdapter.js": {
+    "mtime": 1778079783.8249984,
+    "hash": "af290af38ae79ebcd35d630429769622"
+  },
+  "C:\\dev\\sublytics\\lib\\scanProgressClient.js": {
+    "mtime": 1775523914.1290698,
+    "hash": "218db3f7f04cd970cd37d8f569dd8328"
+  },
+  "C:\\dev\\sublytics\\lib\\sentry.js": {
+    "mtime": 1778079783.8259978,
+    "hash": "969a70a3a1eb9193f6379e31e5d86929"
+  },
+  "C:\\dev\\sublytics\\lib\\shortcuts.js": {
+    "mtime": 1778079783.8270006,
+    "hash": "7f06562df1efb08b34ca7cbecb951341"
+  },
+  "C:\\dev\\sublytics\\lib\\store.js": {
+    "mtime": 1778101903.7469907,
+    "hash": "3a496225a23b02dffcb69cfcada523e0"
+  },
+  "C:\\dev\\sublytics\\lib\\streak.js": {
+    "mtime": 1778079783.8300023,
+    "hash": "89f151c8126ec7b8c8051c089dfe3d8e"
+  },
+  "C:\\dev\\sublytics\\lib\\supabase.js": {
+    "mtime": 1775523914.1421018,
+    "hash": "8d09ab00e0a914df941d7b512b893eac"
+  },
+  "C:\\dev\\sublytics\\lib\\sync.js": {
+    "mtime": 1769355706.0859063,
+    "hash": "acb80c83eecc779375f85998f36fefa3"
+  },
+  "C:\\dev\\sublytics\\lib\\theme.js": {
+    "mtime": 1778079783.8310027,
+    "hash": "2ada1a46da36857c0c863c0cbf3d152b"
+  },
+  "C:\\dev\\sublytics\\lib\\timeAgo.js": {
+    "mtime": 1775523914.147075,
+    "hash": "1ff835a865cffa2410b29223d26e77a1"
+  },
+  "C:\\dev\\sublytics\\lib\\utils.js": {
+    "mtime": 1769355706.0958698,
+    "hash": "7f73c728cbbea73d6f04b761f600a26f"
+  },
+  "C:\\dev\\sublytics\\lib\\widgetBridge.js": {
+    "mtime": 1777833113.5560987,
+    "hash": "972bee91a6ba3ca308551ce12d33b648"
+  },
+  "C:\\dev\\sublytics\\lib\\auth\\api.js": {
+    "mtime": 1775523914.0214863,
+    "hash": "c59bf44c070728f4ec3e766c90bb1768"
+  },
+  "C:\\dev\\sublytics\\lib\\auth\\googleGmailOAuth.js": {
+    "mtime": 1778079783.833003,
+    "hash": "0c1cd3ee02e01b7b552f78d49040298a"
+  },
+  "C:\\dev\\sublytics\\lib\\brand\\brandResolver.js": {
+    "mtime": 1777426066.1601875,
+    "hash": "e53032c696aa55c92aaffdfe6caa80a3"
+  },
+  "C:\\dev\\sublytics\\lib\\demo\\generateDemoData.js": {
+    "mtime": 1775523914.0474875,
+    "hash": "69c3d379c65e08df1fec6349ea3f5fe5"
+  },
+  "C:\\dev\\sublytics\\lib\\recurring\\status.js": {
+    "mtime": 1775523914.1170714,
+    "hash": "17cc8355a93fdd285a2fa986d24f9f09"
+  },
+  "C:\\dev\\sublytics\\lib\\scan\\bus.js": {
+    "mtime": 1775523914.1220734,
+    "hash": "c95141767fd66f460dbd8ac48018a7a7"
+  },
+  "C:\\dev\\sublytics\\lib\\scan\\service.js": {
+    "mtime": 1778095310.573465,
+    "hash": "d6f25e151ba56dfe1538746c9d83d9d7"
+  },
+  "C:\\dev\\sublytics\\lib\\scan\\useScanProgress.js": {
+    "mtime": 1775523914.1270697,
+    "hash": "aaa88e5123ff5593a2ed767c8c1f6142"
+  },
+  "C:\\dev\\sublytics\\lib\\ui\\matte.js": {
+    "mtime": 1775523914.1500695,
+    "hash": "ce95a89b1bed219083b8a92192916ff3"
+  },
+  "C:\\dev\\sublytics\\modules\\widget-bridge\\index.js": {
+    "mtime": 1775523914.1920803,
+    "hash": "deddbba663e21f0c4378121d2a3ca59b"
+  },
+  "C:\\dev\\sublytics\\modules\\widget-bridge\\android\\build.gradle": {
+    "mtime": 1775523914.1810803,
+    "hash": "60ebaeb2c5ddf950c941923aeebfb08e"
+  },
+  "C:\\dev\\sublytics\\modules\\widget-bridge\\android\\src\\main\\java\\expo\\modules\\widgetbridge\\WidgetBridgeModule.kt": {
+    "mtime": 1775523914.1880805,
+    "hash": "6e141eadf5deee5c64a36883ca2cf54a"
+  },
+  "C:\\dev\\sublytics\\modules\\widget-bridge\\ios\\WidgetBridgeModule.swift": {
+    "mtime": 1775523914.194603,
+    "hash": "0ae2f23bfe7ff66baa255f1f9897c8b1"
+  },
+  "C:\\dev\\sublytics\\plugins\\withIosWidget.js": {
+    "mtime": 1775566274.9859273,
+    "hash": "c7960bb7375b25d1e4aa875a080ef4c7"
+  },
+  "C:\\dev\\sublytics\\plugins\\withPodfileDeploymentTarget.js": {
+    "mtime": 1776651179.479908,
+    "hash": "4040a641a206fb9f463a88d8a13aad79"
+  },
+  "C:\\dev\\sublytics\\plugins\\withPrivacyManifest.js": {
+    "mtime": 1777427227.2256813,
+    "hash": "101f613e048c4283409b677f9e1ee197"
+  },
+  "C:\\dev\\sublytics\\plugins\\withShareExtension.js": {
+    "mtime": 1778079783.8389988,
+    "hash": "3d996150cde9ce9d5927501716616ca4"
+  },
+  "C:\\dev\\sublytics\\plugins\\withTurboModuleIOS26Patch.js": {
+    "mtime": 1778079783.8399985,
+    "hash": "bf8b1c994a974fbac299eddf743768ca"
+  },
+  "C:\\dev\\sublytics\\scripts\\audit-confirm-flows.js": {
+    "mtime": 1775523914.2146118,
+    "hash": "1ad5a95b061a60c884d7d5fb35590603"
+  },
+  "C:\\dev\\sublytics\\scripts\\dateMath.test.mjs": {
+    "mtime": 1775523914.2196057,
+    "hash": "ec9835fc09bbe41e19e848f37f347818"
+  },
+  "C:\\dev\\sublytics\\scripts\\sweep-placeholders.js": {
+    "mtime": 1775523914.2216043,
+    "hash": "ffa35c764895e3b83bec6690b576b709"
+  },
+  "C:\\dev\\sublytics\\supabase\\migrations\\20251219_mail.sql": {
+    "mtime": 1769355706.293097,
+    "hash": "c65fcdc05f1fdc0b8541c102349cd9e4"
+  },
+  "C:\\dev\\sublytics\\supabase\\migrations\\20251219_mail_scan.sql": {
+    "mtime": 1769355706.297101,
+    "hash": "1afde0da0e12bb940980f2ca50623b1b"
+  },
+  "C:\\dev\\sublytics\\supabase\\migrations\\20251222_mail_cleanup.sql": {
+    "mtime": 1769355706.3017223,
+    "hash": "f7f26d245ff023500d1f28e2698f74fc"
+  },
+  "C:\\dev\\sublytics\\codemagic.yaml": {
+    "mtime": 1778019200.5769684,
+    "hash": "af1c980ae8098952c4543d99fc09813b"
+  },
+  "C:\\dev\\sublytics\\expo-config-raw.txt": {
+    "mtime": 1775523914.0045216,
+    "hash": "4d8378ebc163200c70b8a4f9bfc47055"
+  },
+  "C:\\dev\\sublytics\\README.md": {
+    "mtime": 1769055851.9597843,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\dev\\sublytics\\TEST_CHECKLIST.md": {
+    "mtime": 1778076992.94747,
+    "hash": "ee20554324e67c76d9925d3f25ed3ad8"
+  },
+  "C:\\dev\\sublytics\\backend\\README.md": {
+    "mtime": 1775523913.8174553,
+    "hash": "c9e51b7b294e1c63a2c419bb3da8db6b"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-hdpi\\notification_icon.png": {
+    "mtime": 1776474430.6808968,
+    "hash": "a9e88f68f963dcab1af22dc4f8147dbb"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-hdpi\\splashscreen_logo.png": {
+    "mtime": 1776474430.4798188,
+    "hash": "0f63c7312aa09d2710dcd771b792ca0f"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-mdpi\\notification_icon.png": {
+    "mtime": 1776474430.6759,
+    "hash": "1fcb75b3b9faf305868cbd4fc74bf7d3"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-mdpi\\splashscreen_logo.png": {
+    "mtime": 1776474430.0651503,
+    "hash": "bc7c48771799839c4b60b207a64c4462"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-xhdpi\\notification_icon.png": {
+    "mtime": 1776474430.6848955,
+    "hash": "52edf6061728340725b45db41c2ba2b0"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-xhdpi\\splashscreen_logo.png": {
+    "mtime": 1776474430.0746627,
+    "hash": "1c723b0a1a60891097718f92a540b5cf"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-xxhdpi\\notification_icon.png": {
+    "mtime": 1776474430.6788943,
+    "hash": "99acaaf62ab4aa9cacb41614833c5b8f"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-xxhdpi\\splashscreen_logo.png": {
+    "mtime": 1776474430.1852164,
+    "hash": "e524a056c462c4a9f4ce421a6d1991f7"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-xxxhdpi\\notification_icon.png": {
+    "mtime": 1776474430.6798944,
+    "hash": "9a05eb740733198b12b7161d3d559afc"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\drawable-xxxhdpi\\splashscreen_logo.png": {
+    "mtime": 1776474430.4818232,
+    "hash": "d50b3e11205a18cc6ae4c567dd06719c"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.webp": {
+    "mtime": 1776474426.8293028,
+    "hash": "de0b980775c1391c725fa3098511f0d1"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_foreground.webp": {
+    "mtime": 1776474427.4819796,
+    "hash": "55f60db9df25804cdf1e0204cc05f2b7"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.webp": {
+    "mtime": 1776474426.8293028,
+    "hash": "914c47b6426ae8bb1303a99211ee4937"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_foreground.webp": {
+    "mtime": 1776474427.4819796,
+    "hash": "a347e83013c8232df7e6032dc2b1468c"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.webp": {
+    "mtime": 1776474426.869306,
+    "hash": "504f6ad6d738843208f7bf6ccb392a5a"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_foreground.webp": {
+    "mtime": 1776474427.4809804,
+    "hash": "5bbb38549b8656f382cb08747f9fca2c"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.webp": {
+    "mtime": 1776474426.8713129,
+    "hash": "cb8840ddd060d9bc6514a4ca9512bfd5"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_foreground.webp": {
+    "mtime": 1776474427.4819796,
+    "hash": "a6489ebcd03afa2ad51df4690f6315dc"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.webp": {
+    "mtime": 1776474426.8713129,
+    "hash": "2aef48aae5d6030d2972dfefac6ba3f6"
+  },
+  "C:\\dev\\sublytics\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_foreground.webp": {
+    "mtime": 1776474427.4819796,
+    "hash": "a9f9916af3d71973f5db0a2bc5aa767f"
+  },
+  "C:\\dev\\sublytics\\assets\\BeforeItBillsLogo.png": {
+    "mtime": 1777947808.523579,
+    "hash": "bc0c6094b1e93b692bedd3d76d1e2cf9"
+  },
+  "C:\\dev\\sublytics\\assets\\notification-icon.png": {
+    "mtime": 1775523913.7839355,
+    "hash": "a7a6d8b68b96a9a037d50cd6009dc925"
+  },
+  "C:\\dev\\sublytics\\assets\\profile.jpg": {
+    "mtime": 1775523913.8064563,
+    "hash": "40b2cdb7b3823ded80c8a04fa356dc65"
+  },
+  "C:\\dev\\sublytics\\assets\\splash.png": {
+    "mtime": 1775523913.8104558,
+    "hash": "3ea702a08533233128e260efbce42cf0"
+  }
+}

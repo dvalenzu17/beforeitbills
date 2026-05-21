@@ -19,12 +19,14 @@ import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
+import Svg, { Path } from "react-native-svg";
+import { GoogleSignin, statusCodes as GoogleStatusCodes } from "@react-native-google-signin/google-signin";
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../lib/store";
 import { useAuthState } from "../../lib/authState";
 import { useTheme } from "../../lib/theme";
 import { track, identify } from "../../lib/analytics";
-import { TERMS_URL, PRIVACY_URL } from "../../lib/config";
+import { TERMS_URL, PRIVACY_URL, GOOGLE_IOS_CLIENT_ID } from "../../lib/config";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -55,7 +57,12 @@ export default function LoginScreen() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
+  useEffect(() => {
+    GoogleSignin.configure({ iosClientId: GOOGLE_IOS_CLIENT_ID });
+  }, []);
 
   const cleanEmail = useMemo(() => email.trim().toLowerCase(), [email]);
 
@@ -76,7 +83,14 @@ export default function LoginScreen() {
 
   function onAuthSuccess(u, method) {
     setUser(u);
-    setAuthReady(true);
+    if (method === "email_signup") {
+      // For new sign-ups, pause the routing gate so the SIGNED_IN auth listener
+      // can evaluate onboardingDone for the new user before routing — prevents
+      // stale onboardingDone from a previous user sending new users to /(tabs).
+      setAuthReady(false);
+    } else {
+      setAuthReady(true);
+    }
     if (u) {
       track("signed_in", { method });
       identify(u.id, { email: u.email });
@@ -144,6 +158,32 @@ export default function LoginScreen() {
     }
   }
 
+  async function handleGoogleSignIn() {
+    if (googleLoading || loading || appleLoading) return;
+    setGoogleLoading(true);
+    try {
+      await GoogleSignin.hasPlayServices();
+      const { raw, hashed } = await generateNonce();
+      const response = await GoogleSignin.signIn({ nonce: hashed });
+      const idToken = response?.data?.idToken;
+      if (!idToken) throw new Error("No ID token returned from Google");
+
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: idToken,
+        nonce: raw,
+      });
+      if (error) throw error;
+      onAuthSuccess(data?.session?.user ?? null, "google");
+    } catch (e) {
+      if (e?.code === GoogleStatusCodes.SIGN_IN_CANCELLED) return;
+      if (__DEV__) console.warn("[sign-in] Google sign-in error:", e?.message);
+      Alert.alert(tt("auth.signInFailed"), tt("auth.googleSignInFailedBody"));
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
+
   async function handleAppleSignIn() {
     if (appleLoading || loading) return;
     setAppleLoading(true);
@@ -166,7 +206,7 @@ export default function LoginScreen() {
 
       if (error) throw error;
 
-      // Apple only returns name on first sign-in — persist if available
+      // Apple only returns name on first sign-in - persist if available
       const u = data?.session?.user ?? data?.user ?? null;
       if (u && credential.fullName?.givenName) {
         const displayName = [
@@ -183,7 +223,7 @@ export default function LoginScreen() {
 
       onAuthSuccess(u, "apple");
     } catch (e) {
-      // ERR_CANCELED = user dismissed the sheet — not an error
+      // ERR_CANCELED = user dismissed the sheet - not an error
       if (e?.code === "ERR_REQUEST_CANCELED") return;
       if (__DEV__) console.warn("[sign-in] Apple sign-in error:", e?.message);
       Alert.alert(tt("auth.signInFailed"), tt("auth.appleSignInFailedBody"));
@@ -224,6 +264,7 @@ export default function LoginScreen() {
 
               <Text style={s.label}>Email</Text>
               <TextInput
+                testID="auth-email-input"
                 value={email}
                 onChangeText={setEmail}
                 placeholder="you@email.com"
@@ -241,6 +282,7 @@ export default function LoginScreen() {
               <Text style={s.label}>Password</Text>
               <View style={s.passwordWrapper}>
                 <TextInput
+                  testID="auth-password-input"
                   value={password}
                   onChangeText={setPassword}
                   placeholder="••••••••"
@@ -310,6 +352,7 @@ export default function LoginScreen() {
                 )}
 
                 <Pressable
+                  testID="auth-submit-btn"
                   onPress={handlePrimary}
                   disabled={!canSubmit || loading || appleLoading}
                   style={({ pressed }) => [
@@ -327,16 +370,36 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Apple Sign In — iOS only, App Store requirement */}
-            {Platform.OS === "ios" && (
-              <View style={s.socialRow}>
-                <View style={s.dividerRow}>
-                  <View style={s.dividerLine} />
-                  <Text style={s.dividerText}>or</Text>
-                  <View style={s.dividerLine} />
-                </View>
-                {appleLoading ? (
-                  <View style={s.appleLoading}>
+            {/* Social sign-in */}
+            <View style={s.socialRow}>
+              <View style={s.dividerRow}>
+                <View style={s.dividerLine} />
+                <Text style={s.dividerText}>or</Text>
+                <View style={s.dividerLine} />
+              </View>
+
+              {/* Google Sign In */}
+              <Pressable
+                onPress={handleGoogleSignIn}
+                disabled={googleLoading || loading || appleLoading}
+                style={({ pressed }) => [s.googleButton, pressed && s.pressed]}
+                accessibilityRole="button"
+                accessibilityLabel="Sign in with Google"
+              >
+                {googleLoading ? (
+                  <ActivityIndicator color="#1F1F1F" size="small" />
+                ) : (
+                  <>
+                    <GoogleLogo size={20} />
+                    <Text style={s.googleButtonText}>Continue with Google</Text>
+                  </>
+                )}
+              </Pressable>
+
+              {/* Apple Sign In - iOS only */}
+              {Platform.OS === "ios" && (
+                appleLoading ? (
+                  <View style={[s.appleLoading, { marginTop: 10 }]}>
                     <ActivityIndicator color={theme.text} />
                   </View>
                 ) : (
@@ -348,17 +411,28 @@ export default function LoginScreen() {
                         : AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
                     }
                     cornerRadius={14}
-                    style={s.appleButton}
+                    style={[s.appleButton, { marginTop: 10 }]}
                     onPress={handleAppleSignIn}
                   />
-                )}
-              </View>
-            )}
+                )
+              )}
+            </View>
 
           </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </SafeAreaView>
+  );
+}
+
+function GoogleLogo({ size = 20 }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 48 48">
+      <Path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <Path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <Path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <Path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </Svg>
   );
 }
 
@@ -492,6 +566,32 @@ function makeStyles(t) {
     dividerRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 },
     dividerLine: { flex: 1, height: 1, backgroundColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" },
     dividerText: { color: t.tertiary, fontSize: 12, fontWeight: "600" },
+    socialButton: {
+      width: "100%",
+      height: 52,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)",
+      backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "#fff",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    socialButtonText: { color: t.text, fontSize: 15, fontWeight: "700" },
+    // Google button is always white per Google brand guidelines
+    googleButton: {
+      width: "100%",
+      height: 52,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: "rgba(0,0,0,0.12)",
+      backgroundColor: "#FFFFFF",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+    },
+    googleButtonText: { color: "#1F1F1F", fontSize: 15, fontWeight: "600" },
     appleButton: { width: "100%", height: 52 },
     appleLoading: {
       height: 52,

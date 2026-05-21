@@ -3,7 +3,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   BackHandler,
+  FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -17,7 +19,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-import { useTheme } from "../../lib/theme";
+import { useTheme, useIsDark } from "../../lib/theme";
 import { SPACING } from "../../lib/ui/tokens";
 import { BILL_ICONS, getBillIcon } from "../../lib/billIcons";
 
@@ -104,6 +106,8 @@ export default function RecurringForm({
   onDirtyChange,
 }) {
   const t = useTheme();
+  const isDark = useIsDark();
+  const pickerTheme = isDark ? "dark" : "light";
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
@@ -384,7 +388,7 @@ export default function RecurringForm({
       const payload = buildPayload();
 
       // Reset both the snapshot baseline AND the ref synchronously before onSubmit.
-      // The ref is what the beforeRemove listener reads — it must be false before
+      // The ref is what the beforeRemove listener reads - it must be false before
       // r.replace() fires inside onSubmit, which happens in the same tick.
       baselineRef.current = currentSnap;
       isDirtyRef.current = false;
@@ -424,7 +428,7 @@ export default function RecurringForm({
   // ✅ React Navigation hook: catches header back, gestures, router.back, etc.
   useEffect(() => {
     const unsub = navigation.addListener("beforeRemove", (e) => {
-      // Use ref — not the closed-over isDirty — so this never goes stale
+      // Use ref - not the closed-over isDirty - so this never goes stale
       if (!isDirtyRef.current) return;
 
       e.preventDefault();
@@ -539,16 +543,22 @@ export default function RecurringForm({
               <Input t={t} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" />
 
               <Label t={t} style={{ marginTop: 14 }}>Currency</Label>
-              <Input t={t} value={currency} onChangeText={setCurrency} autoCapitalize="characters" maxLength={3} placeholder="USD" />
+              <WheelPicker
+                t={t}
+                value={currency}
+                options={CURRENCY_OPTIONS}
+                onChange={setCurrency}
+              />
 
               {kind === "subscription" ? (
                 <>
                   <Label t={t} style={{ marginTop: 14 }} required>Cadence</Label>
-                  <Row wrap>
-                    {["monthly", "yearly", "weekly", "quarterly"].map((c) => (
-                      <Select key={c} t={t} active={cadence === c} label={c} onPress={() => setCadence(c)} />
-                    ))}
-                  </Row>
+                  <WheelPicker
+                    t={t}
+                    value={cadence}
+                    options={CADENCE_OPTIONS}
+                    onChange={setCadence}
+                  />
 
                   <Label t={t} style={{ marginTop: 14 }} required>Renews on</Label>
 
@@ -564,6 +574,7 @@ export default function RecurringForm({
         value={nextRenewal ?? new Date()}
         mode="date"
         display="default"
+        themeVariant={pickerTheme}
         onChange={(event, d) => {
           setShowAndroidRenewal(false);
           if (event?.type === "dismissed") return;
@@ -577,18 +588,24 @@ export default function RecurringForm({
     <DateRow
       t={t}
       value={formatISO(nextRenewal)}
-      onPress={() => setShowIOSRenewal(true)}
+      onPress={() => setShowIOSRenewal((v) => !v)}
     />
     {showIOSRenewal && (
-      <DateTimePicker
-        value={nextRenewal ?? new Date()}
-        mode="date"
-        display="spinner"
-        onChange={(_, d) => {
-          if (d) setNextRenewal(d);
-          setShowIOSRenewal(false);
-        }}
-      />
+      <View style={{ borderRadius: 14, overflow: "hidden", borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface }}>
+        <DateTimePicker
+          value={nextRenewal ?? new Date()}
+          mode="date"
+          display="spinner"
+          themeVariant={pickerTheme}
+          onChange={(_, d) => { if (d) setNextRenewal(d); }}
+        />
+        <Pressable
+          onPress={() => setShowIOSRenewal(false)}
+          style={{ alignItems: "center", paddingVertical: 12, backgroundColor: t.accent }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>Done</Text>
+        </Pressable>
+      </View>
     )}
   </>
 )}
@@ -608,6 +625,7 @@ export default function RecurringForm({
         value={nextDue ?? new Date()}
         mode="date"
         display="default"
+        themeVariant={pickerTheme}
         onChange={(event, d) => {
           setShowAndroidDue(false);
           if (event?.type === "dismissed") return;
@@ -618,9 +636,14 @@ export default function RecurringForm({
   </>
 ) : (
                     <>
-                      <DateRow t={t} value={formatISO(nextDue)} onPress={() => setShowIOSDue(true)} />
+                      <DateRow t={t} value={formatISO(nextDue)} onPress={() => setShowIOSDue((v) => !v)} />
                       {showIOSDue ? (
-                        <DateTimePicker value={nextDue ?? new Date()} mode="date" display="spinner" onChange={(_, d) => { if (d) setNextDue(d); setShowIOSDue(false); }} />
+                        <View style={{ borderRadius: 14, overflow: "hidden", borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface }}>
+                          <DateTimePicker value={nextDue ?? new Date()} mode="date" display="spinner" themeVariant={pickerTheme} onChange={(_, d) => { if (d) setNextDue(d); }} />
+                          <Pressable onPress={() => setShowIOSDue(false)} style={{ alignItems: "center", paddingVertical: 12, backgroundColor: t.accent }}>
+                            <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>Done</Text>
+                          </Pressable>
+                        </View>
                       ) : null}
                     </>
                   )}
@@ -684,6 +707,7 @@ export default function RecurringForm({
         value={trialEnd}
         mode="date"
         display="default"
+        themeVariant={pickerTheme}
         onChange={(event, d) => {
           setShowAndroidTrialEnd(false);
           if (event?.type === "dismissed") return;
@@ -694,9 +718,14 @@ export default function RecurringForm({
   </>
 ) : (
                       <>
-                        <DateRow t={t} value={formatISO(trialEnd)} onPress={() => setShowIOSTrialEnd(true)} />
+                        <DateRow t={t} value={formatISO(trialEnd)} onPress={() => setShowIOSTrialEnd((v) => !v)} />
                         {showIOSTrialEnd ? (
-                          <DateTimePicker value={trialEnd} mode="date" display="spinner" onChange={(_, d) => { if (d) setTrialEnd(d); setShowIOSTrialEnd(false); }} />
+                          <View style={{ borderRadius: 14, overflow: "hidden", borderWidth: 1, borderColor: t.hairline, backgroundColor: t.surface }}>
+                            <DateTimePicker value={trialEnd} mode="date" display="spinner" themeVariant={pickerTheme} onChange={(_, d) => { if (d) setTrialEnd(d); }} />
+                            <Pressable onPress={() => setShowIOSTrialEnd(false)} style={{ alignItems: "center", paddingVertical: 12, backgroundColor: t.accent }}>
+                              <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>Done</Text>
+                            </Pressable>
+                          </View>
                         ) : null}
                       </>
                     )}
@@ -885,5 +914,168 @@ function ToggleRow({ t, label, value, onChange }) {
       <Text style={{ color: t.text, fontWeight: "600" }}>{label}</Text>
       <Switch value={value} onValueChange={onChange} />
     </View>
+  );
+}
+
+const CADENCE_OPTIONS = [
+  { value: "monthly",   label: "Monthly"   },
+  { value: "yearly",    label: "Yearly"    },
+  { value: "weekly",    label: "Weekly"    },
+  { value: "quarterly", label: "Quarterly" },
+];
+
+const CURRENCY_OPTIONS = [
+  { value: "USD", label: "USD - US Dollar"        },
+  { value: "EUR", label: "EUR - Euro"              },
+  { value: "GBP", label: "GBP - British Pound"    },
+  { value: "CAD", label: "CAD - Canadian Dollar"  },
+  { value: "AUD", label: "AUD - Australian Dollar"},
+  { value: "JPY", label: "JPY - Japanese Yen"     },
+  { value: "MXN", label: "MXN - Mexican Peso"     },
+  { value: "BRL", label: "BRL - Brazilian Real"   },
+  { value: "CHF", label: "CHF - Swiss Franc"      },
+  { value: "INR", label: "INR - Indian Rupee"     },
+  { value: "SGD", label: "SGD - Singapore Dollar" },
+  { value: "HKD", label: "HKD - Hong Kong Dollar" },
+  { value: "NZD", label: "NZD - New Zealand Dollar"},
+  { value: "SEK", label: "SEK - Swedish Krona"    },
+  { value: "NOK", label: "NOK - Norwegian Krone"  },
+  { value: "DKK", label: "DKK - Danish Krone"     },
+  { value: "PLN", label: "PLN - Polish Złoty"     },
+  { value: "CZK", label: "CZK - Czech Koruna"     },
+  { value: "ZAR", label: "ZAR - South African Rand"},
+  { value: "ARS", label: "ARS - Argentine Peso"   },
+  { value: "CLP", label: "CLP - Chilean Peso"     },
+  { value: "COP", label: "COP - Colombian Peso"   },
+  { value: "PEN", label: "PEN - Peruvian Sol"     },
+  { value: "PAB", label: "PAB - Panamanian Balboa"},
+];
+
+const ITEM_H = 52;
+const VISIBLE_ITEMS = 5;
+
+function WheelPicker({ t, value, options, onChange }) {
+  const [open, setOpen] = useState(false);
+  const listRef = useRef(null);
+
+  const currentIdx = options.findIndex((o) => o.value === value);
+  const displayLabel = options.find((o) => o.value === value)?.label?.split(" - ")[0] ?? value;
+
+  function scrollToIndex(idx, animated = false) {
+    listRef.current?.scrollToOffset({
+      offset: Math.max(0, idx) * ITEM_H,
+      animated,
+    });
+  }
+
+  function handleScrollEnd(e) {
+    const idx = Math.round(e.nativeEvent.contentOffset.y / ITEM_H);
+    const clamped = Math.max(0, Math.min(idx, options.length - 1));
+    onChange(options[clamped].value);
+  }
+
+  return (
+    <>
+      <Pressable
+        onPress={() => setOpen(true)}
+        style={{
+          marginTop: 8, padding: 13, borderRadius: 14,
+          backgroundColor: t.surface2, borderWidth: 1,
+          borderColor: t.hairline,
+          flexDirection: "row", alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Text style={{ color: t.text, fontWeight: "700", fontSize: 15 }}>{displayLabel}</Text>
+        <Feather name="chevron-down" size={16} color={t.subtext} />
+      </Pressable>
+
+      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
+        <Pressable
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" }}
+          onPress={() => setOpen(false)}
+        >
+          <Pressable
+            style={{
+              backgroundColor: t.bg,
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              paddingBottom: 34,
+              borderTopWidth: 1, borderColor: t.hairline,
+            }}
+            onPress={() => {}}
+          >
+            {/* Header */}
+            <View style={{
+              flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+              paddingHorizontal: 20, paddingVertical: 16,
+              borderBottomWidth: 1, borderBottomColor: t.hairline,
+            }}>
+              <Pressable onPress={() => setOpen(false)}>
+                <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 15 }}>Cancel</Text>
+              </Pressable>
+              <Pressable onPress={() => setOpen(false)}>
+                <Text style={{ color: t.accent, fontWeight: "800", fontSize: 16 }}>Done</Text>
+              </Pressable>
+            </View>
+
+            {/* Wheel */}
+            <View style={{ height: ITEM_H * VISIBLE_ITEMS, position: "relative" }}>
+              {/* Selection highlight band */}
+              <View
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  top: ITEM_H * 2,
+                  left: 20, right: 20,
+                  height: ITEM_H,
+                  borderRadius: 12,
+                  backgroundColor: t.accent + "1A",
+                  borderTopWidth: 1, borderBottomWidth: 1,
+                  borderColor: t.accent + "44",
+                }}
+              />
+              <FlatList
+                ref={listRef}
+                data={options}
+                keyExtractor={(item) => item.value}
+                snapToInterval={ITEM_H}
+                decelerationRate="fast"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingVertical: ITEM_H * 2 }}
+                getItemLayout={(_, index) => ({ length: ITEM_H, offset: ITEM_H * index, index })}
+                onLayout={() => scrollToIndex(currentIdx)}
+                onMomentumScrollEnd={handleScrollEnd}
+                onScrollEndDrag={handleScrollEnd}
+                renderItem={({ item, index }) => {
+                  const isSelected = item.value === value;
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        onChange(item.value);
+                        scrollToIndex(index, true);
+                      }}
+                      style={{
+                        height: ITEM_H,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        paddingHorizontal: 20,
+                      }}
+                    >
+                      <Text style={{
+                        color: isSelected ? t.text : t.subtext,
+                        fontWeight: isSelected ? "800" : "500",
+                        fontSize: isSelected ? 17 : 15,
+                      }}>
+                        {item.label}
+                      </Text>
+                    </Pressable>
+                  );
+                }}
+              />
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
   );
 }

@@ -122,27 +122,70 @@ export async function updateGmailAccessToken(userId, { accessToken, refreshToken
  * - Staleness: marks is_active=false for subscriptions not seen in 2× their billing
  *   period (handled by markStaleSubscriptions, called after each scan)
  */
+// Merchants in this set are auto-confirmed (is_suggested=false) and appear
+// directly in the user's subscription list without requiring manual review.
+// Values must match lowercase(subscriptionEngine BRAND_NAME_MAP output).
+const CONFIRMED_BRANDS = new Set([
+  // Streaming / Video
+  "netflix", "hulu", "disney+", "max", "hbo max", "paramount+", "peacock",
+  "apple tv+", "youtube", "youtube premium", "youtube tv", "crunchyroll", "funimation",
+  "showtime", "starz", "discovery+", "espn+", "dazn",
+  // Music / Audio
+  "spotify", "apple music", "youtube music", "tidal", "deezer", "amazon music",
+  "siriusxm", "audible", "pandora",
+  // Productivity / Storage / Office
+  "google", "google one", "google workspace", "microsoft", "icloud",
+  "dropbox", "notion", "slack", "zoom", "grammarly", "canva", "figma",
+  "miro", "airtable", "trello", "asana", "monday.com", "jira", "atlassian",
+  "1password", "lastpass", "dashlane", "loom", "webflow", "framer",
+  // Developer / Hosting / Monitoring
+  "github", "gitlab", "vercel", "netlify", "heroku", "digitalocean",
+  "linode", "cloudflare", "sentry", "datadog", "openai", "chatgpt",
+  "anthropic", "claude", "cursor",
+  // Delivery / Mobility
+  "uber one",
+  // E-commerce / Finance
+  "amazon", "amazon prime", "prime video", "shopify",
+  // Fitness / Wellness / News / Education
+  "peloton", "strava", "calm", "headspace", "duolingo", "masterclass",
+  "medium", "substack", "new york times", "linkedin",
+  // Misc SaaS
+  "hubspot", "salesforce", "mailchimp", "typeform", "mixpanel", "amplitude",
+  "twitch", "patreon", "fastly",
+]);
+
+function isConfirmedBrand(merchant) {
+  if (!merchant) return false;
+  return CONFIRMED_BRANDS.has(merchant.toLowerCase().trim());
+}
+
 export async function batchUpsertSubscriptions(userId, subscriptions) {
   if (!subscriptions?.length) return;
 
   const now = new Date().toISOString();
 
   for (const s of subscriptions) {
+    // Known subscription brands auto-appear in the main list (is_suggested=false).
+    // Low-confidence unknowns go to the review queue (is_suggested=true).
+    const isSuggested = !isConfirmedBrand(s.merchant) && (s.confidence ?? 0) < 0.70;
+
     await pool.query(
       `INSERT INTO subscriptions
          (user_id, merchant, renewal_amount, currency, renewal_date, billing_interval,
           confidence, is_active, is_suggested, source, last_seen_at, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,true,true,$8,$9,$9)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,true,$8,$9,$10,$10)
        ON CONFLICT (user_id, merchant) DO UPDATE SET
-         renewal_amount  = COALESCE(EXCLUDED.renewal_amount, subscriptions.renewal_amount),
-         currency        = COALESCE(EXCLUDED.currency, subscriptions.currency),
-         renewal_date    = COALESCE(EXCLUDED.renewal_date, subscriptions.renewal_date),
+         renewal_amount   = COALESCE(EXCLUDED.renewal_amount, subscriptions.renewal_amount),
+         currency         = COALESCE(EXCLUDED.currency, subscriptions.currency),
+         renewal_date     = COALESCE(EXCLUDED.renewal_date, subscriptions.renewal_date),
          billing_interval = COALESCE(EXCLUDED.billing_interval, subscriptions.billing_interval),
-         confidence      = GREATEST(EXCLUDED.confidence, subscriptions.confidence),
-         is_active       = true,
-         source          = EXCLUDED.source,
-         last_seen_at    = EXCLUDED.last_seen_at,
-         updated_at      = EXCLUDED.updated_at`,
+         confidence       = GREATEST(EXCLUDED.confidence, subscriptions.confidence),
+         is_active        = true,
+         -- Never flip is_suggested from false → true (don't un-confirm a known brand)
+         is_suggested     = CASE WHEN subscriptions.is_suggested = false THEN false ELSE EXCLUDED.is_suggested END,
+         source           = EXCLUDED.source,
+         last_seen_at     = EXCLUDED.last_seen_at,
+         updated_at       = EXCLUDED.updated_at`,
       [
         userId,
         s.merchant,
@@ -151,6 +194,7 @@ export async function batchUpsertSubscriptions(userId, subscriptions) {
         s.renewalDate ?? null,
         s.cadence ?? 'monthly',
         s.confidence ?? 0,
+        isSuggested,
         s.source ?? 'gmail_scan',
         now,
       ]

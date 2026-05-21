@@ -5,6 +5,8 @@ import SwiftUI
 @main
 struct SubsWidgetBundle: WidgetBundle {
   var body: some Widget {
-    SubsWidget()
+    BIBOverviewWidget()
+    BIBUpcomingWidget()
+    BIBInsightsWidget()
   }
 }

@@ -1,5 +1,5 @@
 // app/(tabs)/index.js
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, ScrollView, Text, Pressable, InteractionManager } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
@@ -31,6 +31,7 @@ import { useOnboardingStore } from "../../lib/onboardingStore";
 import { useToast } from "../../components/ToastProvider";
 import { track } from "../../lib/analytics";
 import { formatMoney } from "../../lib/utils";
+import { fmtDateShort } from "../../lib/formatters";
 
 import { SPACING } from "../../lib/ui/tokens";
 import { VStack } from "../../components/ui/Stack";
@@ -60,10 +61,8 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
       animate={{ opacity: 1, translateY: 0 }}
       transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 210 }}
     >
-      <T.Sub style={{ marginBottom: 2 }}>{greeting}</T.Sub>
-
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <T.Title style={{ fontSize: 30, flex: 1 }}>{displayName}</T.Title>
+        <T.Title style={{ fontSize: 22, flex: 1 }} numberOfLines={1}>{greeting}, {displayName}</T.Title>
         <Pressable
           onPress={onSearch}
           hitSlop={8}
@@ -79,7 +78,7 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
         </Pressable>
       </View>
 
-      {/* Urgent / inbox badges only — spend is shown in MonthlyDigestCard */}
+      {/* Urgent / inbox badges only - spend is shown in MonthlyDigestCard */}
       {(urgentCount > 0 || candidateCount > 0 || !emailConnected) && (
         <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
           {urgentCount > 0 && (
@@ -127,7 +126,7 @@ function HeroSection({ t, displayName, urgentCount, candidateCount, emailConnect
 }
 
 // ── Action card ───────────────────────────────────────────────────────────────
-function ActionCard({ t, item, onPress }) {
+function ActionCard({ t, item, onPress, featured }) {
   const iconMap = {
     recap: { icon: "bar-chart-2", color: t.accent },
     recommendation: { icon: "scissors", color: "#FF3B30" },
@@ -135,6 +134,42 @@ function ActionCard({ t, item, onPress }) {
     bill: { icon: "file-text", color: "#64D2FF" },
   };
   const { icon, color } = iconMap[item.kind] || { icon: "zap", color: t.accent };
+
+  // Featured = "one clear action" hero card (recommendation/urgent kind)
+  if (featured) {
+    return (
+      <PressableScale
+        haptic="impactMedium"
+        onPress={onPress}
+        style={{ borderRadius: 18, overflow: "hidden" }}
+      >
+        <LinearGradient
+          colors={[color + "CC", color + "88"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            padding: 18,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <View style={{
+            width: 44, height: 44, borderRadius: 13,
+            backgroundColor: "rgba(0,0,0,0.18)",
+            alignItems: "center", justifyContent: "center",
+          }}>
+            <Feather name={icon} size={20} color="#fff" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>{item.title}</Text>
+            <Text style={{ color: "rgba(255,255,255,0.8)", marginTop: 3, fontSize: 13 }}>{item.detail}</Text>
+          </View>
+          <Feather name="arrow-right" size={18} color="rgba(255,255,255,0.9)" />
+        </LinearGradient>
+      </PressableScale>
+    );
+  }
 
   return (
     <PressableScale
@@ -256,6 +291,7 @@ export default function Home() {
 
   const emailStateHydrate = useEmailImportStore((s) => s.hydrate);
   const connectedProvider = useEmailImportStore((s) => s.connectedProvider);
+  const emailStoreHydrated = useEmailImportStore((s) => s.hasHydrated);
   const lastScanAt = useEmailImportStore((s) => s.lastScanAt);
   const lastStats = useEmailImportStore((s) => s.lastStats);
   const candidates = useEmailImportStore((s) => s.candidates);
@@ -272,10 +308,12 @@ export default function Home() {
   const isDone = useOnboardingStore((s) => s.isChecklistDone);
 
   const [now, setNow] = useState(() => new Date());
+  const [savingsDismissed, setSavingsDismissed] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
   const [proofItem, setProofItem] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState(false);
   const [contextItem, setContextItem] = useState(null);
   const [celebration, setCelebration] = useState(null);
 
@@ -290,6 +328,7 @@ export default function Home() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
+    setRefreshError(false);
     try {
       await loadMail?.();
       await loadBills?.();
@@ -298,6 +337,7 @@ export default function Home() {
       else await loadSubsLocal?.();
     } catch (e) {
       if (__DEV__) console.warn("[home] refresh failed:", e?.message);
+      setRefreshError(true);
     } finally {
       setRefreshing(false);
     }
@@ -308,7 +348,7 @@ export default function Home() {
 
     (async () => {
       try {
-        // Phase 1: local reads only — fast, no network, unblocks render immediately
+        // Phase 1: local reads only - fast, no network, unblocks render immediately
         await loadMail?.();
         await loadBills?.();
         await loadSubsLocal?.();
@@ -340,9 +380,10 @@ export default function Home() {
   }, []);
 
   const recurring = useMemo(
-    () => recordingActive && recordingPersona
-      ? recordingPersona.recurring
-      : getRecurring?.() || [],
+    () => (recordingActive && recordingPersona
+      ? recordingPersona.recurring || []
+      : getRecurring?.() || []
+    ).filter((x) => x.active !== false),
     [recordingActive, recordingPersona, getRecurring, subs, bills]
   );
 
@@ -371,6 +412,15 @@ export default function Home() {
   [recurring]);
 
   // Split upcoming into subs vs bills with shared data
+  function fmtDue(dateStr) {
+    const days = daysUntil(dateStr);
+    if (days === null) return fmtDateShort(dateStr);
+    if (days === 0) return "today";
+    if (days === 1) return "tomorrow";
+    if (days <= 14) return `in ${days} days`;
+    return fmtDateShort(dateStr);
+  }
+
   const upcomingSubs = useMemo(() =>
     recurring.filter((x) => x.kind === "subscription").slice(0, 10).map((x) => ({
       kind: x.kind, id: x.id,
@@ -378,7 +428,7 @@ export default function Home() {
       amount: x.effectiveAmount,
       currency: x.currency || "USD",
       cadence: x.cadence,
-      subtitle: `${x.cadence} · renews ${x.nextDate || "—"}`,
+      subtitle: `${x.cadence} · renews ${fmtDue(x.nextDate)}`,
       nextDate: x.nextDate,
       domain: x.domain || x.fromDomain || "",
       sharedCount: Number(x.sharedCount ?? 1) || 1,
@@ -392,7 +442,7 @@ export default function Home() {
       name: x.title || x.merchant || x.name || "",
       amount: x.effectiveAmount,
       currency: x.currency || "USD",
-      subtitle: `bill · due ${x.nextDate || "—"}`,
+      subtitle: `bill · due ${fmtDue(x.nextDate)}`,
       nextDate: x.nextDate,
       domain: x.domain || "",
       sharedCount: Number(x.sharedCount ?? 1) || 1,
@@ -449,6 +499,11 @@ export default function Home() {
         }
       >
         <BiBRefreshBanner refreshing={refreshing} />
+        {refreshError && !refreshing && (
+          <View style={{ marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 12, backgroundColor: "#FF3B3018", borderWidth: 1, borderColor: "#FF3B3033" }}>
+            <Text style={{ color: "#FF3B30", fontWeight: "700", fontSize: 13 }}>Could not refresh. Check your connection.</Text>
+          </View>
+        )}
         {/* ── HERO ── */}
         <HeroSection
           t={t}
@@ -466,7 +521,7 @@ export default function Home() {
         ) : (
           <>
 
-        {/* ── EMAIL REVIEW BANNER — above the fold when detections exist ── */}
+        {/* ── EMAIL REVIEW BANNER - above the fold when detections exist ── */}
         {candidateCount > 0 && (
           <MotiView
             from={{ opacity: 0, translateY: 10 }}
@@ -497,10 +552,10 @@ export default function Home() {
                   <Feather name="mail" size={18} color="#fff" />
                   <View>
                     <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
-                      Review {candidateCount} new email detection{candidateCount !== 1 ? "s" : ""}
+                      {tt(candidateCount === 1 ? "home.reviewDetections" : "home.reviewDetectionsPlural", { n: candidateCount })}
                     </Text>
                     <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 1 }}>
-                      Tap to confirm from your inbox scan
+                      {tt("home.fromInboxScan")}
                     </Text>
                   </View>
                 </View>
@@ -510,7 +565,7 @@ export default function Home() {
           </MotiView>
         )}
 
-        {/* ── MONTHLY DIGEST — month label + view all + share ── */}
+        {/* ── MONTHLY DIGEST - month label + view all + share ── */}
         <MotiView
           from={{ opacity: 0, translateY: 10 }}
           animate={{ opacity: 1, translateY: 0 }}
@@ -522,26 +577,19 @@ export default function Home() {
             bills={bills}
             currency="USD"
             emailConnected={emailConnected}
-            onOpenRecap={() => r.push("/(tabs)/insights?recap=1")}
+            onOptimize={() => r.push("/optimize")}
             onViewAll={() => r.push("/recurring")}
           />
         </MotiView>
 
-        {/* ── SAVINGS TRACKER — only when something has been cancelled ── */}
-        {(savings?.totalSaved > 0) && (
+        {/* ── SAVINGS TRACKER - only when something has been cancelled ── */}
+        {(savings?.totalSaved > 0) && !savingsDismissed && (
           <MotiView
             from={{ opacity: 0, translateY: 10 }}
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 90 }}
           >
-            <Pressable
-              onPress={() => r.push("/recurring")}
-              style={({ pressed }) => ({
-                borderRadius: 18,
-                overflow: "hidden",
-                opacity: pressed ? 0.88 : 1,
-              })}
-            >
+            <View style={{ borderRadius: 18, overflow: "hidden" }}>
               <LinearGradient
                 colors={["#064E3B", "#065F46"]}
                 start={{ x: 0, y: 0 }}
@@ -549,7 +597,6 @@ export default function Home() {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "space-between",
                   paddingVertical: 16,
                   paddingHorizontal: 18,
                   borderRadius: 18,
@@ -557,20 +604,29 @@ export default function Home() {
                   borderColor: "#34D39944",
                 }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <Pressable
+                  onPress={() => r.push("/recurring")}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}
+                >
                   <Text style={{ fontSize: 24 }}>🎉</Text>
                   <View>
                     <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
-                      You've saved {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(savings.totalSaved)}/mo
+                      {tt("home.savedAmount", { amount: new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number.isFinite(savings.totalSaved) ? savings.totalSaved : 0) })}
                     </Text>
                     <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 }}>
-                      From {savings.entries?.length || 0} cancelled subscription{savings.entries?.length !== 1 ? "s" : ""}
+                      {tt("home.cancelledCount", { count: savings.entries?.length || 0 })}
                     </Text>
                   </View>
-                </View>
-                <Feather name="arrow-right" size={16} color="rgba(255,255,255,0.6)" />
+                </Pressable>
+                <Pressable
+                  onPress={() => setSavingsDismissed(true)}
+                  hitSlop={10}
+                  style={{ padding: 4, marginLeft: 8 }}
+                >
+                  <Feather name="x" size={16} color="rgba(255,255,255,0.5)" />
+                </Pressable>
               </LinearGradient>
-            </Pressable>
+            </View>
           </MotiView>
         )}
 
@@ -593,7 +649,7 @@ export default function Home() {
         </MotiView>
    
 
-        {/* ── QUICK ADD — full width ── */}
+        {/* ── QUICK ADD - full width ── */}
         <MotiView
           from={{ opacity: 0, translateY: 10 }}
           animate={{ opacity: 1, translateY: 0 }}
@@ -605,7 +661,32 @@ export default function Home() {
             left={<Feather name="plus" size={16} color="#fff" />}
           />
         </MotiView>
-        {/* ── NEXT ACTIONS ── */}
+
+        {/* ── CONNECT EMAIL / CHECK INBOX - always visible ── */}
+        {emailStoreHydrated && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 200 }}
+          >
+            {!emailConnected ? (
+              <Button
+                title={tt("home.connectEmail") || "Connect your email"}
+                variant="secondary"
+                onPress={() => r.push("/account/connect-email")}
+                left={<Feather name="mail" size={16} color={t.text} />}
+              />
+            ) : (
+              <Button
+                title={tt("home.checkEmails") || "Check your emails"}
+                variant="secondary"
+                onPress={() => r.push("/account/connect-email/connected")}
+                left={<Feather name="mail" size={16} color={t.text} />}
+              />
+            )}
+          </MotiView>
+        )}
+        {/* ── NEXT ACTIONS - first recommendation shown as hero "one clear action" ── */}
         {actionFeed.length > 0 && (
           <MotiView
             from={{ opacity: 0, translateY: 10 }}
@@ -619,6 +700,7 @@ export default function Home() {
                     key={`${a.kind}-${idx}`}
                     t={t}
                     item={a}
+                    featured={idx === 0 && a.kind === "recommendation"}
                     onPress={() => a.href ? r.push(a.href) : null}
                   />
                 ))}
@@ -629,8 +711,8 @@ export default function Home() {
 
         {/* ── TRIALS ── */}
         {trialRadarItems.length > 0 && (() => {
-          const hasUrgent = trialRadarItems.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 3);
-          const hasCritical = trialRadarItems.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 1);
+          const hasUrgent = trialRadarItems?.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 3) ?? false;
+          const hasCritical = trialRadarItems?.some(x => (daysUntil(x.trialEndsAt) ?? 99) <= 1) ?? false;
           return (
           <HomeSection
             title={tt("home.trialsEndingSoon")}
@@ -667,7 +749,7 @@ export default function Home() {
           );
         })()}
 
-        {/* ── UPCOMING — tabbed ── */}
+        {/* ── UPCOMING - tabbed ── */}
         <HomeSection title={tt("home.upcoming")}>
           {upcomingSubs.length === 0 && upcomingBills.length === 0 ? (
             <Card>
@@ -676,9 +758,9 @@ export default function Home() {
                 title={tt("home.noRecurringYet")}
                 body={tt("home.noRecurringBody")}
                 primary={{
-                  title: emailConnected ? tt("home.scanInbox") : tt("home.connectInbox"),
-                  icon: emailConnected ? "search" : "link",
-                  onPress: () => r.push(emailConnected ? "/progressive-scan" : "/(onboarding)/connect"),
+                  title: tt("home.scanInbox"),
+                  icon: "mail",
+                  onPress: () => r.push("/account/connect-email"),
                 }}
                 secondary={{
                   title: tt("home.addManually"),
@@ -726,6 +808,7 @@ export default function Home() {
         onArchive={async () => {
           if (!contextItem) return;
           try {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
             const result = contextItem.kind === "bill"
               ? await updateBill?.(contextItem.id, { active: false })
               : await updateSub?.(contextItem.id, { active: false });

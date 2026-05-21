@@ -113,10 +113,10 @@ export default function BrandPage() {
   const currency = primary?.currency || "USD";
   const cadence = primary?.cadence || "monthly";
 
-  const nextDate = primary?.nextRenewal || primary?.nextDue || null;
+  const nextDate = primary?.nextDate || primary?.nextRenewal || primary?.nextDue || null;
   const lastDate = primary?.lastChargeAt || null;
 
-  // Status — editable
+  // Status - editable
   const derivedStatus = (() => {
     const s = String(primary?.status || "").toLowerCase();
     if (s === "suspended") return "suspended";
@@ -136,11 +136,12 @@ export default function BrandPage() {
     else await updateSub?.(primary.id, patch);
   }
 
-  /* ---------- evidence — pull from emailImportStore by merchant name ---------- */
+  /* ---------- evidence - pull from emailImportStore by merchant name ---------- */
 
   const evidence = useMemo(() => {
-    // First check if the recurring item has its own evidence
+    // Check evidence on recurring item shape, then on raw sub
     if (primary?.evidence?.length) return primary.evidence;
+    if (primary?.raw?.evidence?.length) return primary.raw.evidence;
     // Fall back to matching email candidates by merchant name
     const n0 = norm(paramName || pickName(primary));
     const match = (emailSubscriptions || []).find(s => norm(s.merchant).includes(n0) || n0.includes(norm(s.merchant)));
@@ -239,30 +240,23 @@ export default function BrandPage() {
               {!!domain && <T.Sub style={{ marginTop: 4 }}>{domain}</T.Sub>}
             </View>
 
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              {STATUS_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.key}
-                  onPress={() => applyStatus(opt.key)}
-                  style={{
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    borderRadius: 999,
-                    borderWidth: 1.5,
-                    borderColor: statusKey === opt.key ? opt.color : t.hairline,
-                    backgroundColor: statusKey === opt.key ? opt.color + "18" : t.surface2,
-                  }}
-                >
-                  <Text style={{
-                    fontSize: 12,
-                    fontWeight: "800",
-                    color: statusKey === opt.key ? opt.color : t.subtext,
-                  }}>
-                    {opt.label}
+            {(() => {
+              const current = STATUS_OPTIONS.find(o => o.key === statusKey) || STATUS_OPTIONS[0];
+              return (
+                <View style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  borderRadius: 999,
+                  borderWidth: 1.5,
+                  borderColor: current.color,
+                  backgroundColor: current.color + "18",
+                }}>
+                  <Text style={{ fontSize: 12, fontWeight: "800", color: current.color }}>
+                    {current.label}
                   </Text>
-                </Pressable>
-              ))}
-            </View>
+                </View>
+              );
+            })()}
           </HStack>
         </View>
 
@@ -406,26 +400,68 @@ export default function BrandPage() {
           <HStack gap={SPACING.cardGap}>
             <View style={{ flex: 1 }}>
               <Button
-                title={tt("brand_screen.cancel")}
+                title={statusKey === "suspended" ? "Resume" : "Pause"}
+                variant="secondary"
                 onPress={() =>
-                  r.push({
-                    pathname: "/cancel-center",
-                    params: { domain, name: title },
-                  })
+                  Alert.alert(
+                    statusKey === "suspended" ? "Resume subscription?" : "Pause subscription?",
+                    statusKey === "suspended"
+                      ? `Mark ${title} as active again?`
+                      : `Mark ${title} as paused. You can reactivate it any time.`,
+                    [
+                      { text: "Back", style: "cancel" },
+                      {
+                        text: statusKey === "suspended" ? "Resume" : "Pause",
+                        onPress: () => applyStatus(statusKey === "suspended" ? "active" : "suspended"),
+                      },
+                    ]
+                  )
                 }
-                left={<Feather name="x-circle" size={16} color="#fff" />}
+                left={<Feather name={statusKey === "suspended" ? "play" : "pause"} size={16} color={t.text} />}
               />
             </View>
 
             <View style={{ flex: 1 }}>
               <Button
-                title={tt("brand_screen.openWebsite")}
-                variant="secondary"
-                onPress={onManage}
-                left={<Feather name="external-link" size={16} color={t.text} />}
+                title="Cancel"
+                onPress={() =>
+                  Alert.alert(
+                    "Cancel subscription?",
+                    `This will mark ${title} as cancelled. It will still appear in your list with a cancelled status.`,
+                    [
+                      { text: "Back", style: "cancel" },
+                      {
+                        text: "Cancel subscription",
+                        style: "destructive",
+                        onPress: async () => {
+                          if (!primary) return;
+                          const patch = { status: "cancelled", active: false };
+                          if (primary.kind === "bill") await updateBill?.(primary.id, patch);
+                          else await updateSub?.(primary.id, patch);
+                          r.replace("/(tabs)");
+                        },
+                      },
+                    ]
+                  )
+                }
+                left={<Feather name="x-circle" size={16} color="#fff" />}
               />
             </View>
           </HStack>
+
+          <Button
+            title="How to cancel"
+            variant="secondary"
+            onPress={() => r.push({ pathname: "/cancel-center", params: { domain, name: title } })}
+            left={<Feather name="help-circle" size={16} color={t.text} />}
+          />
+
+          <Button
+            title={tt("brand_screen.openWebsite")}
+            variant="secondary"
+            onPress={onManage}
+            left={<Feather name="external-link" size={16} color={t.text} />}
+          />
         </View>
       </ScrollView>
 

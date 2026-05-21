@@ -97,7 +97,7 @@ export default function RecurringDetail() {
 
   async function onSubmit(payload) {
     try {
-      // Single call — captures savedEntry if active is being set to false
+      // Single call - captures savedEntry if active is being set to false
       const result = isBill
         ? await updateBill?.(item.id, {
             active: payload.active,

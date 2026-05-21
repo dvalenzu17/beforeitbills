@@ -1,0 +1,27 @@
+# TEST: Deep link scheme — beforeitbills:// opens the app from cold start
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+
+# Stop app, then reopen via deep link
+- stopApp
+- openLink: "beforeitbills://"
+- waitForAnimationToEnd
+- takeScreenshot: "14_deep_link_opened"
+
+# App should open — could land on home or sign-in depending on session state
+- assertVisible:
+    text: "Home"
+    optional: true
+- assertVisible:
+    text: "Welcome back"
+    optional: true
+
+# No crash
+- assertNotVisible: "Error"
+- assertNotVisible: "Something went wrong"

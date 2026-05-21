@@ -1,0 +1,26 @@
+# TEST: Email / password sign in
+appId: com.beforeitbills.app
+---
+- runFlow: utils/ensure_signed_out.yaml
+- takeScreenshot: "01_auth_signin_start"
+
+- assertVisible: "Sign In"
+- assertVisible: "Sign Up"
+
+- tapOn:
+    id: "auth-email-input"
+- inputText: ${TEST_EMAIL}
+- tapOn:
+    id: "auth-password-input"
+- inputText: ${TEST_PASSWORD}
+- hideKeyboard
+- takeScreenshot: "01_auth_signin_filled"
+
+- tapOn:
+    id: "auth-submit-btn"
+- waitForAnimationToEnd
+
+- runFlow: utils/skip_onboarding.yaml
+
+- assertVisible: "Home"
+- takeScreenshot: "01_auth_signin_success"

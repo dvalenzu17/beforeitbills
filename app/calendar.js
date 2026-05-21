@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 import { SPACING } from "../lib/ui/tokens";
 import Screen from "../components/Screen";
@@ -121,7 +121,7 @@ export default function CalendarView() {
       }
     }
 
-    // trial events — use canonical trial_end field from store
+    // trial events - use canonical trial_end field from store
     for (const s of subs || []) {
       const trialEnd = s?.trial_end || null;
       const isTrial = !!(s?.is_trial || s?.isTrial);
@@ -202,7 +202,7 @@ export default function CalendarView() {
 
   function goEvent(e) {
     setModalOpen(false);
-    // Navigate to brand page — the correct route that exists in this codebase.
+    // Navigate to brand page - the correct route that exists in this codebase.
     // Pass domain if available, fall back to name. BrandPage filters recurring by both.
     r.push({
       pathname: "/brand",
@@ -230,7 +230,7 @@ export default function CalendarView() {
             marginRight: 12,
           }}
         >
-          <Ionicons name="chevron-back" size={20} color={t.text} />
+          <Feather name="arrow-left" size={20} color={t.text} />
         </PressableScale>
 
         <View style={{ flex: 1 }}>

@@ -111,7 +111,7 @@ export default function SpotlightTutorial({ steps, visible, onDone }) {
 
   if (!visible) return null;
 
-  // Tooltip positioning — prefer below target, flip above if too close to bottom
+  // Tooltip positioning - prefer below target, flip above if too close to bottom
   let tooltipTop = null;
   let tooltipBottom = null;
   let arrowUp = true;
@@ -141,7 +141,7 @@ export default function SpotlightTutorial({ steps, visible, onDone }) {
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Dark overlay with cutout — we fake the cutout by placing a clear rect */}
+      {/* Dark overlay with cutout - we fake the cutout by placing a clear rect */}
       <View
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
@@ -152,7 +152,7 @@ export default function SpotlightTutorial({ steps, visible, onDone }) {
             backgroundColor: "rgba(0,0,0,0.55)",
           }}
         />
-        {/* Cutout — white rect that makes the target element visible */}
+        {/* Cutout - white rect that makes the target element visible */}
         {layout ? (
           <View
             style={{
@@ -175,7 +175,7 @@ export default function SpotlightTutorial({ steps, visible, onDone }) {
         ) : null}
       </View>
 
-      {/* Spotlight highlight — elevated above the backdrop */}
+      {/* Spotlight highlight - elevated above the backdrop */}
       {layout ? (
         <View
           pointerEvents="none"

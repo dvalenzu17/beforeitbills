@@ -179,9 +179,10 @@ export default function Insights() {
   }, [user]);
 
   const recurring = useMemo(
-    () => recordingActive && recordingPersona
-      ? recordingPersona.recurring
-      : getRecurring?.() || [],
+    () => (recordingActive && recordingPersona
+      ? recordingPersona.recurring || []
+      : getRecurring?.() || []
+    ).filter((x) => x.active !== false),
     [recordingActive, recordingPersona, getRecurring, subs, bills]
   );
 
@@ -581,7 +582,7 @@ function ChartCarousel({ weeklyBuckets, recurring, monthlyBurn, tt }) {
                   <Text style={{ color: "#fff", fontWeight: "800", fontSize: 13 }}>{tt("insights.addManually")}</Text>
                 </PressableScale>
                 <PressableScale
-                  onPress={() => r.push("/(onboarding)/connect")}
+                  onPress={() => r.push("/account/connect-email")}
                   style={{ paddingVertical: 9, paddingHorizontal: 16, borderRadius: 999, backgroundColor: t.surface2, borderWidth: 1, borderColor: t.hairline }}
                 >
                   <Text style={{ color: t.text, fontWeight: "800", fontSize: 13 }}>{tt("insights.scanInbox")}</Text>
@@ -659,7 +660,7 @@ function SmoothLineChart({ values, tt }) {
   const [selected, setSelected] = useState(null);
 
   const W = 320; const H = 120; const pad = 16;
-  // Safe values — handle single point and all-zero
+  // Safe values - handle single point and all-zero
   const safe = (values || []).filter((_, i) => i % 2 === 0); // downsample to 14 pts for clarity
   const maxVal = Math.max(...safe.map(v => Number(v) || 0));
   const max = maxVal > 0 ? maxVal : 1;

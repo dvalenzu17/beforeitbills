@@ -20,3 +20,6 @@ eas-build/
 
 .env.local
 .env
+
+# Maestro test results
+.maestro/results/

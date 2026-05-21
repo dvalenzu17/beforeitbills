@@ -1,0 +1,72 @@
+# TEST: Account screen — profile visible, settings items navigate correctly,
+#       sign-out button present
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+
+- tapOn:
+    id: "tab-account"
+- waitForAnimationToEnd
+- takeScreenshot: "11_account_open"
+
+# Header
+- assertVisible: "Account"
+
+# Settings items visible
+- assertVisible: "Personal Information"
+- assertVisible: "Login & Security"
+- assertVisible: "Notifications"
+- assertVisible: "Connected Accounts"
+- assertVisible: "Settings"
+
+# Tap Personal Information
+- tapOn: "Personal Information"
+- waitForAnimationToEnd
+- takeScreenshot: "11_account_personal"
+- back
+- waitForAnimationToEnd
+
+# Tap Notifications
+- tapOn: "Notifications"
+- waitForAnimationToEnd
+- takeScreenshot: "11_account_notifications"
+- back
+- waitForAnimationToEnd
+
+# Tap Connected Accounts
+- tapOn: "Connected Accounts"
+- waitForAnimationToEnd
+- takeScreenshot: "11_account_connected"
+- back
+- waitForAnimationToEnd
+
+# Tap Settings (language, etc.)
+- tapOn:
+    text: "Settings"
+    index: 0
+- waitForAnimationToEnd
+- takeScreenshot: "11_account_settings"
+- back
+- waitForAnimationToEnd
+
+# Scroll to bottom — Sign out must be present
+- scrollUntilVisible:
+    element:
+      text: "Sign out"
+    direction: DOWN
+- assertVisible: "Sign out"
+- takeScreenshot: "11_account_signout_visible"
+
+# Tap sign out → cancel (don't actually sign out)
+- tapOn: "Sign out"
+- waitForAnimationToEnd
+- tapOn: "Cancel"
+- waitForAnimationToEnd
+
+# Still on account screen
+- assertVisible: "Account"

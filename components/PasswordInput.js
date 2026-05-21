@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 export default function PasswordInput({
   value,
@@ -25,9 +25,9 @@ export default function PasswordInput({
         onPress={() => setSecure(!secure)}
         style={styles.icon}
       >
-        <Ionicons
-          name={secure ? "eye-off-outline" : "eye-outline"}
-          size={22}
+        <Feather
+          name={secure ? "eye-off" : "eye"}
+          size={20}
           color="#666"
         />
       </TouchableOpacity>
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 10,
     paddingHorizontal: 15,
-    paddingRight: 45, // space for icon
+    paddingRight: 45,
   },
   icon: {
     position: "absolute",

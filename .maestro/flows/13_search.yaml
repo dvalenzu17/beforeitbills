@@ -1,0 +1,44 @@
+# TEST: Search — opens, accepts input, shows results or empty state, closes cleanly
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+
+# Open search via the button in the header
+- tapOn:
+    label: "Search"
+- waitForAnimationToEnd
+- takeScreenshot: "13_search_open"
+
+- assertVisible: "Search subscriptions & bills…"
+
+# Type a query
+- tapOn: "Search subscriptions & bills…"
+- inputText: "Netflix"
+- waitForAnimationToEnd
+- takeScreenshot: "13_search_results_netflix"
+
+# Either results or empty state — no crash
+- assertNotVisible: "Error"
+- assertNotVisible: "undefined"
+
+# Clear and try another query
+- eraseText: 100
+- inputText: "zzz_nonexistent_zzz"
+- waitForAnimationToEnd
+- takeScreenshot: "13_search_empty_state"
+
+# Empty state should be shown
+- assertVisible:
+    text: "No results"
+    optional: true
+
+# Close search
+- hideKeyboard
+- back
+- waitForAnimationToEnd
+- assertVisible: "Add recurring expense"

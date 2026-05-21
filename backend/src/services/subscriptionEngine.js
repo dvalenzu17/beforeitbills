@@ -7,6 +7,23 @@
 
 // ── Brand metadata ────────────────────────────────────────────────────────────
 
+// Brands where the sender domain is the authoritative identity source.
+// Used to give a scoring bonus and to prefer domain-derived names over display names.
+const SUBSCRIPTION_BRAND_KEYS = new Set([
+  'netflix', 'spotify', 'hulu', 'disney', 'hbo', 'max', 'peacock', 'paramount',
+  'apple', 'google', 'microsoft', 'adobe', 'dropbox', 'notion', 'slack',
+  'github', 'zoom', 'canva', 'figma', 'grammarly', 'audible', 'twitch',
+  'crunchyroll', 'duolingo', 'headspace', 'calm', 'peloton', 'medium',
+  'substack', 'patreon', 'openai', 'claude', 'cursor', 'vercel', 'netlify',
+  'datadog', 'sentry', 'intercom', 'zendesk', 'hubspot', 'salesforce',
+  'mailchimp', 'airtable', 'asana', 'monday', 'trello', 'jira', 'atlassian',
+  'linkedin', 'youtube', 'chatgpt', 'anthropic', 'loom', 'miro',
+  'webflow', 'framer', 'typeform', 'amplitude', 'mixpanel', 'segment',
+  'cloudflare', 'digitalocean', 'linode', 'heroku', 'fastly',
+  'icloud', 'appletv', 'applemusic', 'amazonprime', 'primevideo',
+  'hoyoverse', 'uberone', 'interactivebrokers', 'klaviyo',
+]);
+
 const BRAND_NAME_MAP = {
   netflix: 'Netflix', spotify: 'Spotify', amazon: 'Amazon', youtube: 'YouTube',
   google: 'Google', apple: 'Apple', disney: 'Disney+', hulu: 'Hulu',
@@ -56,13 +73,30 @@ export function applyBrandMap(brand) {
 }
 
 export function normalizeMerchant(from = '', senderDomain = '') {
+  // Domain is the most reliable signal — prefer it for known brands.
+  if (senderDomain) {
+    const domainBrand = brandFromDomain(senderDomain);
+    if (BRAND_NAME_MAP[domainBrand]) return BRAND_NAME_MAP[domainBrand];
+  }
+
   const withoutBrackets = String(from).replace(/<.*?>/g, '').replace(/"/g, '').trim();
   const looksLikeEmail = !withoutBrackets || withoutBrackets.includes('@');
   if (looksLikeEmail) {
     const brand = brandFromDomain(senderDomain || extractSenderDomain(from));
     return brand ? applyBrandMap(brand) : 'Subscription';
   }
+
+  // Display name — strip trailing TLDs and map through brand table.
   const clean = withoutBrackets.replace(/\.(com|net|io|org|co|app)$/i, '').trim();
+  // Reject generic display names that don't reflect the actual merchant
+  const genericNames = new Set(['billing', 'noreply', 'no-reply', 'support', 'info', 'hello', 'team', 'payments', 'invoices', 'accounts', 'notifications', 'mailer', 'mail', 'service']);
+  const firstWord = clean.split(/\s+/)[0].toLowerCase();
+  if (genericNames.has(firstWord)) {
+    // Fall back to domain
+    const brand = brandFromDomain(senderDomain || extractSenderDomain(from));
+    return brand ? applyBrandMap(brand) : clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
   const brand = brandFromDomain(clean.toLowerCase().replace(/\s/g, ''));
   if (BRAND_NAME_MAP[brand]) return BRAND_NAME_MAP[brand];
   return clean.charAt(0).toUpperCase() + clean.slice(1);
@@ -80,15 +114,29 @@ export function parseEmailDate(dateStr = '') {
 
 export function parseAmount(text = '') {
   const s = String(text);
+
+  // European decimal format: €9,99 or EUR 9,99 — comma is decimal separator (≤2 trailing digits)
+  const euroDecimal = s.match(/(?:€|EUR)\s?([0-9]{1,4}),([0-9]{1,2})(?!\d)/i);
+  if (euroDecimal) {
+    const num = Number(`${euroDecimal[1]}.${euroDecimal[2]}`);
+    if (Number.isFinite(num) && num > 0 && num < 10_000) return num;
+  }
+
+  // Standard formats: $9.99, $1,299.00, 9.99 USD, etc.
   const patterns = [
-    /(USD|US\$|\$|GBP|£|EUR|€)\s?([0-9]+(?:\.[0-9]{1,2})?)/i,
-    /([0-9]+(?:\.[0-9]{1,2})?)\s?(USD|GBP|EUR)/i,
+    /(USD|US\$|\$|GBP|£|EUR|€)\s?([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)/i,
+    /([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)\s?(USD|GBP|EUR|CAD|AUD)/i,
   ];
   for (const re of patterns) {
     const m = s.match(re);
     if (m) {
-      const num = Number(m[1]) || Number(m[2]);
-      if (Number.isFinite(num) && num > 0) return num;
+      const raw1 = m[1];
+      const raw2 = m[2];
+      // Strip commas (thousands separators) before converting
+      const n1 = Number(raw1.replace(/,/g, ''));
+      const n2 = Number((raw2 ?? '').replace(/,/g, ''));
+      const num = (Number.isFinite(n1) && n1 > 0) ? n1 : (Number.isFinite(n2) && n2 > 0 ? n2 : null);
+      if (num !== null && num < 10_000) return num;
     }
   }
   return null;
@@ -159,6 +207,14 @@ export function scoreCandidate({ subject = '', from = '', snippet = '', senderDo
     ['gift card',             -0.50], ['gift receipt',          -0.50],
     ['donation',              -0.40], ['survey',                -0.60],
     ['unsubscribe',           -0.30],
+    // Marketing / content newsletters — not billing
+    ['playlist',              -0.60], ['discover weekly',       -0.70],
+    ['new episode',           -0.60], ['new release',           -0.55],
+    ['now available',         -0.50], ['just dropped',          -0.50],
+    ['recommended for you',   -0.50], ['check out',             -0.35],
+    ['we thought you',        -0.50], ['this week',             -0.30],
+    ['newsletter',            -0.50], ['weekly digest',         -0.60],
+    ['top picks',             -0.50], ['your daily',            -0.50],
   ];
   for (const [k, w] of oneTimePenalties) {
     if (allLow.includes(k)) score += w;
@@ -169,7 +225,12 @@ export function scoreCandidate({ subject = '', from = '', snippet = '', senderDo
     'doordash', 'ubereats', 'grubhub', 'instacart', 'shipt',
     'lyft', 'uber', 'airbnb', 'booking', 'expedia', 'hotels', 'eventbrite',
   ]);
-  if (oneTimeSenders.has(brandFromDomain(senderDomain))) score -= 0.35;
+  const domainBrand = brandFromDomain(senderDomain);
+  if (oneTimeSenders.has(domainBrand)) score -= 0.35;
+
+  // Known subscription brand — give a meaningful bonus so receipt-style emails
+  // from Spotify, Netflix, etc. clear the 0.55 threshold even without explicit keywords.
+  if (SUBSCRIPTION_BRAND_KEYS.has(domainBrand)) score += 0.30;
 
   return Math.max(0, Math.min(1, score));
 }
@@ -335,15 +396,32 @@ export async function detectRecurringSubscriptions(emails, source = 'gmail_scan'
     const subConfidence  = scoreCandidate({ subject, from, snippet, senderDomain });
     const billResult     = scoreBillCandidate({ subject, from, snippet, senderDomain, hasPdf, pdfFilename });
 
-    // ML model augmentation — only runs for the ambiguous middle band (0.30–0.70)
-    // to avoid adding overhead for clear winners/losers
-    let finalSubConfidence = subConfidence;
-    if (subConfidence >= 0.30 && subConfidence < 0.70) {
+    // Recency decay — emails in the last 30 days get a small boost; very old ones
+    // get a slight penalty (stale subscriptions are less actionable).
+    const emailDateObj = date instanceof Date ? date : parseEmailDate(date);
+    let recencyDelta = 0;
+    if (emailDateObj) {
+      const daysAgo = (Date.now() - emailDateObj.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysAgo < 14)       recencyDelta =  0.08;
+      else if (daysAgo < 30)  recencyDelta =  0.05;
+      else if (daysAgo < 60)  recencyDelta =  0.02;
+      else if (daysAgo > 270) recencyDelta = -0.05;
+    }
+
+    // ML model augmentation — runs for anything with baseline score ≥ 0.20
+    // (lowered from 0.30 so borderline known-brand emails get the ML boost)
+    let finalSubConfidence = Math.min(1, subConfidence + recencyDelta);
+    if (subConfidence >= 0.20 && subConfidence < 0.70) {
       const { predictSubscription } = await import('./subscriptionModel.js');
       const mlResult = predictSubscription({ subject, from, snippet, senderDomain });
       if (mlResult) {
-        // Blend: take the higher of heuristic and ML (conservative — don't miss real subs)
-        finalSubConfidence = Math.max(subConfidence, mlResult.confidence);
+        // If the heuristic applied strong penalties (score < 0.10), treat it as a veto —
+        // the ML pattern-matches on brand/cadence keywords without seeing penalty signals
+        // like "playlist", "shipped", "password", so a near-zero heuristic wins.
+        const blended = subConfidence < 0.10
+          ? Math.min(mlResult.confidence, 0.48)   // cap below threshold — ML can't override a veto
+          : Math.max(subConfidence, mlResult.confidence);
+        finalSubConfidence = Math.min(1, blended + recencyDelta);
       }
     }
 
@@ -355,7 +433,7 @@ export async function detectRecurringSubscriptions(emails, source = 'gmail_scan'
     const merchant  = normalizeMerchant(from, senderDomain);
     const amount    = parseAmount(allText);
     const currency  = parseCurrency(allText);
-    const emailDate = date instanceof Date ? date : parseEmailDate(date);
+    const emailDate = emailDateObj; // already parsed above for recency decay
 
     const low = allText.toLowerCase();
     let cadence = null;

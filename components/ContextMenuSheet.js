@@ -10,13 +10,13 @@ import { formatMoney } from "../lib/utils";
  * Cross-platform action sheet triggered by long press.
  *
  * Props:
- *   visible    — boolean
- *   item       — { name, amount, currency, cadence, kind, id }
- *   onClose    — fn
- *   onEdit     — fn
- *   onArchive  — fn
- *   onCancel   — fn | null (pass null to hide "Cancel subscription" action; bills don't have this)
- *   onDelete   — fn | null
+ *   visible    - boolean
+ *   item       - { name, amount, currency, cadence, kind, id }
+ *   onClose    - fn
+ *   onEdit     - fn
+ *   onArchive  - fn
+ *   onCancel   - fn | null (pass null to hide "Cancel subscription" action; bills don't have this)
+ *   onDelete   - fn | null
  */
 export default function ContextMenuSheet({ visible, item, onClose, onEdit, onArchive, onCancel, onDelete }) {
   const t = useTheme();
@@ -60,7 +60,7 @@ export default function ContextMenuSheet({ visible, item, onClose, onEdit, onArc
       color: "#F59E0B",
       onPress: wrap(onArchive),
     },
-    // Cancel subscription — subs only
+    // Cancel subscription - subs only
     !isBill && onCancel ? {
       icon: "x-circle",
       label: tt("recurring_screen.contextCancel"),
@@ -96,7 +96,7 @@ export default function ContextMenuSheet({ visible, item, onClose, onEdit, onArc
         accessibilityRole="button"
         accessibilityLabel={tt("common.cancel")}
       >
-        {/* Sheet — inner Pressable prevents backdrop tap from propagating through */}
+        {/* Sheet - inner Pressable prevents backdrop tap from propagating through */}
         <Pressable onPress={() => {}}>
           <View style={{
             backgroundColor: t.surface,

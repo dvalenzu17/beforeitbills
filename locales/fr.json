@@ -35,7 +35,8 @@
     "resetFailed": "Échec de l’envoi",
     "resetFailedBody": "Réessayez.",
     "enterEmailFirst": "Entrez d’abord votre e-mail",
-    "appleSignInFailedBody": "La connexion avec Apple a échoué. Réessayez ou utilisez votre e-mail."
+    "appleSignInFailedBody": "La connexion avec Apple a échoué. Réessayez ou utilisez votre e-mail.",
+    "googleSignInFailedBody": "Échec de la connexion Google. Réessayez ou utilisez votre e-mail."
   },
   "features": {
     "title": "Hub Fonctionnalités",
@@ -77,8 +78,13 @@
     "body": "You saved / you’ll pay / what changed + shareable highlights."
   },
   "search": {
-    "title": "Smart search + filters",
-    "body": "Filter by category, cost, renewal date, trial, provider, confidence."
+    "placeholder": "Rechercher abonnements et dépenses…",
+    "startTyping": "Tapez pour rechercher dans tous les éléments",
+    "noResults": "Aucun résultat pour « {{q}} »",
+    "result": "résultat",
+    "results": "résultats",
+    "kindSubscription": "Abonnement",
+    "kindBill": "Dépense"
   },
   "manual": {
     "title": "Manual add + upload receipt/PDF",
@@ -113,7 +119,30 @@
     "subSubtitle": "{{cadence}} · {{date}}",
     "fromManualEntries": "depuis les entrées manuelles",
     "urgentCount": "{{n}} urgent",
-    "newFromInbox": "{{n}} nouveau de la boîte"
+    "newFromInbox": "{{n}} nouveau de la boîte",
+    "savedAmount": "Vous avez économisé {{amount}}/mois",
+    "cancelledCount": "De {{count}} abonnement annulé",
+    "cancelledCountPlural": "De {{count}} abonnements annulés",
+    "connectEmail": "Connectez votre e-mail",
+    "checkEmails": "Vérifier vos e-mails"
+  },
+  "streak": {
+    "day": "jour",
+    "days": "jours",
+    "started": "Série lancée !",
+    "keepGoing": "Continuez !",
+    "onARoll": "Vous êtes en série !",
+    "onFire": "Vous êtes en feu !",
+    "legendStatus": "Statut légendaire 🏆",
+    "toNext": "encore {{n}} jour pour atteindre {{milestone}} 🎯",
+    "toNextPlural": "encore {{n}} jours pour atteindre {{milestone}} 🎯",
+    "best": "Meilleur : {{n}} jours"
+  },
+  "social": {
+    "title": "Activité de la communauté",
+    "trackingLabel": "suivent leurs\nabonnements",
+    "avgSavedLabel": "économies moy.\npar mois",
+    "cancelledLabel": "annulés\ncette semaine"
   },
   "conflict": {
     "title": "Conflit de synchronisation",
@@ -125,15 +154,6 @@
     "keepMine": "Garder la mienne",
     "useTheirs": "Utiliser la leur",
     "skipForNow": "Ignorer pour l'instant"
-  },
-  "search": {
-    "placeholder": "Rechercher abonnements et dépenses…",
-    "startTyping": "Tapez pour rechercher dans tous les éléments",
-    "noResults": "Aucun résultat pour « {{q}} »",
-    "result": "résultat",
-    "results": "résultats",
-    "kindSubscription": "Abonnement",
-    "kindBill": "Dépense"
   },
   "insights": {
     "subtitle": "Your recurring burn rate, in plain English.",
@@ -200,122 +220,154 @@
         "subtext": "Toutes les pages V1"
       },
       "upgrade": {
-        "label": "Upgrade",
-        "subtextPro": "You’re already Pro",
-        "subtextFree": "Unlock premium features"
+        "label": "Passer au Pro",
+        "subtextPro": "Vous êtes déjà Pro",
+        "subtextFree": "Débloquer les fonctionnalités premium"
       },
       "personal": {
-        "label": "Personal Information",
-        "subtext": "Name, email, username"
+        "label": "Informations personnelles",
+        "subtext": "Nom, e-mail, nom d’utilisateur"
       },
       "security": {
-        "label": "Login & Security",
-        "subtext": "Password, sessions, 2FA"
+        "label": "Connexion et sécurité",
+        "subtext": "Mot de passe, sessions, 2FA"
       },
       "notifications": {
         "label": "Notifications",
-        "subtext": "Renewals + reminders"
+        "subtext": "Renouvellements + rappels"
       },
       "connected": {
-        "label": "Connected Accounts",
-        "subtext": "Mail scan settings"
+        "label": "Comptes connectés",
+        "subtext": "Paramètres d’analyse mail"
       },
       "help": {
-        "label": "Help",
-        "subtext": "FAQs + contact"
+        "label": "Aide",
+        "subtext": "FAQ + contact"
       },
       "legals": {
-        "label": "Legals",
-        "subtext": "Privacy + terms"
+        "label": "Mentions légales",
+        "subtext": "Confidentialité + CGU"
       },
       "export": {
-        "label": "Export Data",
-        "subtext": "Download your data"
+        "label": "Exporter les données",
+        "subtext": "Télécharger vos données"
       },
       "about": {
-        "label": "About",
-        "subtext": "Version + credits"
+        "label": "À propos",
+        "subtext": "Version + crédits"
+      },
+      "lang": {
+        "title": "Langue"
+      },
+      "settings": {
+        "label": "Paramètres",
+        "subtext": "Langue, notifications, données"
       }
     }
   },
   "ob": {
-    "langTitle": "Choisissez votre langue",
-    "langBody": "Vous pourrez la changer à tout moment dans Compte.",
-    "promiseTitle": "Suivez chaque abonnement.",
-    "promiseBody": "Annulez l’inutile. Gardez le bon.",
-    "b1Title": "Connectez votre boîte mail → on trouve les reçus",
-    "b1Body": "On analyse confirmations et renouvellements pour détecter les abonnements.",
-    "b2Title": "Une preuve pour chaque élément",
-    "b2Body": "Touchez un abonnement pour voir l’email exact qui l’a créé.",
-    "b3Title": "Vous gardez le contrôle",
-    "b3Body": "Accès en lecture seule. Déconnexion à tout moment.",
+    "skip": "Passer",
+    "next": "Suivant",
     "getStarted": "Commencer",
-    "tryWithout": "Essayer sans connecter",
-  
-    "privacyTitle": "Confidentialité & confiance",
-    "privacyBody": "Simple : reçus uniquement, lecture seule, vos règles.",
-    "p1Title": "Analyse en lecture seule",
-    "p1Body": "Nous n’envoyons pas d’emails. Nous lisons uniquement pour trouver des reçus.",
-    "p2Title": "Reçus & confirmations",
-    "p2Body": "On cible les signaux de facturation/renouvellement, pas vos messages personnels.",
-    "p3Title": "Supprimer & déconnecter quand vous voulez",
-    "p3Body": "Vous pouvez déconnecter et supprimer vos données à tout moment.",
-  
-    "connectTitle": "Connectez votre messagerie",
-    "connectBody": "Optionnel — mais ça débloque la détection automatique.",
-    "connectHint": "Environ 1–3 min. Vous pouvez utiliser l’app pendant l’analyse.",
-    "connectGmail": "Connecter Gmail",
-    "connectOutlook": "Connecter Outlook",
-    "skipForNow": "Ignorer pour l’instant",
-  
-    "scanSetupTitle": "Réglages d’analyse",
-    "scanSetupBody": "Choisissez une période. Plus large = plus d’abonnements trouvés.",
-    "range90": "90 derniers jours",
-    "range90Sub": "Le plus rapide. Peut rater les anciens abonnements.",
-    "rangeYear": "Dernière année (recommandé)",
-    "rangeYearSub": "Le meilleur équilibre vitesse/couverture.",
-    "rangeAll": "Tout l’historique",
-    "rangeAllSub": "Le plus lent. Le plus complet.",
-    "includePromos": "Inclure promotions/marketing",
-    "includePromosSub": "Peut trouver plus, mais ajoute du bruit.",
-    "startScan": "Démarrer l’analyse",
-  
-    "scanningTitle": "Analyse en cours…",
-    "scanningSub": "Période : {{range}}",
-    "emailsScanned": "Emails analysés : {{n}}",
-    "receiptsFound": "Reçus trouvés : {{n}}",
-    "subsDetected": "Abonnements détectés : {{n}}",
-    "scanningHint": "Vous pouvez voir les résultats dès le premier trouvé.",
+    "pickOne": "Choisissez-en un pour continuer",
+    "hook": {
+      "stat": "12",
+      "statLabel": "abonnements",
+      "statSub": "La personne moyenne paye pour 12 abonnements.",
+      "halfForgotten": "La moitié sont oubliés."
+    },
+    "problem": {
+      "title": "Ça vous parle ?",
+      "subtitle": "Vous n'êtes pas désorganisé. Les abonnements sont conçus pour être difficiles à suivre.",
+      "p1": "Vous êtes débité sans même savoir pour quoi.",
+      "p2": "Les essais gratuits deviennent payants sans que vous vous en rendiez compte.",
+      "p3": "Netflix a augmenté ses prix. Vous l'avez découvert sur votre relevé.",
+      "p4": "Vous payez des doublons. Deux stockages cloud. Trois services de streaming."
+    },
+    "personalize": {
+      "title": "Qu'est-ce qui vous touche le plus ?",
+      "subtitle": "Nous nous concentrerons sur ce qui compte le plus pour vous.",
+      "opt1": "Je paye pour des choses que j'ai oubliées",
+      "opt2": "Les pièges d'essai continuent de me frapper",
+      "opt3": "Mes prix ne cessent d'augmenter",
+      "opt4": "Je veux juste tout voir en un seul endroit"
+    },
+    "solution": {
+      "title_forgot": "Ne perdez plus jamais le fil",
+      "body_forgot": "Nous scannons votre boîte de réception et affichons chaque frais avant qu'il arrive sur votre carte. Même ceux d'il y a 2 ans.",
+      "title_trials": "Battez les pièges d'essai",
+      "body_trials": "Nous signalons chaque essai sur le point de devenir payant, avec la date exacte d'annulation.",
+      "title_prices": "Détectez chaque augmentation",
+      "body_prices": "Dès qu'un e-mail de facturation affiche un montant plus élevé que la dernière fois, nous vous alertons.",
+      "title_clarity": "Votre centrale d'abonnements",
+      "body_clarity": "Tous vos frais récurrents, un seul écran. Montants, dates, quoi faire. Sans chercher.",
+      "note": "Conçu pour ça. Opérationnel en 60 secondes."
+    },
+    "outcomes": {
+      "title": "Pas des fonctions. Des résultats.",
+      "subtitle": "Voici ce qui change vraiment pour vous.",
+      "o1": "Connaissez vos dépenses mensuelles exactes avant qu'elles quittent votre compte",
+      "o2": "Annulez ce que vous avez oublié — en moins de 60 secondes",
+      "o3": "Ne manquez plus jamais un essai expirant ou une hausse de prix silencieuse",
+      "o4": "Arrêtez de payer pour des services que vous n'utilisez plus"
+    },
+    "magic": {
+      "title": "Voici à quoi ça ressemble",
+      "liveDemo": "Aperçu en direct",
+      "priceBadge": "↑ Augmentation de prix",
+      "trialBadge": "⚠ Essai bientôt terminé",
+      "forgotBadge": "Oublié depuis 18 mois"
+    },
+    "success": {
+      "title": "Vous êtes Pro ! 🎉",
+      "pill": "Essai gratuit de 7 jours démarré",
+      "unlockedLabel": "MAINTENANT DÉBLOQUÉ",
+      "cta": "Commencer"
+    },
+    "quickwin": {
+      "title": "Ajoutez-en un que vous reconnaissez",
+      "subtitle": "Appuyez sur l'un que vous payez. 5 secondes.",
+      "addedTitle": "Le voilà.",
+      "addedBody": "C'est votre première victoire. Imaginez des dizaines d'autres."
+    },
+    "cta": {
+      "title": "Commencez à tout voir",
+      "subtitle": "Vous avez trouvé votre premier abonnement en quelques secondes. Attendez de voir quand nous scannons toute votre boîte.",
+      "trial": "Essai gratuit de 7 jours",
+      "trialSub": "Puis 4,99 €/mois. Annulez à tout moment.",
+      "noThanks": "Continuer avec les fonctions de base",
+      "notNow": "Pas maintenant",
+      "loading": "Traitement…",
+      "trialPill": "· 7 jours gratuits",
+      "unlockedLabel": "CE QUE VOUS DÉBLOQUEZ",
+      "bullet5": "Profondeur de scan illimitée",
+      "bullet1": "Détection automatique depuis Gmail",
+      "bullet2": "Alertes d'augmentation de prix",
+      "bullet3": "Radar d'essais",
+      "bullet4": "Récapitulatif mensuel"
+    },
+    "gmail": {
+      "title": "Maintenant trouvons le reste",
+      "subtitle": "Connectez Gmail pour détecter automatiquement les abonnements depuis votre boîte mail.",
+      "connected": "Gmail connecté",
+      "continue": "Continuer",
+      "connect": "Connecter Gmail",
+      "connecting": "Connexion...",
+      "skip": "Ignorer pour l'instant"
+    },
+    "scanningTitle": "Analyse de votre boîte mail",
+    "scanningSub": "Recherche sur les derniers {{range}}",
+    "range90": "90 jours",
+    "rangeAll": "toute la période",
+    "rangeYear": "1 an",
+    "emailsScanned": "{{n}} e-mails analysés",
+    "receiptsFound": "{{n}} reçus trouvés",
+    "subsDetected": "{{n}} abonnements détectés",
+    "scanningHint": "Cela peut prendre une minute. Les résultats apparaissent au fur et à mesure.",
+    "scanError": "Une erreur s'est produite. Vos résultats peuvent être partiels.",
     "viewResults": "Voir les résultats",
-    "keepScanning": "Continuer l’analyse",
-    "stop": "Arrêter",
-  
-    "resultsTitle": "Premiers résultats",
-    "resultsBody": "Vérifiez ce qu’on a trouvé, puis confirmez pour améliorer la précision.",
-    "resultsMeta": "Renouvelle le {{renewal}} · Confiance : {{conf}}",
-    "confirmItems": "Confirmer",
-  
-    "confirmTitle": "Confirmer les abonnements",
-    "confirmSub": "{{n}} sur {{total}}",
-    "tapToProof": "Preuve (extrait d’email) :",
-    "yesSub": "Oui, abonnement",
-    "notSub": "Pas un abonnement",
-  
-    "goalsTitle": "Que voulez-vous faire ?",
-    "goalsBody": "Cela personnalise votre tableau de bord.",
-    "goalCut": "Réduire la dépense mensuelle",
-    "goalCutSub": "Trouver les abonnements inutiles et les doublons.",
-    "goalTrials": "Suivre les essais",
-    "goalTrialsSub": "Rappels avant les prélèvements.",
-    "goalHikes": "Éviter les hausses de prix",
-    "goalHikesSub": "Détecter les augmentations et proposer une action.",
-  
-    "notifTitle": "Activer les alertes",
-    "notifBody": "Rappels d’essais + renouvellements (sans spam).",
-    "notifB1": "Essais qui se terminent",
-    "notifB2": "Renouvellements et changements de prix",
-    "enableAlerts": "Activer les alertes",
-    "notNow": "Pas maintenant"
+    "keepScanning": "Continuer l'analyse",
+    "stop": "Arrêter"
   },
   "scanActivity": {
     "title": "Activité des analyses",
@@ -339,6 +391,10 @@
     "lastScan": "Dernière analyse",
     "notYet": "Pas encore analysé",
     "scanFailed": "Échec de l'analyse. Appuyez sur 'Analyser la boîte' pour réessayer.",
+    "gmailAuthExpiredTitle": "Gmail déconnecté",
+    "gmailAuthExpiredBody": "Votre connexion Gmail a expiré. Reconnectez pour reprendre.",
+    "gmailReconnect": "Reconnecter Gmail",
+    "scanRateLimited": "Trop d'analyses. Veuillez attendre 15 minutes avant de réessayer.",
     "disconnect": "Déconnecter",
     "disconnectConfirmTitle": "Déconnecter {{provider}} ?",
     "disconnectConfirmBody": "La détection automatique s'arrêtera. Vos éléments enregistrés restent.",

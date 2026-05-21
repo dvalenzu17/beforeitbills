@@ -1,0 +1,20 @@
+# Reusable: sign in with test credentials — only acts if on the sign-in screen.
+# Safe to call when the user is already logged in (keychain session persists
+# across clearState:true because clearState only clears UserDefaults/AsyncStorage).
+appId: com.beforeitbills.app
+---
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Welcome back"
+    commands:
+      - tapOn:
+          id: "auth-email-input"
+      - inputText: ${TEST_EMAIL}
+      - tapOn:
+          id: "auth-password-input"
+      - inputText: ${TEST_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          id: "auth-submit-btn"
+      - waitForAnimationToEnd

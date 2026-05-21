@@ -2,9 +2,9 @@
 
 ## What this is
 
-BeforeItBills is a consumer mobile app (iOS + Android) that detects recurring subscription charges in users' email inboxes and presents them in a clean personal finance dashboard. Users connect Gmail via OAuth or Yahoo/Outlook/iCloud via IMAP — the backend scans for billing emails and surfaces what's charging them before the next bill hits.
+BeforeItBills is a consumer mobile app (iOS + Android) that detects recurring subscription charges in users' email inboxes and presents them in a clean personal finance dashboard. Users connect Gmail/Yahoo/Outlook/iCloud via IMAP — the backend scans for billing emails and surfaces what's charging them before the next bill hits.
 
-The repo contains two packages: the React Native frontend (`/`) and a Fastify backend (`/backend`).
+The repo contains the React Native frontend (`/`). The backend that powers it lives at **`C:\dev\email-import-api`** (deployed to Render at `https://email-import-api.onrender.com`). The `/backend` folder in this repo is a legacy copy — do not edit it; always edit `C:\dev\email-import-api` instead.
 
 ---
 

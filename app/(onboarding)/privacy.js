@@ -44,7 +44,7 @@ export default function Privacy() {
         <View style={{ marginTop: "auto" }}>
           <Button
             title={tt("Continue") || "Continue"}
-            onPress={() => r.replace("/(onboarding)/connect")}
+            onPress={() => r.replace("/account/connect-email")}
             left={<Feather name="arrow-right" size={16} color="#fff" />}
           />
         </View>

@@ -6,7 +6,7 @@ import { verifyImapCredentials, scanImapInbox } from '../services/imapClient.js'
 import { detectRecurringSubscriptions } from '../services/subscriptionEngine.js';
 import { batchUpsertSubscriptions, markStaleSubscriptions, saveScanMetadata, saveImapCredentials, getImapCredentials } from '../db/index.js';
 
-const PROVIDERS = ['yahoo', 'outlook', 'icloud'];
+const PROVIDERS = ['gmail', 'yahoo', 'outlook', 'icloud'];
 
 const verifyBodySchema = z.object({
   provider: z.enum(PROVIDERS),

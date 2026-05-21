@@ -37,10 +37,12 @@ export default function CandidateCard({ c, onConfirm, onReject, onEdit }) {
 
   const merchant = normalizeMerchant(c?.merchant);
   const domain = c?.domain || "";
+  const iconUrl = c?.iconUrl || null;
   const amount = Number(c?.amount || 0).toFixed(2);
   const cadence = c?.cadenceGuess || "monthly";
   const nextCharge = formatRelative(c?.nextDateGuess);
   const suspicious = Number(amount) >= 40;
+  const mayBeCancelled = c?.mayBeCancelled === true;
   const evidenceSubject = c?.rawSubject || null;
 
   const slide = useRef(new Animated.Value(0)).current;
@@ -120,7 +122,7 @@ export default function CandidateCard({ c, onConfirm, onReject, onEdit }) {
 
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
 
-              <BrandAvatar domain={domain} name={merchant} size={42} />
+              <BrandAvatar domain={domain} name={merchant} size={42} logoUrl={iconUrl} />
 
               <View style={{ flex: 1 }}>
 
@@ -144,9 +146,15 @@ export default function CandidateCard({ c, onConfirm, onReject, onEdit }) {
                   ${amount} · {cadence}
                 </Text>
 
+                {mayBeCancelled && (
+                  <Text style={{ fontSize: 12, color: "#9CA3AF", marginTop: 2 }}>
+                    ℹ This subscription may have been cancelled
+                  </Text>
+                )}
+
                 {suspicious && (
                   <Text style={{ fontSize: 12, color: "#E67E22", marginTop: 2 }}>
-                    ⚠ Unusual amount — verify before confirming
+                    ⚠ Unusual amount - verify before confirming
                   </Text>
                 )}
 

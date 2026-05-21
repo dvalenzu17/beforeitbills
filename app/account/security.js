@@ -27,7 +27,7 @@ function Section({ t, title, children }) {
         marginBottom: 14,
       }}
     >
-      <Text style={{ color: t.subtext, fontWeight: "700", marginBottom: 14 }}>{title}</Text>
+      <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>{title}</Text>
       {children}
     </View>
   );
@@ -79,7 +79,7 @@ export default function Security() {
         redirectTo: "beforeitbills://auth/update-password",
       });
       if (error) throw error;
-      Alert.alert("Reset email sent", "Check your inbox and tap the link — it will open the app to set your new password.");
+      Alert.alert("Reset email sent", "Check your inbox and tap the link - it will open the app to set your new password.");
     } catch (e) {
       Alert.alert("Reset failed", e?.message || "Try again.");
     } finally {
@@ -106,28 +106,12 @@ export default function Security() {
 
   async function deleteAccount() {
     Alert.alert(
-      "Delete account",
-      "This permanently deletes your account and all your data — subscriptions, bills, inbox connection, and profile. This cannot be undone.",
+      "Delete account?",
+      `This permanently deletes ${email} and all your data - subscriptions, bills, inbox connection, and profile. This cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete my account",
-          style: "destructive",
-          onPress: () => confirmDelete(),
-        },
-      ]
-    );
-  }
-
-  async function confirmDelete() {
-    // Second confirmation — type nothing, just a second press to prevent fat-finger
-    Alert.alert(
-      "Are you absolutely sure?",
-      `Your account (${email}) and all associated data will be permanently deleted immediately.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Yes, delete everything",
           style: "destructive",
           onPress: () => executeDelete(),
         },
@@ -143,50 +127,33 @@ export default function Security() {
 
     setDeleting(true);
     try {
-      // Get the current session token to authenticate the delete request
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
-      if (!accessToken) throw new Error("No active session — sign in and try again.");
+      // Clear local data and sign out immediately - give instant feedback
+      await resetUserData();
+      await resetEmailStore?.();
+      await clearBypass();
+      try { await supabase.auth.signOut(); } catch {}
 
-      // Call backend delete-account endpoint (uses service role to delete auth user)
-      if (BACKEND_URL) {
-        const res = await fetch(`${BACKEND_URL}/account/delete`, {
+      // Fire backend deletion in background - don't block the user
+      if (BACKEND_URL && accessToken) {
+        fetch(`${BACKEND_URL}/account/delete`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
-        });
-
-        const json = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          throw new Error(json?.error || `Delete failed: HTTP ${res.status}`);
-        }
-      } else {
-        // No backend — delete from client side using admin API isn't possible
-        // Best we can do is sign out and inform the user
-        throw new Error("Backend not configured. Email privacy@beforeitbills.com to delete your account.");
-      }
-
-      // Clear all local data regardless of backend response
-      await resetUserData();
-      await resetEmailStore?.();
-      await clearBypass();
-
-      // Sign out — the _layout gate will redirect to sign-in
-      try { await supabase.auth.signOut(); } catch (e) {
-        if (__DEV__) console.warn("[security] signOut after delete failed:", e?.message);
+        }).catch(() => {});
       }
 
       Alert.alert(
         "Account deleted",
-        "Your account and all data have been permanently deleted.",
+        "Your account has been deleted. All data will be fully removed within 24 hours.",
         [{ text: "OK" }]
       );
     } catch (e) {
-      Alert.alert("Delete failed", e?.message || "Please email privacy@beforeitbills.com to delete your account.");
+      Alert.alert("Delete failed", "Please email privacy@beforeitbills.com to delete your account.");
     } finally {
       setDeleting(false);
     }

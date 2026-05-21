@@ -3,10 +3,12 @@ import React, { useMemo, useState } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 
 import { useTheme } from "../lib/theme";
 import { useStore } from "../lib/store";
+import { usePurchasesStore } from "../lib/purchasesStore";
 import { formatMoney } from "../lib/utils";
 
 import BrandAvatar from "../components/BrandAvatar";
@@ -24,7 +26,7 @@ function pickName(x) {
   return x?.brand || x?.merchant || x?.name || x?.title || x?.fromName || "Unknown";
 }
 function safeDate(d) {
-  if (!d) return "—";
+  if (!d) return "-";
   try {
     const dt = typeof d === "string" ? new Date(d) : d;
     return dt.toISOString().slice(0, 10);
@@ -112,6 +114,8 @@ export default function PriceAlerts() {
   const t = useTheme();
   const r = useRouter();
 
+  const isPro = usePurchasesStore((s) => s.isPro);
+
   const getRecurring = useStore((s) => s.getRecurring);
   const subs = useStore((s) => s.subs);
   const bills = useStore((s) => s.bills);
@@ -124,6 +128,77 @@ export default function PriceAlerts() {
 
   const [proofOpen, setProofOpen] = useState(false);
   const [proofItem, setProofItem] = useState(null);
+
+  // ── Pro gate ──────────────────────────────────────────────────────────────
+  if (!isPro) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
+        <View style={{ padding: 16, paddingBottom: 10 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Pressable
+              onPress={() => r.back()}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: t.hairline,
+                backgroundColor: t.surface,
+              }}
+            >
+              <Feather name="arrow-left" size={16} color={t.text} />
+            </Pressable>
+            <Text style={{ color: t.text, fontSize: 22, fontWeight: "900" }}>Price alerts</Text>
+          </View>
+        </View>
+
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 32 }}>
+          <View
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: 22,
+              backgroundColor: "rgba(245,158,11,0.12)",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 20,
+              borderWidth: 1,
+              borderColor: "rgba(245,158,11,0.2)",
+            }}
+          >
+            <Feather name="bell" size={32} color="#F59E0B" />
+          </View>
+
+          <Text style={{ fontSize: 22, fontWeight: "900", color: t.text, textAlign: "center", marginBottom: 10 }}>
+            Price-change alerts
+          </Text>
+          <Text style={{ fontSize: 15, color: t.subtext, textAlign: "center", lineHeight: 22, marginBottom: 32 }}>
+            Know the moment any subscription quietly increases its price - before it hits your card.
+          </Text>
+
+          <Pressable
+            onPress={() => r.push("/account/upgrade")}
+            style={{ borderRadius: 18, overflow: "hidden", width: "100%",
+              shadowColor: "#6366F1", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 4 }, elevation: 8,
+            }}
+          >
+            <LinearGradient
+              colors={["#6366F1", "#8B5CF6"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ paddingVertical: 17, alignItems: "center" }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Unlock with Pro</Text>
+            </LinearGradient>
+          </Pressable>
+
+          <Pressable onPress={() => r.back()} style={{ marginTop: 16, padding: 10 }}>
+            <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 14 }}>Not now</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const openProof = (a) => {
     const ev = a.evidence?.[0] || {
@@ -227,13 +302,13 @@ export default function PriceAlerts() {
                 <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: 12 }}>
                   <Text style={{ color: t.subtext, fontWeight: "900" }}>Before</Text>
                   <Text style={{ color: t.text, fontWeight: "900" }}>
-                    {a.oldAmount != null ? (formatMoney?.(a.oldAmount, a.currency) ?? `${a.oldAmount} ${a.currency}`) : "—"}
+                    {a.oldAmount != null ? (formatMoney?.(a.oldAmount, a.currency) ?? `${a.oldAmount} ${a.currency}`) : "-"}
                   </Text>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: 6 }}>
                   <Text style={{ color: t.subtext, fontWeight: "900" }}>After</Text>
                   <Text style={{ color: t.text, fontWeight: "900" }}>
-                    {a.newAmount != null ? (formatMoney?.(a.newAmount, a.currency) ?? `${a.newAmount} ${a.currency}`) : "—"}
+                    {a.newAmount != null ? (formatMoney?.(a.newAmount, a.currency) ?? `${a.newAmount} ${a.currency}`) : "-"}
                   </Text>
                 </View>
 

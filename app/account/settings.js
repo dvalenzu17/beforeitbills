@@ -145,7 +145,7 @@ export default function SettingsScreen() {
 
         {/* APPEARANCE */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionAppearance")}
           </Text>
           <Group t={t}>
@@ -173,7 +173,7 @@ export default function SettingsScreen() {
 
         {/* LANGUAGE */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionLanguage")}
           </Text>
           <Group t={t}>
@@ -189,12 +189,24 @@ export default function SettingsScreen() {
               onPress={() => setAppLanguage?.("es")}
               right={<Radio active={currentLang === "es"} t={t} />}
             />
+            <Row
+              t={t}
+              title="Português"
+              onPress={() => setAppLanguage?.("pt")}
+              right={<Radio active={currentLang === "pt"} t={t} />}
+            />
+            <Row
+              t={t}
+              title="Français"
+              onPress={() => setAppLanguage?.("fr")}
+              right={<Radio active={currentLang === "fr"} t={t} />}
+            />
           </Group>
         </View>
 
         {/* SECURITY */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionSecurity")}
           </Text>
           <Group t={t}>
@@ -210,7 +222,7 @@ export default function SettingsScreen() {
 
         {/* QUICK ACTIONS */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionShortcuts")}
           </Text>
           <Group t={t}>
@@ -236,7 +248,7 @@ export default function SettingsScreen() {
 
         {/* DATA */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionData")}
           </Text>
           <Group t={t}>
@@ -259,7 +271,7 @@ export default function SettingsScreen() {
 
         {/* SUPPORT */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionSupport")}
           </Text>
           <Group t={t}>
@@ -289,7 +301,7 @@ export default function SettingsScreen() {
 
         {/* ADVANCED */}
         <View>
-          <Text style={{ color: t.subtext, fontWeight: "800", marginBottom: 8, marginLeft: 4 }}>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
             {tt("settings.sectionAdvanced")}
           </Text>
           <Group t={t}>

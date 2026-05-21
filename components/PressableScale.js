@@ -11,6 +11,7 @@ export default function PressableScale({
   disabled = false,
   haptic = "selection", // "selection" | "impactLight" | "impactMedium" | "none"
   scaleTo = 0.98,
+  testID,
   accessible,
   accessibilityRole,
   accessibilityLabel,
@@ -19,6 +20,7 @@ export default function PressableScale({
 }) {
   return (
     <MotiPressable
+      testID={testID}
       disabled={disabled}
       accessible={accessible}
       accessibilityRole={accessibilityRole}
@@ -28,7 +30,7 @@ export default function PressableScale({
       onLongPress={onLongPress}
       onPress={() => {
         if (disabled) return;
-        // Fire haptic without awaiting — handler must not be blocked
+        // Fire haptic without awaiting - handler must not be blocked
         try {
           if (haptic === "selection") Haptics.selectionAsync();
           if (haptic === "impactLight")

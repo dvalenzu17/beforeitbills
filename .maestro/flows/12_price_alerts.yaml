@@ -1,0 +1,47 @@
+# TEST: Price alerts screen — shows pro gate for free user or alert list for pro,
+#       back navigation works
+appId: com.beforeitbills.app
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- runFlow: utils/signin.yaml
+- runFlow: utils/skip_onboarding.yaml
+- waitForAnimationToEnd
+
+# Navigate to price alerts (accessible from Account)
+- tapOn:
+    id: "tab-account"
+- waitForAnimationToEnd
+
+# Look for price alerts entry in account
+- scrollUntilVisible:
+    element:
+      text: "Price"
+    direction: DOWN
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Price"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: "12_price_alerts_open"
+
+# Free user should see the pro gate
+- assertVisible:
+    text: "Price-change alerts"
+    optional: true
+- assertVisible:
+    text: "Unlock with Pro"
+    optional: true
+
+# Pro gate "Not now" should dismiss
+- tapOn:
+    text: "Not now"
+    optional: true
+- waitForAnimationToEnd
+
+# Pro user: no crash on alert list
+- assertNotVisible: "Error"
+- assertNotVisible: "undefined"
+- takeScreenshot: "12_price_alerts_end"

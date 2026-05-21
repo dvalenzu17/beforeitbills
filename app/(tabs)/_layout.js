@@ -1,6 +1,6 @@
 // app/(tabs)/_layout.js
 import React, { useEffect } from "react";
-import { View } from "react-native";
+import { View, Pressable } from "react-native";
 import { MotiView } from "moti";
 import { Tabs, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../lib/theme";
 import { ensureNotificationReady } from "../../lib/notifications";
 import { useStore } from "../../lib/store";
+import { useFeedbackStore } from "../../lib/feedbackStore";
 
 // V4 principle: local-first, no auth gate.
 // Sign-in is optional and should never block core tracking.
@@ -19,6 +20,7 @@ export default function TabsLayout() {
   const { t: tt } = useTranslation();
   const r = useRouter();
   const insets = useSafeAreaInsets();
+  const showFeedback = useFeedbackStore((s) => s.show);
 
   const loadSubsLocal  = useStore((s) => s.loadSubsLocal);
   const loadBills      = useStore((s) => s.loadBills);
@@ -27,7 +29,7 @@ export default function TabsLayout() {
   const user           = useStore((s) => s.user);
 
   // Eagerly populate store from AsyncStorage before any tab mounts.
-  // Tabs will find data already there — no loading flash on first switch.
+  // Tabs will find data already there - no loading flash on first switch.
   useEffect(() => {
     loadSubsLocal?.();
     loadBills?.();
@@ -106,6 +108,7 @@ export default function TabsLayout() {
           name="index"
           options={{
             title: "Home",
+            tabBarTestID: "tab-home",
             tabBarIcon: ({ color, size, focused }) => (
               <MotiView
                 animate={{ scale: focused ? 1.18 : 1 }}
@@ -114,12 +117,23 @@ export default function TabsLayout() {
                 <Feather name="home" color={color} size={size} />
               </MotiView>
             ),
+            tabBarButton: (props) => (
+              <Pressable
+                {...props}
+                onLongPress={() => {
+                  props.onLongPress?.();
+                  showFeedback();
+                }}
+                delayLongPress={800}
+              />
+            ),
           }}
         />
         <Tabs.Screen
           name="insights"
           options={{
             title: "Insights",
+            tabBarTestID: "tab-insights",
             tabBarIcon: ({ color, size, focused }) => (
               <MotiView
                 animate={{ scale: focused ? 1.18 : 1 }}
@@ -138,6 +152,7 @@ export default function TabsLayout() {
           name="account"
           options={{
             title: "Account",
+            tabBarTestID: "tab-account",
             tabBarIcon: ({ color, size, focused }) => (
               <MotiView
                 animate={{ scale: focused ? 1.18 : 1 }}

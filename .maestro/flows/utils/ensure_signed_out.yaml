@@ -1,0 +1,24 @@
+# Reusable: guarantees the app is on the sign-in screen.
+# If already logged in (keychain session), navigates to Account → signs out.
+appId: com.beforeitbills.app
+---
+- launchApp
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Add recurring expense"
+    commands:
+      - tapOn:
+          id: "tab-account"
+      - waitForAnimationToEnd
+      - scrollUntilVisible:
+          element:
+            text: "Sign out"
+          direction: DOWN
+      - tapOn: "Sign out"
+      - waitForAnimationToEnd
+      - tapOn: "Sign out"
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 10000

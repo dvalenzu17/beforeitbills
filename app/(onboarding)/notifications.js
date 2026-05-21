@@ -23,7 +23,7 @@ export default function Notifications() {
     try {
       await ensureNotificationReady();
     } catch {
-      // permission denied or unsupported — not fatal
+      // permission denied or unsupported - not fatal
     } finally {
       setLoading(false);
       await complete();

@@ -77,6 +77,8 @@ export default function Optimize() {
   const activeSubs = useMemo(() => {
     return subs
       .filter((s) => !!s?.merchant)
+      .filter((s) => s?.active !== false)
+      .filter((s) => !!s?.nextRenewal)
       .filter((s) => !String(s?.status || "").toLowerCase().includes("cancel"))
       .map((s) => ({
         ...s,
@@ -324,7 +326,7 @@ export default function Optimize() {
             </View>
           ) : (
             <Text style={{ color: t.subtext, marginTop: 10 }}>
-              Do your monthly recap and I’ll give you laser-targeted actions.
+              Complete a monthly recap in Insights to get personalized recommendations here.
             </Text>
           )}
         </Card>
@@ -332,7 +334,10 @@ export default function Optimize() {
         {/* ANNUAL SWITCH */}
         <Card>
           <Text style={{ color: t.subtext, fontWeight: "800" }}>
-            Annual switch (est.)
+            Annual switch
+          </Text>
+          <Text style={{ color: t.tertiary, fontSize: 12, marginTop: 4 }}>
+            Most services charge ~15–20% less when billed yearly. Check each service's pricing page to confirm.
           </Text>
 
           {annualSwitch.length ? (
@@ -362,17 +367,16 @@ export default function Optimize() {
                         <Text style={{ color: t.text, fontWeight: "700" }}>
                           {s.merchantLabel}
                         </Text>
-
                         <Text style={{ color: t.subtext }}>
-                          Save about {formatMoney(x.estSave, "USD")}/year
+                          {formatMoney(s.monthly * 12, s.currency || "USD")}/yr now · could be less annually
                         </Text>
                       </View>
                     </Pressable>
 
                     <Button
-                      title="View details"
+                      title="Check annual pricing"
                       onPress={() => openBrand(s)}
-                      left={<Feather name="eye" size={16} color="#fff" />}
+                      left={<Feather name="external-link" size={16} color="#fff" />}
                     />
                   </View>
                 );
@@ -380,7 +384,7 @@ export default function Optimize() {
             </View>
           ) : (
             <Text style={{ color: t.subtext, marginTop: 10 }}>
-              Nothing worth switching annually yet.
+              No monthly subscriptions to switch yet.
             </Text>
           )}
         </Card>
