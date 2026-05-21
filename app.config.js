@@ -8,12 +8,6 @@ module.exports = {
     orientation: "portrait",
     icon: "./assets/BeforeItBillsLogo.png",
 
-    splash: {
-      image: "./assets/splash.png",
-      resizeMode: "contain",
-      backgroundColor: "#0D1B3E",
-    },
-
     assetBundlePatterns: ["**/*"],
 
     ios: {

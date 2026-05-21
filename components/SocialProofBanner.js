@@ -1,5 +1,5 @@
 // components/SocialProofBanner.js
-// Shows aggregate community activity. Static baseline numbers —
+// Shows aggregate community activity. Static baseline numbers -
 // replace STATS values with real API data when backend supports it.
 import React from 'react';
 import { View, Text } from 'react-native';

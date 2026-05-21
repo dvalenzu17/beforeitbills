@@ -18,13 +18,13 @@ import { useTheme } from "../lib/theme";
  *   size        – diameter in px (default 44)
  *   billIconKey – if set, renders a bill icon instead of brand resolution
  */
-export default function BrandAvatar({ domain, name, size = 44, billIconKey }) {
+export default function BrandAvatar({ domain, name, size = 44, billIconKey, logoUrl: propLogoUrl }) {
   const t = useTheme();
   const [meta, setMeta] = useState(null);
 
   useEffect(() => {
-    // Don't hit the brand resolver for bills — they use vector icons
-    if (billIconKey) return;
+    // Don't hit the brand resolver for bills or when a direct logo URL is provided.
+    if (billIconKey || propLogoUrl) return;
 
     let alive = true;
     (async () => {
@@ -32,7 +32,7 @@ export default function BrandAvatar({ domain, name, size = 44, billIconKey }) {
       if (alive) setMeta(m);
     })();
     return () => { alive = false; };
-  }, [domain, name, billIconKey]);
+  }, [domain, name, billIconKey, propLogoUrl]);
 
   const containerStyle = {
     width: size,
@@ -72,7 +72,7 @@ export default function BrandAvatar({ domain, name, size = 44, billIconKey }) {
       .map((p) => p[0]?.toUpperCase())
       .join("") || "?";
 
-  const uri = meta?.logoUrl || meta?.faviconUrl;
+  const uri = propLogoUrl || meta?.logoUrl || meta?.faviconUrl;
   const ring = meta?.color || t.hairline;
 
   return (

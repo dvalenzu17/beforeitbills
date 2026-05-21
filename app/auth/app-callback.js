@@ -25,7 +25,7 @@ export default function AppAuthCallback() {
 
       try {
         if (!SUPABASE_CONFIGURED || !supabase) {
-          // No Supabase — gate will handle routing
+          // No Supabase - gate will handle routing
           return;
         }
 

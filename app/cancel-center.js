@@ -16,9 +16,44 @@ function norm(s) {
   return String(s || "").trim();
 }
 
+const KNOWN_SUPPORT_URLS = {
+  "netflix.com": "https://help.netflix.com/",
+  "spotify.com": "https://support.spotify.com/",
+  "amazon.com": "https://www.amazon.com/gp/help/customer/",
+  "apple.com": "https://support.apple.com/",
+  "google.com": "https://support.google.com/",
+  "hulu.com": "https://help.hulu.com/",
+  "disneyplus.com": "https://help.disneyplus.com/",
+  "disney.com": "https://help.disneyplus.com/",
+  "microsoft.com": "https://support.microsoft.com/",
+  "adobe.com": "https://helpx.adobe.com/",
+  "dropbox.com": "https://help.dropbox.com/",
+  "slack.com": "https://slack.com/help/",
+  "zoom.us": "https://support.zoom.us/",
+  "notion.so": "https://www.notion.so/help/",
+  "github.com": "https://support.github.com/",
+  "linkedin.com": "https://www.linkedin.com/help/linkedin/",
+  "youtube.com": "https://support.google.com/youtube/",
+  "duolingo.com": "https://support.duolingo.com/",
+  "headspace.com": "https://help.headspace.com/",
+  "calm.com": "https://support.calm.com/",
+  "canva.com": "https://www.canva.com/help/",
+  "grammarly.com": "https://support.grammarly.com/",
+  "anthropic.com": "https://support.anthropic.com/",
+  "openai.com": "https://help.openai.com/",
+  "figma.com": "https://help.figma.com/",
+  "notion.com": "https://www.notion.so/help/",
+  "shopify.com": "https://help.shopify.com/",
+  "squarespace.com": "https://support.squarespace.com/",
+  "webflow.com": "https://university.webflow.com/",
+  "substack.com": "https://support.substack.com/",
+  "patreon.com": "https://support.patreon.com/",
+};
+
 function domainToSupportUrl(domain) {
   if (!domain) return null;
-  const d = domain.replace(/^www\./, "");
+  const d = domain.replace(/^www\./, "").toLowerCase();
+  if (KNOWN_SUPPORT_URLS[d]) return KNOWN_SUPPORT_URLS[d];
   return `https://${d}/help`;
 }
 
@@ -40,7 +75,7 @@ async function tryCopy(text) {
 function buildEmailTemplate({ brand, domain, userEmail, reason }) {
   const b = brand || domain || "your service";
   return {
-    subject: `Cancellation request — ${b}`,
+    subject: `Cancellation request - ${b}`,
     body: `Hi ${b} Support,
 
 Please cancel my subscription and stop any future charges.
@@ -371,17 +406,26 @@ export default function CancelCenter() {
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <View style={{ flex: 1 }}>
                   <Button
-                    title="Create request"
-                    onPress={() => r.push("/account/security")}
-                    left={<Feather name="send" size={16} color="#fff" />}
+                    title="Open support"
+                    onPress={async () => {
+                      if (!supportUrl) {
+                        return Alert.alert("Missing domain", "We need a domain to open the support page.");
+                      }
+                      try {
+                        await Linking.openURL(supportUrl);
+                      } catch (e) {
+                        Alert.alert("Couldn't open link", e?.message || "Try again.");
+                      }
+                    }}
+                    left={<Feather name="external-link" size={16} color="#fff" />}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Button
-                    title="Upload proof"
+                    title="View emails"
                     variant="secondary"
                     onPress={() => r.push({ pathname: "/brand", params: { domain, name: brand } })}
-                    left={<Feather name="upload" size={16} color={t.text} />}
+                    left={<Feather name="mail" size={16} color={t.text} />}
                   />
                 </View>
               </View>

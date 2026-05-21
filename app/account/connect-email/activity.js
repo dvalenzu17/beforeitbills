@@ -46,7 +46,7 @@ export default function ScanActivity() {
                     {t("scanActivity.emailsScanned")}
                   </Text>
                   <Text style={{ color: theme.text, fontWeight: "900", fontSize: 16 }}>
-                    {x.scanned ?? "—"}
+                    {x.scanned ?? "-"}
                   </Text>
                 </View>
                 <View style={{ flex: 1 }}>

@@ -403,7 +403,20 @@
       "connect": "Conectar Gmail",
       "connecting": "Conectando...",
       "skip": "Saltar por ahora"
-    }
+    },
+    "scanningTitle": "Escaneando tu bandeja",
+    "scanningSub": "Buscando en el último {{range}}",
+    "range90": "90 días",
+    "rangeAll": "todo el tiempo",
+    "rangeYear": "1 año",
+    "emailsScanned": "{{n}} correos escaneados",
+    "receiptsFound": "{{n}} recibos encontrados",
+    "subsDetected": "{{n}} suscripciones detectadas",
+    "scanningHint": "Esto puede tardar un minuto. Los resultados aparecen a medida que los encontramos.",
+    "scanError": "Algo salió mal. Es posible que tus resultados sean parciales.",
+    "viewResults": "Ver resultados",
+    "keepScanning": "Seguir escaneando",
+    "stop": "Detener"
   },
   "lang": {
     "title": "Idioma"

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text, View } from "react-native";
+import { Text, View, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 
@@ -13,15 +13,23 @@ import { Screen, HeaderRow, MattePanel } from "../../components/_ui";
 export default function Done() {
   const t = useTheme();
   const r = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function goManual() {
-    await setOnboardingDone(true);
+    setLoading(true);
+    try {
+      await setOnboardingDone(true);
+    } catch {
+      // Local AsyncStorage write failed — navigate anyway, Supabase will retry on next boot
+    } finally {
+      setLoading(false);
+    }
     track("onboarding_completed", { method: "manual" });
     r.replace("/add-recurring");
   }
 
   async function goScan() {
-    r.replace("/(onboarding)/connect");
+    r.replace("/account/connect-email");
   }
 
   return (
@@ -30,7 +38,7 @@ export default function Done() {
         <HeaderRow
           title="Add manually"
           subtitle="Enter your own subscriptions"
-          onBack={() => (r.canGoBack?.() ? r.back() : r.replace("/(onboarding)/connect"))}
+          onBack={() => (r.canGoBack?.() ? r.back() : r.replace("/account/connect-email"))}
         />
 
         <View style={{ height: 14 }} />
@@ -46,7 +54,7 @@ export default function Done() {
           <View style={{ height: 12 }} />
 
           <Text style={{ color: t.subtext, fontWeight: "600", lineHeight: 19 }}>
-            • Netflix, Spotify, Adobe — anything{"\n"}
+            • Netflix, Spotify, Adobe - anything{"\n"}
             • Set the amount and billing cadence{"\n"}
             • You can always connect your inbox later
           </Text>
@@ -54,8 +62,9 @@ export default function Done() {
 
         <View style={{ marginTop: "auto", gap: 10 }}>
           <Button
-            title="Add my first subscription"
+            title={loading ? "Setting up…" : "Add my first subscription"}
             onPress={goManual}
+            disabled={loading}
             haptic="impactLight"
             left={<Feather name="plus" size={16} color="#fff" />}
           />

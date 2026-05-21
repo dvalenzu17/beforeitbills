@@ -45,7 +45,7 @@ export default function LoginCallback() {
         const { data, error } = await supabase.auth.exchangeCodeForSession(url);
         if (error) throw error;
 
-        // Password recovery — must set new password before entering app
+        // Password recovery - must set new password before entering app
         if (type === "recovery") {
           if (!mounted) return;
           r.replace("/auth/update-password");

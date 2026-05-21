@@ -75,7 +75,7 @@ export default function SetupChecklistCard({
 
   return (
     <Card>
-      {/* Header — only show progress when checklist is still active */}
+      {/* Header - only show progress when checklist is still active */}
       {!dismissed && !isDone && (
         <>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
@@ -146,7 +146,7 @@ export default function SetupChecklistCard({
         </>
       )}
 
-      {/* Demo data section — always visible when demoMode is on */}
+      {/* Demo data section - always visible when demoMode is on */}
       <View style={{ marginTop: (!dismissed && !isDone) ? 16 : 0 }}>
         {demoMode && (
           <View
@@ -165,7 +165,7 @@ export default function SetupChecklistCard({
           >
             <Feather name="info" size={14} color={t.subtext} />
             <Text style={{ color: t.subtext, fontSize: 13, fontWeight: "700", flex: 1 }}>
-              Sample subscriptions are shown — this is demo data, not real.
+              Sample subscriptions are shown - this is demo data, not real.
             </Text>
           </View>
         )}

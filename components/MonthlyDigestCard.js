@@ -1,7 +1,7 @@
 // components/MonthlyDigestCard.js
 import React, { useMemo } from "react";
 import { View, Text, Share, Pressable } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 import Tile from "./ui/Tile";
 import Card from "./Card";
@@ -37,7 +37,7 @@ export default function MonthlyDigestCard({
   bills = [],
   currency = "USD",
   emailConnected = false,
-  onOpenRecap,
+  onOptimize,
   onViewAll,
 }) {
   const t = useTheme();
@@ -74,24 +74,20 @@ export default function MonthlyDigestCard({
     cutoff.setDate(today.getDate() + 30);
 
     let sum = 0;
-    for (const s of subs || []) {
-      if (!s?.nextRenewal) continue;
-      const d = new Date(`${s.nextRenewal}T00:00:00`);
-      if (d >= today && d <= cutoff) sum += (Number(s.amount) || 0) / shareDivisor(s);
-    }
-    for (const b of bills || []) {
-      if (!b?.nextDue) continue;
-      const d = new Date(`${b.nextDue}T00:00:00`);
-      if (d >= today && d <= cutoff) sum += (Number(b.amount) || 0) / shareDivisor(b);
+    for (const x of recurring || []) {
+      if (x?.active === false) continue;
+      if (!x?.nextDate) continue;
+      const d = new Date(`${x.nextDate}T00:00:00`);
+      if (d >= today && d <= cutoff) sum += Number(x?.effectiveAmount ?? x?.amount) || 0;
     }
     return sum;
-  }, [subs, bills]);
+  }, [recurring]);
 
   const shareText = useMemo(() => {
     const total = formatMoney(monthlySpend, currency);
     const due = formatMoney(dueNext30, currency);
     const ch = changes ? `${changes} updates` : "no changes";
-    return `Sublytics · ${mk}\nMonthly spend: ${total}\nNext 30 days: ${due}\nChanges: ${ch}`;
+    return `BeforeItBills · ${mk}\nMonthly spend: ${total}\nNext 30 days: ${due}\nChanges: ${ch}`;
   }, [mk, monthlySpend, dueNext30, changes, currency]);
 
   async function onShare() {
@@ -105,7 +101,7 @@ export default function MonthlyDigestCard({
       {/* Header */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Ionicons name="sparkles-outline" size={18} color={t.subtext} />
+          <Feather name="zap" size={16} color={t.subtext} />
           <Text style={{ color: t.subtext, fontWeight: "900" }}>Monthly digest · {mk}</Text>
         </View>
 
@@ -113,7 +109,7 @@ export default function MonthlyDigestCard({
           onPress={onShare}
           hitSlop={10}
           style={{
-            padding: 6,
+            padding: 8,
             borderRadius: 12,
             borderWidth: 1,
             borderColor: t.hairline,
@@ -156,9 +152,9 @@ export default function MonthlyDigestCard({
       <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
         <View style={{ flex: 1 }}>
           <Button
-            title="View recap"
-            onPress={onOpenRecap}
-            left={<Feather name="check-circle" size={16} color="#fff" />}
+            title="Optimize"
+            onPress={onOptimize}
+            left={<Feather name="scissors" size={16} color="#fff" />}
           />
         </View>
 

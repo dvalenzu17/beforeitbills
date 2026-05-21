@@ -21,7 +21,8 @@ import { useStore } from "../lib/store";
 import { useAuthState } from "../lib/authState";
 import * as WebBrowser from "expo-web-browser";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { AppState, Modal, View, Text, Pressable } from "react-native";
+import { Animated, AppState, Modal, StyleSheet, View, Text, Pressable } from "react-native";
+import SplashLoadingScreen from "../components/SplashLoadingScreen";
 import { initSentry } from "../lib/sentry";
 import { initNotificationHandler } from "../lib/notifications";
 import { usePurchasesStore } from "../lib/purchasesStore";
@@ -32,6 +33,8 @@ import * as Notifications from "expo-notifications";
 import { handleNotificationAction } from "../lib/notificationsEngine";
 import { Feather } from "@expo/vector-icons";
 import ConflictResolutionSheet from "../components/ConflictResolutionSheet";
+import FeedbackSheet from "../components/FeedbackSheet";
+import { useFeedbackStore } from "../lib/feedbackStore";
 import {
   setupShortcuts,
   addShortcutListener,
@@ -44,9 +47,35 @@ import {
 
 try { WebBrowser.maybeCompleteAuthSession(); } catch {}
 
+// ── Shake-to-report ───────────────────────────────────────────────────────────
+// Uses RN's built-in "shake" DeviceEventEmitter event (iOS) — no native module
+// needed beyond what ships with React Native itself.
+// Debounced to once per 3 s to avoid duplicate triggers from a single shake.
+function useShakeToReport() {
+  const showFeedback = useFeedbackStore((s) => s.show);
+  const lastFired = React.useRef(0);
+
+  useEffect(() => {
+    let sub = null;
+    try {
+      const { DeviceEventEmitter } = require('react-native');
+      sub = DeviceEventEmitter.addListener('shake', () => {
+        const now = Date.now();
+        if (now - lastFired.current > 3000) {
+          lastFired.current = now;
+          showFeedback();
+        }
+      });
+    } catch {
+      // Not available on this platform — silent skip
+    }
+    return () => sub?.remove?.();
+  }, [showFeedback]);
+}
+
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Initialise Sentry as early as possible — before any component renders
+// Initialise Sentry as early as possible - before any component renders
 initSentry();
 
 // ── Error boundary ────────────────────────────────────────────────────────────
@@ -170,6 +199,7 @@ function BiometricLockOverlay() {
 }
 
 export default function RootLayout() {
+  useShakeToReport();
   const router = useRouter();
   const segments = useSegments();
   const rootNavState = useRootNavigationState();
@@ -216,6 +246,13 @@ export default function RootLayout() {
   const splashHiddenRef = useRef(false);
   const bootstrapUserIdRef = useRef(null);
   const appStateRef = useRef(AppState.currentState);
+  const authSubRef = useRef(null);
+
+  // JS splash overlay — fades out after native splash hides + auth is ready
+  const splashOpacity = useRef(new Animated.Value(1)).current;
+  const [jsSplashVisible, setJsSplashVisible] = useState(true);
+  const splashReadyAt = useRef(null); // timestamp when min duration is satisfied
+  const [splashMinDone, setSplashMinDone] = useState(false);
 
   // Hydrate biometric lock preference on mount
   useEffect(() => {
@@ -330,7 +367,7 @@ export default function RootLayout() {
             // Identify user in RevenueCat
             purchasesLogin(u.id);
 
-            // Register for push notifications — stores token in push_tokens table
+            // Register for push notifications - stores token in push_tokens table
             registerPushToken().catch(() => {});
 
             // Background profile sync
@@ -348,7 +385,7 @@ export default function RootLayout() {
             useEmailImportStore.getState().restoreConnectionState?.();
           }
 
-          supabase.auth.onAuthStateChange(async (event, session) => {
+          const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange(async (event, session) => {
             const u = session?.user ?? null;
             setUser(u);
 
@@ -359,6 +396,7 @@ export default function RootLayout() {
               registerPushToken().catch(() => {});
               const done = await isOnboardingDone(u);
               setOnboardingDone(done);
+              setAuthReady(true);
             }
 
             if (event === "USER_UPDATED") {
@@ -372,6 +410,7 @@ export default function RootLayout() {
               purchasesLogout();
             }
           });
+          authSubRef.current = authSub;
         } else {
           setUser(null);
           setOnboardingDone(true);
@@ -384,14 +423,29 @@ export default function RootLayout() {
         setAuthReady(true);
       }
     })();
+
+    return () => { authSubRef.current?.unsubscribe?.(); };
   }, []);
 
-  // ── Hide splash ──────────────────────────────────────────────────────────
+  // ── Hide native splash immediately when JS layout renders ────────────────
+  // The JS overlay (SplashLoadingScreen) seamlessly takes over.
+  // Also start the 2-second minimum timer here.
   useEffect(() => {
-    if (!navReady || !authReady || splashHiddenRef.current) return;
-    splashHiddenRef.current = true;
     SplashScreen.hideAsync().catch(() => {});
-  }, [navReady, authReady]);
+    const t = setTimeout(() => setSplashMinDone(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // ── Fade out JS overlay when app is ready AND min duration has passed ─────
+  useEffect(() => {
+    if (!navReady || !authReady || !splashMinDone || splashHiddenRef.current) return;
+    splashHiddenRef.current = true;
+    Animated.timing(splashOpacity, {
+      toValue: 0,
+      duration: 350,
+      useNativeDriver: true,
+    }).start(() => setJsSplashVisible(false));
+  }, [navReady, authReady, splashMinDone]);
 
   // ── Redirect gate ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -449,12 +503,18 @@ export default function RootLayout() {
               <Modal visible={showLock} animationType="fade" statusBarTranslucent>
                 <BiometricLockOverlay />
               </Modal>
+              <FeedbackSheet />
               <ConflictResolutionSheet
                 conflicts={pendingConflicts}
                 onKeepLocal={(id) => resolveConflict?.(id, 'local')}
                 onKeepRemote={(id) => resolveConflict?.(id, 'remote')}
                 onSkip={(id) => dismissConflict?.(id)}
               />
+              {jsSplashVisible && (
+                <Animated.View style={[StyleSheet.absoluteFill, { opacity: splashOpacity }]} pointerEvents="none">
+                  <SplashLoadingScreen />
+                </Animated.View>
+              )}
             </ThemeBackground>
           </ToastProvider>
         </ThemeProvider>

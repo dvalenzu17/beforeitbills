@@ -354,7 +354,20 @@
       "connect": "Conectar Gmail",
       "connecting": "Conectando...",
       "skip": "Pular por agora"
-    }
+    },
+    "scanningTitle": "Verificando sua caixa de entrada",
+    "scanningSub": "Procurando no último {{range}}",
+    "range90": "90 dias",
+    "rangeAll": "todo o período",
+    "rangeYear": "1 ano",
+    "emailsScanned": "{{n}} e-mails verificados",
+    "receiptsFound": "{{n}} recibos encontrados",
+    "subsDetected": "{{n}} assinaturas detectadas",
+    "scanningHint": "Isso pode levar um minuto. Os resultados aparecem à medida que os encontramos.",
+    "scanError": "Algo deu errado. Seus resultados podem ser parciais.",
+    "viewResults": "Ver resultados",
+    "keepScanning": "Continuar verificando",
+    "stop": "Parar"
   },
   "scanActivity": {
     "title": "Atividade de varredura",

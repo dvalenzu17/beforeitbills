@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [{"source": "density_xhdpi", "target": "icon_splashscreen_logo", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "android/app/src/main/res/drawable-xhdpi/splashscreen_logo.png", "source_location": null, "weight": 1.0}], "hyperedges": []}

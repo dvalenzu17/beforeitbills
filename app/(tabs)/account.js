@@ -1,12 +1,11 @@
 // app/(tabs)/account.js
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, View, TouchableOpacity, Image, Alert, Linking } from "react-native";
+import { ActivityIndicator, ScrollView, View, Text, TouchableOpacity, Image, Alert, Linking, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useTranslation } from "react-i18next";
-import { Pressable } from "react-native";
 
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
@@ -15,11 +14,95 @@ import { supabase, SUPABASE_CONFIGURED } from "../../lib/supabase";
 import { useEmailImportStore } from "../../lib/emailImportStore";
 import { useAuthState } from "../../lib/authState";
 
-import { SPACING } from "../../lib/ui/tokens";
-import { VStack, HStack } from "../../components/ui/Stack";
-import * as T from "../../components/ui/Text";
-
 import profilePic from "../../assets/profile.jpg";
+
+// ── Section label ────────────────────────────────────────────────────────────
+function SectionLabel({ children, style }) {
+  const t = useTheme();
+  return (
+    <Text style={[{
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 1.2,
+      color: t.subtext,
+      textTransform: 'uppercase',
+      marginBottom: 8,
+      paddingHorizontal: 4,
+    }, style]}>
+      {children}
+    </Text>
+  );
+}
+
+// ── Settings row ─────────────────────────────────────────────────────────────
+function SettingsRow({ icon, label, subtext, onPress, last, danger }) {
+  const t = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        backgroundColor: pressed ? t.surface2 : 'transparent',
+        borderTopWidth: last ? 0 : 0,
+        gap: 14,
+      })}
+    >
+      <View style={{
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: danger ? 'rgba(239,68,68,0.1)' : t.surface2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <Feather name={icon} size={18} color={danger ? '#EF4444' : t.subtext} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: danger ? '#EF4444' : t.text }}>
+          {label}
+        </Text>
+        {subtext ? (
+          <Text style={{ fontSize: 12, color: t.subtext, marginTop: 2 }}>{subtext}</Text>
+        ) : null}
+      </View>
+      {!danger && (
+        <Feather name="chevron-right" size={16} color={t.tertiary || t.subtext} />
+      )}
+    </Pressable>
+  );
+}
+
+// ── Settings card ────────────────────────────────────────────────────────────
+function SettingsCard({ items }) {
+  const t = useTheme();
+  return (
+    <View style={{
+      backgroundColor: t.surface,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: t.hairline,
+      overflow: 'hidden',
+    }}>
+      {items.map((item, idx) => (
+        <View key={item.label}>
+          {idx > 0 && (
+            <View style={{ height: 1, backgroundColor: t.hairline, marginLeft: 66 }} />
+          )}
+          <SettingsRow
+            icon={item.icon}
+            label={item.label}
+            subtext={item.subtext}
+            onPress={item.onPress || (item.route ? () => {} : undefined)}
+            danger={item.danger}
+          />
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function Account() {
   const t = useTheme();
@@ -106,37 +189,22 @@ export default function Account() {
       const localUri = result.assets?.[0]?.uri;
       if (!localUri) return;
 
-      // Optimistically show the local image while upload runs
       await updateProfile({ avatarUri: localUri });
 
-      // Upload to Supabase Storage so the URL works on any device / after reinstall.
-      // Failures are silent — user sees the photo immediately via the local URI.
       if (SUPABASE_CONFIGURED && supabase && user) {
         setUploadingAvatar(true);
         try {
           const ext = localUri.split(".").pop()?.toLowerCase().replace(/[^a-z]/g, "") || "jpg";
           const path = `avatars/${user.id}.${ext}`;
-
           const fetchRes = await fetch(localUri);
           const blob = await fetchRes.blob();
-
           const { error: uploadErr } = await supabase.storage
             .from("avatars")
-            .upload(path, blob, {
-              contentType: `image/${ext === "jpg" ? "jpeg" : ext}`,
-              upsert: true,
-            });
+            .upload(path, blob, { contentType: `image/${ext === "jpg" ? "jpeg" : ext}`, upsert: true });
 
           if (!uploadErr) {
-            const { data: urlData } = supabase.storage
-              .from("avatars")
-              .getPublicUrl(path);
-            const publicUrl = urlData?.publicUrl;
-            if (publicUrl) {
-              await updateProfile({ avatarUri: publicUrl });
-            }
-          } else {
-            if (__DEV__) console.warn("[account] avatar upload error:", uploadErr?.message);
+            const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+            if (urlData?.publicUrl) await updateProfile({ avatarUri: urlData.publicUrl });
           }
         } catch (e) {
           if (__DEV__) console.warn("[account] avatar upload failed:", e?.message);
@@ -158,206 +226,242 @@ export default function Account() {
     ]);
   }
 
-  const settingsItems = [
-    { label: tt("account.items.upgrade.label"), subtext: isPro ? tt("account.items.upgrade.subtextPro") : tt("account.items.upgrade.subtextFree"), icon: "checkmark-outline", route: "/account/upgrade" },
-    { label: tt("account.items.personal.label"), subtext: tt("account.items.personal.subtext"), icon: "person-outline", route: "/account/personal" },
-    { label: tt("account.items.security.label"), subtext: tt("account.items.security.subtext"), icon: "lock-closed-outline", route: "/account/security" },
-    { label: tt("account.items.notifications.label"), subtext: tt("account.items.notifications.subtext"), icon: "notifications-outline", route: "/account/notifications" },
-    { label: tt("account.items.connected.label"), subtext: tt("account.items.connected.subtext"), icon: "link-outline", route: "/account/connected" },
+  const manageItems = [
+    {
+      label: tt("account.items.upgrade.label"),
+      subtext: isPro ? tt("account.items.upgrade.subtextPro") : tt("account.items.upgrade.subtextFree"),
+      icon: "award",
+      route: "/account/upgrade",
+      onPress: () => router.push("/account/upgrade"),
+    },
+    {
+      label: tt("account.items.connected.label"),
+      subtext: tt("account.items.connected.subtext"),
+      icon: "link",
+      onPress: () => router.push("/account/connect-email"),
+    },
+    {
+      label: tt("account.items.security.label"),
+      subtext: tt("account.items.security.subtext"),
+      icon: "lock",
+      onPress: () => router.push("/account/security"),
+    },
+    {
+      label: tt("account.items.notifications.label"),
+      subtext: tt("account.items.notifications.subtext"),
+      icon: "bell",
+      onPress: () => router.push("/account/notifications"),
+    },
   ];
 
-  const appInfoItems = [
-    { label: tt("account.items.settings.label") || "Settings", subtext: tt("account.items.settings.subtext") || "Language, notifications, data", icon: "settings-outline", route: "/account/settings" },
+  const moreItems = [
+    {
+      label: tt("account.items.settings.label") || "Settings",
+      subtext: tt("account.items.settings.subtext") || "Language, notifications, data",
+      icon: "settings",
+      onPress: () => router.push("/account/settings"),
+    },
     isPro
-      ? { label: "Priority support", subtext: "Direct line to our team", icon: "chatbubble-outline", onPress: () => Linking.openURL("mailto:support@beforeitbills.com") }
-      : { label: "Priority support", subtext: "Available on Pro", icon: "chatbubble-outline", route: "/account/upgrade" },
-    { label: tt("account.items.help.label"), subtext: tt("account.items.help.subtext"), icon: "help-circle-outline", route: "/account/help" },
-    { label: tt("account.items.legals.label"), subtext: tt("account.items.legals.subtext"), icon: "document-text-outline", route: "/account/legals" },
-    { label: tt("account.items.export.label"), subtext: tt("account.items.export.subtext"), icon: "download-outline", route: "/account/export" },
-    { label: tt("account.items.about.label"), subtext: tt("account.items.about.subtext"), icon: "information-circle-outline", route: "/account/about" },
-  // DEV TOOLS — only visible when running via metro (never in production builds)
-  ...(__DEV__ ? [{
-    label: "Developer Tools",
-    subtext: "Internal testing tools",
-    icon: "code-slash-outline",
-    route: "/dev-tools"
-  }] : []),
+      ? { label: "Priority support", subtext: "Direct line to our team", icon: "message-square", onPress: () => Linking.openURL("mailto:support@beforeitbills.com") }
+      : { label: "Priority support", subtext: "Available on Pro", icon: "message-square", onPress: () => router.push("/account/upgrade") },
+    {
+      label: tt("account.items.help.label"),
+      subtext: tt("account.items.help.subtext"),
+      icon: "help-circle",
+      onPress: () => router.push("/account/help"),
+    },
+    {
+      label: tt("account.items.legals.label"),
+      subtext: tt("account.items.legals.subtext"),
+      icon: "file-text",
+      onPress: () => router.push("/account/legals"),
+    },
+    {
+      label: tt("account.items.about.label"),
+      subtext: tt("account.items.about.subtext"),
+      icon: "info",
+      onPress: () => router.push("/account/about"),
+    },
+    ...(__DEV__ ? [{
+      label: "Developer Tools",
+      subtext: "Internal testing tools",
+      icon: "code",
+      onPress: () => router.push("/dev-tools"),
+    }] : []),
   ];
-  
-
-  const Pill = ({ text, tone = "muted" }) => {
-    const bg = tone === "pro" ? t.surface2 : t.soft || t.surface2;
-    const border = tone === "pro" ? t.accent : t.hairline;
-    const color = tone === "pro" ? t.text : t.subtext;
-
-    return (
-      <View
-        style={{
-          alignSelf: "flex-start",
-          paddingVertical: 6,
-          paddingHorizontal: 10,
-          borderRadius: 999,
-          borderWidth: 1,
-          borderColor: border,
-          backgroundColor: bg,
-        }}
-      >
-        <T.Sub style={{ color, fontWeight: "900" }}>{text}</T.Sub>
-      </View>
-    );
-  };
-
-  const SettingsCard = ({ items }) => (
-    <View
-      style={{
-        backgroundColor: t.card,
-        borderRadius: t.radius,
-        overflow: "hidden",
-        borderWidth: 1,
-        borderColor: t.border,
-      }}
-    >
-      {items.map((item, idx) => (
-        <TouchableOpacity
-          key={item.label}
-          onPress={() => item.onPress ? item.onPress() : item.route && router.push(item.route)}
-          activeOpacity={item.route || item.onPress ? 0.85 : 1}
-          style={{
-            paddingHorizontal: SPACING.screen,
-            paddingVertical: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: SPACING.rowGap,
-            borderTopWidth: idx === 0 ? 0 : 1,
-            borderTopColor: t.border,
-          }}
-        >
-          <Ionicons name={item.icon} size={22} color={t.subtext} />
-          <View style={{ flex: 1 }}>
-            <T.H2 style={{ fontSize: 16 }}>{item.label}</T.H2>
-            {!!item.subtext ? <T.Sub style={{ marginTop: 2 }}>{item.subtext}</T.Sub> : null}
-          </View>
-          <View style={{ paddingLeft: 6 }}>
-  <Ionicons name="chevron-forward" size={18} color={t.subtext} />
-</View>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
-      <ScrollView contentContainerStyle={{ padding: SPACING.screen, paddingBottom: 92, gap: SPACING.cardGap }}>
-        <HStack style={{ justifyContent: "space-between", alignItems: "center" }}>
-          <T.H2 style={{ fontSize: 22 }}>{tt("tabs.account")}</T.H2>
-          {isPro ? <Pill text="PRO" tone="pro" /> : <Pill text={tt("account.freePill")} />}
-        </HStack>
-
-        {!isPro ? (
-          <View
-            style={{
-              backgroundColor: t.card,
-              shadowColor: "#000",
-              shadowOpacity: 0.04,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 4 },
-              borderRadius: t.radius,
-              borderWidth: 1,
-              borderColor: t.border,
-              padding: SPACING.screen,
-            }}
-          >
-            <T.H2 style={{ fontSize: 16 }}>{tt("account.goProTitle")}</T.H2>
-            <T.Sub style={{ marginTop: 6 }}>{tt("account.goProBody")}</T.Sub>
-
-            <View style={{ height: SPACING.cardGap }} />
-
-            <GradientButton
-              title={tt("account.upgrade")}
-              onPress={() => router.push("/account/upgrade")}
-            />
-
-          </View>
-        ) : null}
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            padding: SPACING.screen,
-            backgroundColor: t.card,
-            borderRadius: t.radius,
+      <ScrollView
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+          <Text style={{ fontSize: 28, fontWeight: '900', color: t.text, letterSpacing: -0.5 }}>
+            {tt("tabs.account")}
+          </Text>
+          <View style={{
+            paddingHorizontal: 12,
+            paddingVertical: 5,
+            borderRadius: 999,
             borderWidth: 1,
-            borderColor: t.border,
-            gap: SPACING.cardGap,
-          }}
-        >
+            borderColor: isPro ? t.accent : t.hairline,
+            backgroundColor: isPro ? `${t.accent}18` : t.surface,
+          }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: '800',
+              color: isPro ? t.accent : t.subtext,
+              letterSpacing: 0.8,
+            }}>
+              {isPro ? 'PRO' : tt("account.freePill")}
+            </Text>
+          </View>
+        </View>
+
+        {/* Profile card */}
+        <View style={{
+          backgroundColor: t.surface,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: t.hairline,
+          padding: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 16,
+          marginBottom: 24,
+        }}>
           <TouchableOpacity onPress={avatarMenu} activeOpacity={0.85} disabled={uploadingAvatar}>
             <Image
               source={profile?.avatarUri ? { uri: profile.avatarUri } : profilePic}
-              style={{ width: 80, height: 80, borderRadius: 40, opacity: uploadingAvatar ? 0.5 : 1 }}
+              style={{ width: 72, height: 72, borderRadius: 36, opacity: uploadingAvatar ? 0.5 : 1 }}
             />
             {uploadingAvatar ? (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 0, left: 0, right: 0, bottom: 0,
-                  borderRadius: 40,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
+              <View style={{
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                borderRadius: 36, alignItems: 'center', justifyContent: 'center',
+              }}>
                 <ActivityIndicator size="small" color={t.accent} />
               </View>
             ) : (
-              <View
-                style={{
-                  position: "absolute",
-                  bottom: -2,
-                  right: -2,
-                  backgroundColor: t.surface,
-                  borderRadius: 999,
-                  padding: 6,
-                  borderWidth: 1,
-                  borderColor: t.border,
-                }}
-              >
-                <Ionicons name="pencil" size={14} color={t.text} />
+              <View style={{
+                position: 'absolute', bottom: 0, right: 0,
+                width: 24, height: 24, borderRadius: 12,
+                backgroundColor: t.surface2,
+                borderWidth: 1.5, borderColor: t.bg,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Feather name="edit-2" size={11} color={t.text} />
               </View>
             )}
           </TouchableOpacity>
 
           <View style={{ flex: 1 }}>
-            <T.H2 style={{ fontSize: 20 }}>{displayName}</T.H2>
-            <T.Sub style={{ marginTop: 4 }}>@{username}</T.Sub>
+            <Text style={{ fontSize: 18, fontWeight: '800', color: t.text }}>{displayName}</Text>
+            <Text style={{ fontSize: 13, color: t.subtext, marginTop: 3 }}>@{username}</Text>
           </View>
+
+          <Pressable
+            onPress={() => router.push("/account/personal")}
+            style={({ pressed }) => ({
+              width: 36, height: 36, borderRadius: 18,
+              backgroundColor: pressed ? t.surface2 : t.bg,
+              borderWidth: 1, borderColor: t.hairline,
+              alignItems: 'center', justifyContent: 'center',
+            })}
+          >
+            <Feather name="edit-2" size={15} color={t.subtext} />
+          </Pressable>
         </View>
 
-        <VStack gap={SPACING.cardGap}>
-          <SettingsCard items={settingsItems} />
-          <SettingsCard items={appInfoItems} />
-        </VStack>
+        {/* Upgrade banner (free users only) */}
+        {!isPro && (
+          <View style={{
+            backgroundColor: t.surface,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: t.hairline,
+            padding: 18,
+            marginBottom: 24,
+          }}>
+            <Text style={{ fontSize: 16, fontWeight: '800', color: t.text, marginBottom: 6 }}>
+              {tt("account.goProTitle")}
+            </Text>
+            <Text style={{ fontSize: 13, color: t.subtext, marginBottom: 16, lineHeight: 18 }}>
+              {tt("account.goProBody")}
+            </Text>
+            <GradientButton title={tt("account.upgrade")} onPress={() => router.push("/account/upgrade")} />
+          </View>
+        )}
 
-        {/* Sign out — visible at bottom of account tab, no need to dig into Security */}
+        {/* Manage section */}
+        <SectionLabel style={{ marginBottom: 8 }}>Manage</SectionLabel>
+        <View style={{
+          backgroundColor: t.surface,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: t.hairline,
+          overflow: 'hidden',
+          marginBottom: 24,
+        }}>
+          {manageItems.map((item, idx) => (
+            <View key={item.label}>
+              {idx > 0 && <View style={{ height: 1, backgroundColor: t.hairline, marginLeft: 66 }} />}
+              <SettingsRow
+                icon={item.icon}
+                label={item.label}
+                subtext={item.subtext}
+                onPress={item.onPress}
+              />
+            </View>
+          ))}
+        </View>
+
+        {/* More section */}
+        <SectionLabel style={{ marginBottom: 8 }}>More</SectionLabel>
+        <View style={{
+          backgroundColor: t.surface,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: t.hairline,
+          overflow: 'hidden',
+          marginBottom: 24,
+        }}>
+          {moreItems.map((item, idx) => (
+            <View key={item.label}>
+              {idx > 0 && <View style={{ height: 1, backgroundColor: t.hairline, marginLeft: 66 }} />}
+              <SettingsRow
+                icon={item.icon}
+                label={item.label}
+                subtext={item.subtext}
+                onPress={item.onPress}
+              />
+            </View>
+          ))}
+        </View>
+
+        {/* Sign out */}
         {!!user && (
-          <TouchableOpacity
+          <Pressable
             onPress={handleSignOut}
             disabled={signingOut}
-            activeOpacity={0.75}
-            style={{
-              paddingVertical: 14,
-              alignItems: "center",
-              borderRadius: t.radius,
+            style={({ pressed }) => ({
+              backgroundColor: pressed ? 'rgba(239,68,68,0.08)' : t.surface,
+              borderRadius: 16,
               borderWidth: 1,
-              borderColor: t.hairline,
-              backgroundColor: t.surface,
+              borderColor: 'rgba(239,68,68,0.25)',
+              overflow: 'hidden',
               opacity: signingOut ? 0.5 : 1,
-            }}
+            })}
           >
-            <T.Sub style={{ color: "#FF3B30", fontWeight: "800" }}>
-              {signingOut ? "Signing out…" : "Sign out"}
-            </T.Sub>
-          </TouchableOpacity>
+            <SettingsRow
+              icon="log-out"
+              label={signingOut ? "Signing out…" : "Sign out"}
+              onPress={handleSignOut}
+              danger
+            />
+          </Pressable>
         )}
       </ScrollView>
     </SafeAreaView>

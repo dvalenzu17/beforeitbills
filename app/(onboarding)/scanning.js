@@ -140,8 +140,8 @@ export default function Scanning() {
           </Text>
         </View>
 
-        <Text style={{ color: t.subtext, marginTop: 10 }}>
-          {error ? `⚠️ ${error}` : tt("ob.scanningHint")}
+        <Text style={{ color: error ? t.warning ?? "#F59E0B" : t.subtext, marginTop: 10 }}>
+          {error ? tt("ob.scanError") : tt("ob.scanningHint")}
         </Text>
 
         <View style={{ height: 12 }} />
@@ -166,7 +166,7 @@ export default function Scanning() {
           onPress={() =>
             Alert.alert(
               "Still scanning",
-              "All good — scanning continues in the background. You can check Results anytime."
+              "All good - scanning continues in the background. You can check Results anytime."
             )
           }
         />

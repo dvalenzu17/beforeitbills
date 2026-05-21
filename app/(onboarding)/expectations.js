@@ -38,11 +38,13 @@ import { useTheme } from "../../lib/theme";
 import { useOnboardingStore } from "../../lib/onboardingStore";
 import { usePurchasesStore } from "../../lib/purchasesStore";
 import { useStore } from "../../lib/store";
+import { useEmailImportStore } from "../../lib/emailImportStore";
 import { setOnboardingDone } from "../../lib/onboardingGate";
 import { track } from "../../lib/analytics";
+import { connectGoogleGmail } from "../../lib/auth/googleGmailOAuth";
 
 const { width: W } = Dimensions.get("window");
-const TOTAL = 8;
+const TOTAL = 9;
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -321,7 +323,7 @@ function PersonalizeSlide({ t, tt, picked, onPick }) {
 const SOLUTION_COPY = {
   forgot:  {
     titleKey: "ob.solution.title_forgot",  titleFallback: "Never lose track again",
-    bodyKey:  "ob.solution.body_forgot",   bodyFallback:  "We scan your inbox and surface every charge — before it hits your card. Even the ones from 2 years ago.",
+    bodyKey:  "ob.solution.body_forgot",   bodyFallback:  "We scan your inbox and surface every charge - before it hits your card. Even the ones from 2 years ago.",
   },
   trials:  {
     titleKey: "ob.solution.title_trials",  titleFallback: "Beat trial traps before they hit",
@@ -401,7 +403,7 @@ function SolutionSlide({ t, tt, picked }) {
 
 const OUTCOME_COPY = [
   { key: "ob.outcomes.o1", fallback: "Know your exact monthly burn before it leaves your account" },
-  { key: "ob.outcomes.o2", fallback: "Cancel what you forgot about — in under 60 seconds"         },
+  { key: "ob.outcomes.o2", fallback: "Cancel what you forgot about - in under 60 seconds"         },
   { key: "ob.outcomes.o3", fallback: "Never miss a trial ending or a quiet price increase"         },
   { key: "ob.outcomes.o4", fallback: "Stop paying for services you don't use anymore"             },
 ];
@@ -662,7 +664,117 @@ function QuickWinSlide({ t, tt, picked, onPick }) {
   );
 }
 
-// ─── Slide 8: CTA ─────────────────────────────────────────────────────────────
+// ─── Slide 8: Gmail Connect ───────────────────────────────────────────────────
+
+function GmailConnectSlide({ t, tt, connected, connecting, onConnect, onSkip }) {
+  return (
+    <View style={{ width: W, flex: 1, paddingHorizontal: 24, paddingTop: 20 }}>
+      <Animated.View
+        entering={ZoomIn.duration(380)}
+        style={{
+          width: 84, height: 84, borderRadius: 24,
+          backgroundColor: "#1D4ED818", alignItems: "center", justifyContent: "center",
+          marginBottom: 28, borderWidth: 1, borderColor: "#1D4ED830",
+        }}
+      >
+        <Feather name="mail" size={36} color="#1D4ED8" />
+      </Animated.View>
+
+      <Animated.Text
+        entering={FadeInDown.delay(80).duration(350)}
+        style={{ fontSize: 28, fontWeight: "900", color: t.text, lineHeight: 34, marginBottom: 10 }}
+      >
+        {tt("ob.gmail.title") || "Now let's find the rest"}
+      </Animated.Text>
+
+      <Animated.Text
+        entering={FadeInDown.delay(140).duration(350)}
+        style={{ fontSize: 15, color: t.subtext, fontWeight: "600", marginBottom: 32, lineHeight: 22 }}
+      >
+        {tt("ob.gmail.subtitle") || "Connect Gmail to automatically detect subscriptions from your inbox."}
+      </Animated.Text>
+
+      {connected ? (
+        <Animated.View
+          entering={FadeIn.duration(350)}
+          style={{
+            padding: 18, borderRadius: 18,
+            backgroundColor: "#10B98114", borderWidth: 1, borderColor: "#10B98130",
+            flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 24,
+          }}
+        >
+          <Feather name="check-circle" size={24} color="#10B981" />
+          <Text style={{ flex: 1, color: "#10B981", fontWeight: "800", fontSize: 16 }}>
+            {tt("ob.gmail.connected") || "Gmail connected"}
+          </Text>
+        </Animated.View>
+      ) : null}
+
+      <Animated.View entering={FadeInUp.delay(220).duration(350)} style={{ gap: 12 }}>
+        {connected ? (
+          <TouchableOpacity
+            onPress={onSkip}
+            activeOpacity={0.88}
+            style={{ borderRadius: 18, overflow: "hidden" }}
+          >
+            <LinearGradient
+              colors={["#10B981", "#059669"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ paddingVertical: 17, alignItems: "center" }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>
+                {tt("ob.gmail.continue") || "Continue"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : (
+          <>
+            <TouchableOpacity
+              onPress={onConnect}
+              disabled={connecting}
+              activeOpacity={0.88}
+              style={{ borderRadius: 18, overflow: "hidden", opacity: connecting ? 0.75 : 1 }}
+            >
+              <LinearGradient
+                colors={["#1D4ED8", "#1E40AF"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ paddingVertical: 17, alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 10 }}
+              >
+                {connecting ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Feather name="mail" size={18} color="#fff" />
+                )}
+                <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>
+                  {connecting
+                    ? (tt("ob.gmail.connecting") || "Connecting...")
+                    : (tt("ob.gmail.connect") || "Connect Gmail")}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <Pressable
+              onPress={onSkip}
+              disabled={connecting}
+              style={({ pressed }) => ({
+                alignItems: "center", paddingVertical: 10,
+                opacity: pressed || connecting ? 0.5 : 1,
+              })}
+            >
+              <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 15 }}>
+                {tt("ob.gmail.skip") || "Skip for now"}
+              </Text>
+            </Pressable>
+          </>
+        )}
+      </Animated.View>
+    </View>
+  );
+}
+
+// ─── Slide 9: CTA ─────────────────────────────────────────────────────────────
 
 function CTASlide({ t, tt, onConnect, onNotNow, loading }) {
   return (
@@ -965,6 +1077,9 @@ export default function Expectations() {
   const loadOfferings  = usePurchasesStore((s) => s.loadOfferings);
   const purchasePkg    = usePurchasesStore((s) => s.purchasePackage);
   const addSub         = useStore((s) => s.addSub);
+  const connectedProvider = useEmailImportStore((s) => s.connectedProvider);
+  const addAccount     = useEmailImportStore((s) => s.addAccount);
+  const resetFastPass  = useEmailImportStore((s) => s.resetFastPass);
   const scrollRef = useRef(null);
 
   const [index, setIndex]                   = useState(0);
@@ -972,6 +1087,10 @@ export default function Expectations() {
   const [quickWinPicked, setQuickWinPicked] = useState(null);
   const [purchasing, setPurchasing]         = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [gmailConnecting, setGmailConnecting] = useState(false);
+
+  const emailAlreadyConnected = !!connectedProvider || gmailConnected;
 
   function scrollTo(i) {
     scrollRef.current?.scrollTo({ x: i * W, animated: true });
@@ -997,6 +1116,24 @@ export default function Expectations() {
     setIndex(i);
   }
 
+  async function connectGmailFromSlide() {
+    setGmailConnecting(true);
+    try {
+      const result = await connectGoogleGmail();
+      if (result?.ok) {
+        resetFastPass?.();
+        addAccount({ provider: "gmail", email: result?.email ?? null });
+        track("gmail_connected", { provider: "gmail", source: "onboarding" });
+        setGmailConnected(true);
+        setTimeout(() => scrollTo(index + 1), 600);
+      }
+    } catch {
+      // silent - stay on slide
+    } finally {
+      setGmailConnecting(false);
+    }
+  }
+
   async function goTrial() {
     markStep?.("expectations");
     track("onboarding_start_trial", { pickedProblem, quickWin: quickWinPicked?.id });
@@ -1005,7 +1142,7 @@ export default function Expectations() {
       const offerings = await loadOfferings();
       const pkg = offerings?.current?.availablePackages?.[0] ?? null;
       if (!pkg) {
-        // No native module (Expo Go) or no offerings — show success anyway for demo
+        // No native module (Expo Go) or no offerings - show success anyway for demo
         setPurchaseSuccess(true);
         return;
       }
@@ -1016,7 +1153,7 @@ export default function Expectations() {
       }
       // user cancelled → stay on CTA, do nothing
     } catch {
-      // silent — stay on CTA
+      // silent - stay on CTA
     } finally {
       setPurchasing(false);
     }
@@ -1049,7 +1186,7 @@ export default function Expectations() {
         confidence: 1.0,
       });
     } catch {
-      // non-fatal — onboarding continues regardless
+      // non-fatal - onboarding continues regardless
     }
 
     await setOnboardingDone(true);
@@ -1092,7 +1229,7 @@ export default function Expectations() {
           ))}
         </View>
 
-        {/* Skip — hide on CTA slide */}
+        {/* Skip - hide on CTA slide */}
         {!isCTA ? (
           <Pressable onPress={skip} hitSlop={12}>
             <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 14 }}>
@@ -1136,14 +1273,23 @@ export default function Expectations() {
           <QuickWinSlide t={t} tt={tt} picked={quickWinPicked} onPick={setQuickWinPicked} />
         </View>
         <View style={{ width: W, flex: 1 }}>
+          <GmailConnectSlide
+            t={t} tt={tt}
+            connected={emailAlreadyConnected}
+            connecting={gmailConnecting}
+            onConnect={connectGmailFromSlide}
+            onSkip={() => { track("onboarding_gmail_skipped"); scrollTo(index + 1); }}
+          />
+        </View>
+        <View style={{ width: W, flex: 1 }}>
           <CTASlide t={t} tt={tt} onConnect={goTrial} onNotNow={goNotNow} loading={purchasing} />
         </View>
       </ScrollView>
 
       <SuccessOverlay t={t} tt={tt} visible={purchaseSuccess} onGetStarted={goGetStarted} />
 
-      {/* Bottom Next button — hidden on CTA slide (has its own inline CTAs) */}
-      {!isCTA ? (
+      {/* Bottom Next button - hidden on CTA and Gmail slides (have their own inline CTAs) */}
+      {!isCTA && index !== 7 ? (
         <View style={{ paddingHorizontal: 24, paddingBottom: 24, paddingTop: 8 }}>
           <Pressable
             onPress={next}

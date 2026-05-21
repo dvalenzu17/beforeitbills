@@ -1,7 +1,7 @@
 /**
  * plugins/withShareExtension.js
  *
- * Expo config plugin — adds a Share Extension target to the iOS Xcode project.
+ * Expo config plugin - adds a Share Extension target to the iOS Xcode project.
  * Applied during `expo prebuild`.
  *
  * What it does:
@@ -9,7 +9,7 @@
  *  2. Adds a new "ShareExtension" app-extension target to the Xcode project
  *  3. Configures build settings (Swift 5, deployment target, bundle ID)
  *  4. Embeds the extension in the main app
- *  5. App Group entitlement is already handled by withIosWidget — this plugin
+ *  5. App Group entitlement is already handled by withIosWidget - this plugin
  *     adds the entitlement file for the extension target itself.
  */
 

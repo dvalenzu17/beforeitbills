@@ -107,10 +107,10 @@ export default function ScanSetup() {
       const { data } = await supabase.auth.getSession();
       accessToken = data?.session?.access_token ?? null;
       if (!accessToken && SCAN_TRANSPORT === "backend") {
-        // No session — backend would 401. Use mock so the onboarding
+        // No session - backend would 401. Use mock so the onboarding
         // preview still runs; they'll get real results after sign-in.
         effectiveTransport = "mock";
-        toast.show({ message: "Previewing with sample data — sign in for real results" });
+        toast.show({ message: "Previewing with sample data - sign in for real results" });
       }
     } catch {
       effectiveTransport = "mock";
@@ -151,7 +151,7 @@ export default function ScanSetup() {
           <HeaderRow
             title="Connect inbox"
             subtitle="Full scan, no limits"
-            onBack={() => (r.canGoBack?.() ? r.back() : r.replace("/(onboarding)/connect"))}
+            onBack={() => (r.canGoBack?.() ? r.back() : r.replace("/account/connect-email"))}
           />
 
           <View style={{ height: 14 }} />
@@ -162,14 +162,14 @@ export default function ScanSetup() {
             </Text>
             <Text style={{ color: t.subtext, marginTop: 8, lineHeight: 19, fontWeight: "600" }}>
               You've used all {EMAIL_SCAN_FREE_CAP} preview email scans. Connect your Gmail
-              for unlimited scanning — it takes 30 seconds and is read-only.
+              for unlimited scanning - it takes 30 seconds and is read-only.
             </Text>
 
             <View style={{ height: 14 }} />
 
             <Button
               title="Connect Gmail instead"
-              onPress={() => r.replace("/(onboarding)/connect")}
+              onPress={() => r.replace("/account/connect-email")}
               left={<Feather name="mail" size={16} color="#fff" />}
             />
 
@@ -197,7 +197,7 @@ export default function ScanSetup() {
         <HeaderRow
           title={tt("ob.scanSetupTitle")}
           subtitle={tt("ob.scanSetupBody")}
-          onBack={() => (r.canGoBack?.() ? r.back() : r.replace("/(onboarding)/connect"))}
+          onBack={() => (r.canGoBack?.() ? r.back() : r.replace("/account/connect-email"))}
         />
 
         <View style={{ height: 14 }} />
@@ -259,7 +259,7 @@ export default function ScanSetup() {
             <RangeOption
               id="year"
               title={tt("ob.rangeYear")}
-              subtitle={isPro ? tt("ob.rangeYearSub") : "Pro — scan the last 12 months"}
+              subtitle={isPro ? tt("ob.rangeYearSub") : "Pro - scan the last 12 months"}
               active={range === "year"}
               onSelect={selectRange}
               locked={!isPro}
@@ -268,7 +268,7 @@ export default function ScanSetup() {
             <RangeOption
               id="all"
               title={tt("ob.rangeAll")}
-              subtitle={isPro ? tt("ob.rangeAllSub") : "Pro — scan your entire inbox history"}
+              subtitle={isPro ? tt("ob.rangeAllSub") : "Pro - scan your entire inbox history"}
               active={range === "all"}
               onSelect={selectRange}
               locked={!isPro}

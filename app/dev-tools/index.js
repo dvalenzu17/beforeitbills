@@ -6,12 +6,16 @@ import {
   View, Text, ScrollView, Alert, Switch, Pressable,
   TextInput, Animated,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme, useThemeSettings } from "../../lib/theme";
 import { setOnboardingDone } from "../../lib/onboardingGate";
 import { useOnboardingStore } from "../../lib/onboardingStore";
 import { useStore } from "../../lib/store";
 import { useEmailImportStore } from "../../lib/emailImportStore";
-import { useRecordingStore, RECORDING_HOOKS } from "../../lib/recordingMode";
+import { useRecordingStore, RECORDING_HOOKS, generatePersona } from "../../lib/recordingMode";
+
+const SUBS_KEY  = "sublytics:subs:v1";
+const BILLS_KEY = "sublytics:bills:v1";
 
 async function copyToClipboard(text) {
   try {
@@ -36,21 +40,22 @@ function SectionLabel({ children, t }) {
   );
 }
 
-function DevItem({ t, icon, title, subtitle, onPress, danger, right }) {
+function DevItem({ t, icon, title, subtitle, onPress, danger, right, accent }) {
+  const accentColor = accent || (danger ? "#FF3B30" : t.text);
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
         padding: 14, borderRadius: 14,
         backgroundColor: pressed ? t.surface2 : t.surface,
-        borderWidth: 1, borderColor: danger ? "#FF3B3033" : t.hairline,
+        borderWidth: 1, borderColor: danger ? "#FF3B3033" : accent ? `${accent}33` : t.hairline,
         flexDirection: "row", alignItems: "center", gap: 12,
         opacity: pressed ? 0.8 : 1,
       })}
     >
-      <Feather name={icon} size={17} color={danger ? "#FF3B30" : t.text} />
+      <Feather name={icon} size={17} color={accentColor} />
       <View style={{ flex: 1 }}>
-        <Text style={{ color: danger ? "#FF3B30" : t.text, fontWeight: "700", fontSize: 14 }}>
+        <Text style={{ color: accentColor, fontWeight: "700", fontSize: 14 }}>
           {title}
         </Text>
         {subtitle ? (
@@ -62,6 +67,19 @@ function DevItem({ t, icon, title, subtitle, onPress, danger, right }) {
   );
 }
 
+function StatBadge({ t, label, value, accent }) {
+  return (
+    <View style={{
+      flex: 1, alignItems: "center", paddingVertical: 10,
+      backgroundColor: t.surface, borderRadius: 12,
+      borderWidth: 1, borderColor: accent ? `${accent}33` : t.hairline,
+    }}>
+      <Text style={{ color: accent || t.accent, fontWeight: "900", fontSize: 18 }}>{value}</Text>
+      <Text style={{ color: t.subtext, fontSize: 10, fontWeight: "700", marginTop: 2 }}>{label}</Text>
+    </View>
+  );
+}
+
 export default function DevTools() {
   const t = useTheme();
   const r = useRouter();
@@ -69,20 +87,26 @@ export default function DevTools() {
 
   const onboardingReset = useOnboardingStore((s) => s.reset);
 
-  const recordingActive = useRecordingStore((s) => s.active);
+  const recordingActive  = useRecordingStore((s) => s.active);
   const recordingPersona = useRecordingStore((s) => s.persona);
-  const personaHistory = useRecordingStore((s) => s.personaHistory);
+  const personaHistory   = useRecordingStore((s) => s.personaHistory);
   const monthlyBurnOverride = useRecordingStore((s) => s.monthlyBurnOverride);
-  const forcePro = useRecordingStore((s) => s.forcePro);
-  const enableRecording = useRecordingStore((s) => s.enable);
+  const forcePro         = useRecordingStore((s) => s.forcePro);
+  const enableRecording  = useRecordingStore((s) => s.enable);
   const disableRecording = useRecordingStore((s) => s.disable);
   const regeneratePersona = useRecordingStore((s) => s.regenerate);
-  const restorePersona = useRecordingStore((s) => s.restorePersona);
+  const restorePersona   = useRecordingStore((s) => s.restorePersona);
   const setMonthlyBurnOverride = useRecordingStore((s) => s.setMonthlyBurnOverride);
-  const setForcePro = useRecordingStore((s) => s.setForcePro);
+  const setForcePro      = useRecordingStore((s) => s.setForcePro);
   const hydrateRecording = useRecordingStore((s) => s.hydrate);
 
-  const resetUserData = useStore((s) => s.resetUserData);
+  const subs           = useStore((s) => s.subs);
+  const bills          = useStore((s) => s.bills);
+  const user           = useStore((s) => s.user);
+  const pro            = useStore((s) => s.pro);
+  const resetUserData  = useStore((s) => s.resetUserData);
+  const loadSubsLocal  = useStore((s) => s.loadSubsLocal);
+  const loadBills      = useStore((s) => s.loadBills);
   const resetEmailStore = useEmailImportStore((s) => s.reset);
 
   React.useEffect(() => { hydrateRecording(); }, []);
@@ -106,7 +130,7 @@ export default function DevTools() {
   async function handleCopyHook(hook, idx) {
     const copied = await copyToClipboard(hook);
     setCopiedHook(idx);
-    showToast(copied ? "Copied to clipboard" : "Clipboard unavailable — install expo-clipboard");
+    showToast(copied ? "Copied to clipboard" : "Clipboard unavailable - install expo-clipboard");
     setTimeout(() => setCopiedHook(null), 2000);
   }
 
@@ -157,12 +181,111 @@ export default function DevTools() {
     );
   }
 
+  // ── QA Presets ──────────────────────────────────────────────────────────────
+
+  async function presetNewUser() {
+    await resetUserData?.();
+    await resetEmailStore?.();
+    await setOnboardingDone(false);
+    onboardingReset?.();
+    showToast("New user state - navigating to onboarding");
+    setTimeout(() => r.replace("/(onboarding)/expectations"), 400);
+  }
+
+  async function presetEmptyAccount() {
+    await AsyncStorage.multiRemove([SUBS_KEY, BILLS_KEY]);
+    await resetEmailStore?.();
+    await loadSubsLocal?.();
+    await loadBills?.();
+    showToast("Empty account - 0 subs, 0 bills");
+    setTimeout(() => r.replace("/(tabs)/"), 400);
+  }
+
+  async function seedFromPersona(personaOverride) {
+    const persona = personaOverride || generatePersona();
+    const now = new Date().toISOString().slice(0, 10);
+
+    const seedSubs = persona.subs.map((s) => ({
+      id: s.id,
+      merchant: s.merchant,
+      title: s.title,
+      domain: s.domain,
+      amount: s.amount,
+      effectiveAmount: s.effectiveAmount,
+      currency: s.currency,
+      cadence: s.cadence,
+      category: s.category,
+      nextDate: s.nextDate || now,
+      nextRenewal: s.nextRenewal || now,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+      tags: [],
+    }));
+
+    const seedBills = persona.bills.map((b) => ({
+      id: b.id,
+      name: b.name,
+      merchant: b.merchant,
+      domain: b.domain || "",
+      amount: b.amount,
+      effectiveAmount: b.effectiveAmount,
+      currency: b.currency,
+      cadence: b.cadence,
+      dueDay: b.dueDay,
+      nextDue: b.nextDate || now,
+      iconKey: b.iconKey,
+      category: b.category,
+      active: true,
+      tags: [],
+    }));
+
+    await AsyncStorage.setItem(SUBS_KEY,  JSON.stringify(seedSubs));
+    await AsyncStorage.setItem(BILLS_KEY, JSON.stringify(seedBills));
+    await loadSubsLocal?.();
+    await loadBills?.();
+    return { subs: seedSubs.length, bills: seedBills.length };
+  }
+
+  async function presetFullAccount() {
+    const { subs: sc, bills: bc } = await seedFromPersona();
+    showToast(`Seeded ${sc} subs + ${bc} bills`);
+    setTimeout(() => r.replace("/(tabs)/"), 400);
+  }
+
+  async function presetHeavyAccount() {
+    // Generate 3 personas and merge their subs/bills for stress testing
+    const p1 = generatePersona();
+    const p2 = generatePersona();
+    const p3 = generatePersona();
+    const now = new Date().toISOString().slice(0, 10);
+
+    const allSubs = [...p1.subs, ...p2.subs, ...p3.subs]
+      .filter((s, i, arr) => arr.findIndex((x) => x.title === s.title) === i) // dedup by name
+      .map((s) => ({ ...s, createdAt: now, updatedAt: now }));
+
+    const allBills = [...p1.bills, ...p2.bills]
+      .filter((b, i, arr) => arr.findIndex((x) => x.name === b.name) === i)
+      .map((b) => ({ ...b, nextDue: b.nextDate || now }));
+
+    await AsyncStorage.setItem(SUBS_KEY,  JSON.stringify(allSubs));
+    await AsyncStorage.setItem(BILLS_KEY, JSON.stringify(allBills));
+    await loadSubsLocal?.();
+    await loadBills?.();
+    showToast(`Heavy: ${allSubs.length} subs + ${allBills.length} bills`);
+    setTimeout(() => r.replace("/(tabs)/"), 400);
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+
   const effectiveBurn = monthlyBurnOverride != null
     ? monthlyBurnOverride
     : recordingPersona?.monthlyBurn ?? 0;
 
   const themeIconMap = { dark: "moon", light: "sun", system: "monitor" };
   const themeIcon = themeIconMap[mode] || "monitor";
+
+  const firstSubId = subs?.[0]?.id;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.bg }}>
@@ -182,6 +305,53 @@ export default function DevTools() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 48 }}>
 
         <Text style={{ fontSize: 24, fontWeight: "900", color: t.text }}>Developer Tools</Text>
+
+        {/* ── STATE INSPECTOR ── */}
+        <View>
+          <SectionLabel t={t}>Current State</SectionLabel>
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+            <StatBadge t={t} label="SUBS"   value={subs?.length ?? 0}  accent="#6366F1" />
+            <StatBadge t={t} label="BILLS"  value={bills?.length ?? 0} accent="#F59E0B" />
+            <StatBadge t={t} label="AUTH"   value={user ? "IN" : "OUT"}  accent={user ? "#10B981" : "#FF3B30"} />
+            <StatBadge t={t} label="PLAN"   value={pro || forcePro ? "PRO" : "FREE"} accent={pro || forcePro ? "#F59E0B" : t.subtext} />
+          </View>
+          {user?.email ? (
+            <Text style={{ color: t.subtext, fontSize: 11, marginLeft: 2 }}>
+              Signed in as {user.email}
+            </Text>
+          ) : null}
+        </View>
+
+        {/* ── QA PRESETS ── */}
+        <View>
+          <SectionLabel t={t}>QA Presets</SectionLabel>
+          <View style={{ gap: 8 }}>
+            <DevItem
+              t={t} icon="user-plus" accent="#6366F1"
+              title="New User"
+              subtitle="Clear everything → open onboarding"
+              onPress={presetNewUser}
+            />
+            <DevItem
+              t={t} icon="inbox" accent="#10B981"
+              title="Empty Account"
+              subtitle="Signed in, 0 subs, 0 bills → home empty state"
+              onPress={presetEmptyAccount}
+            />
+            <DevItem
+              t={t} icon="layers" accent="#F59E0B"
+              title="Full Account"
+              subtitle="4–9 subs + 2–4 bills, realistic data → home"
+              onPress={presetFullAccount}
+            />
+            <DevItem
+              t={t} icon="zap" accent="#EF4444"
+              title="Heavy Account"
+              subtitle="20+ subs + 8 bills - scroll, perf, layout testing"
+              onPress={presetHeavyAccount}
+            />
+          </View>
+        </View>
 
         {/* ── RECORDING MODE ── */}
         <View>
@@ -208,7 +378,7 @@ export default function DevTools() {
                 <View>
                   <Text style={{ color: t.text, fontWeight: "800", fontSize: 15 }}>Recording Mode</Text>
                   <Text style={{ color: t.subtext, fontSize: 12, marginTop: 1 }}>
-                    {recordingActive ? "ON — fake data active" : "OFF — real data"}
+                    {recordingActive ? "ON - fake data active" : "OFF - real data"}
                   </Text>
                 </View>
               </View>
@@ -356,7 +526,7 @@ export default function DevTools() {
         {/* ── HOOK PICKER ── */}
         {recordingActive && (
           <View>
-            <SectionLabel t={t}>Hook Picker — Tap to Copy</SectionLabel>
+            <SectionLabel t={t}>Hook Picker - Tap to Copy</SectionLabel>
             <View style={{ gap: 6 }}>
               {RECORDING_HOOKS.map((hook, i) => (
                 <Pressable
@@ -387,14 +557,42 @@ export default function DevTools() {
         <View>
           <SectionLabel t={t}>Jump to Screen</SectionLabel>
           <View style={{ gap: 8 }}>
+
+            <Text style={{ color: t.tertiary, fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.7, marginLeft: 2 }}>Main</Text>
             <DevItem t={t} icon="home"        title="Home"              onPress={() => r.push("/(tabs)/")} />
             <DevItem t={t} icon="bar-chart-2" title="Insights"          onPress={() => r.push("/(tabs)/insights")} />
-            <DevItem t={t} icon="list"        title="Recurring List"    onPress={() => r.push("/recurring")} />
-            <DevItem t={t} icon="calendar"    title="Calendar"          onPress={() => r.push("/calendar")} />
-            <DevItem t={t} icon="scissors"    title="Optimize"          onPress={() => r.push("/optimize")} />
-            <DevItem t={t} icon="mail"        title="Mail Scan"         onPress={() => r.push("/account/connect-email/connected")} />
-            <DevItem t={t} icon="inbox"       title="Review Queue"      onPress={() => r.push("/account/connect-email/review")} />
-            <DevItem t={t} icon="search"      title="Scan (recording)"  onPress={() => r.push("/(onboarding)/scanning")} />
+            <DevItem t={t} icon="user"        title="Account"           onPress={() => r.push("/(tabs)/account")} />
+
+            <Text style={{ color: t.tertiary, fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.7, marginLeft: 2, marginTop: 4 }}>Subscriptions</Text>
+            <DevItem t={t} icon="list"        title="Subscriptions List"  onPress={() => r.push("/subs")} />
+            <DevItem t={t} icon="search"      title="Search"              onPress={() => r.push("/search")} />
+            <DevItem t={t} icon="plus-circle" title="Add Recurring"       onPress={() => r.push("/add-recurring")} />
+            <DevItem t={t} icon="plus-square" title="Add Bill"            onPress={() => r.push("/add-bill")} />
+            {firstSubId ? (
+              <DevItem t={t} icon="credit-card" title="Sub Detail (first)"  onPress={() => r.push(`/sub/${firstSubId}`)} subtitle={subs?.[0]?.merchant} />
+            ) : null}
+
+            <Text style={{ color: t.tertiary, fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.7, marginLeft: 2, marginTop: 4 }}>Tools</Text>
+            <DevItem t={t} icon="bell"        title="Price Alerts"       onPress={() => r.push("/price-alerts")} />
+            <DevItem t={t} icon="x-circle"    title="Cancel Center"      onPress={() => r.push("/cancel-center")} />
+            <DevItem t={t} icon="trending-up" title="Optimize"           onPress={() => r.push("/optimize")} />
+            <DevItem t={t} icon="calendar"    title="Calendar"           onPress={() => r.push("/calendar")} />
+
+            <Text style={{ color: t.tertiary, fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.7, marginLeft: 2, marginTop: 4 }}>Account</Text>
+            <DevItem t={t} icon="info"        title="Personal Info"      onPress={() => r.push("/account/personal")} />
+            <DevItem t={t} icon="shield"      title="Login & Security"   onPress={() => r.push("/account/security")} />
+            <DevItem t={t} icon="bell"        title="Notifications"      onPress={() => r.push("/account/notifications")} />
+            <DevItem t={t} icon="link"        title="Connected Accounts" onPress={() => r.push("/account/connected")} />
+            <DevItem t={t} icon="settings"    title="Settings"           onPress={() => r.push("/account/settings")} />
+            <DevItem t={t} icon="star"        title="Upgrade / Paywall"  onPress={() => r.push("/account/upgrade")} />
+            <DevItem t={t} icon="lock"        title="Biometric Lock"     onPress={() => r.push("/account/biometric-lock")} />
+            <DevItem t={t} icon="download"    title="Export Data"        onPress={() => r.push("/account/export")} />
+            <DevItem t={t} icon="help-circle" title="Help"               onPress={() => r.push("/account/help")} />
+
+            <Text style={{ color: t.tertiary, fontSize: 10, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.7, marginLeft: 2, marginTop: 4 }}>Email Scan</Text>
+            <DevItem t={t} icon="mail"        title="Connect Email"      onPress={() => r.push("/account/connect-email")} />
+            <DevItem t={t} icon="activity"    title="Scan Activity"      onPress={() => r.push("/account/connect-email/activity")} />
+            <DevItem t={t} icon="inbox"       title="Review Queue"       onPress={() => r.push("/account/connect-email/review")} />
           </View>
         </View>
 
@@ -444,19 +642,40 @@ export default function DevTools() {
             <DevItem t={t} icon="rotate-ccw"  title="Reset + Open"
               onPress={async () => { await resetOnboarding(); r.replace("/(onboarding)/expectations"); }}
             />
-            <DevItem t={t} icon="link"        title="Open Connect Inbox"    onPress={() => r.push("/(onboarding)/connect")} />
+            <DevItem t={t} icon="link"        title="Open Connect Inbox"    onPress={() => r.push("/account/connect-email")} />
           </View>
         </View>
 
         {/* ── DANGER ZONE ── */}
         <View>
           <SectionLabel t={t}>Danger Zone</SectionLabel>
-          <DevItem
-            t={t} icon="trash-2" danger
-            title="Clear All Data"
-            subtitle="Wipes subs, bills, email, onboarding, persona"
-            onPress={nuclearReset}
-          />
+          <View style={{ gap: 8 }}>
+            <DevItem
+              t={t} icon="trash-2" danger
+              title="Clear All Data"
+              subtitle="Wipes subs, bills, email, onboarding, persona"
+              onPress={nuclearReset}
+            />
+            <DevItem
+              t={t} icon="log-out" danger
+              title="Sign Out"
+              subtitle="Returns to sign-in screen"
+              onPress={() => {
+                Alert.alert("Sign out?", undefined, [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Sign out", style: "destructive",
+                    onPress: async () => {
+                      const { supabase } = await import("../../lib/supabase");
+                      await supabase.auth.signOut();
+                      await resetUserData?.();
+                      r.replace("/(auth)/sign-in");
+                    },
+                  },
+                ]);
+              }}
+            />
+          </View>
         </View>
 
       </ScrollView>

@@ -1,5 +1,5 @@
 // app/callback.js
-// OAuth deep-link landing route — hands off to Supabase session exchange.
+// OAuth deep-link landing route - hands off to Supabase session exchange.
 import { useEffect } from "react";
 import { View } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";

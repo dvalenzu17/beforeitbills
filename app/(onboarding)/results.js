@@ -51,7 +51,7 @@ export default function Results() {
 
   async function finish() {
     if (recordingActive) {
-      // Skip onboarding gate mutation — just go to the main app
+      // Skip onboarding gate mutation - just go to the main app
       r.replace("/(tabs)/");
       return;
     }

@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Swipeable } from "react-native-gesture-handler";
 import DraggableFlatList, { ScaleDecorator } from "react-native-draggable-flatlist";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 
@@ -46,6 +46,7 @@ function getNextDate(x) {
 }
 
 function getStatus(x) {
+  if (x?.active === false) return "cancelled";
   const s = norm(x?.status || x?.state || "");
   if (s.includes("trial")) return "trial";
   if (s.includes("pause")) return "paused";
@@ -64,6 +65,44 @@ function getConfidence(x) {
 
 function itemKey(x) {
   return `${x?.kind || "k"}-${x?.id || ""}`;
+}
+
+function FilterSection({ label, children }) {
+  return (
+    <View style={{ gap: 8 }}>
+      <Text style={{ color: "#888", fontSize: 10, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.8 }}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function FilterRow({ children }) {
+  return <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>{children}</View>;
+}
+
+function FilterCheck({ t, active, label, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        flexDirection: "row", alignItems: "center", gap: 6,
+        paddingVertical: 8, paddingHorizontal: 12,
+        borderRadius: 10, borderWidth: 1,
+        borderColor: active ? t.accent : t.hairline,
+        backgroundColor: active ? t.accent + "18" : t.surface2,
+      }}
+    >
+      <View style={{
+        width: 16, height: 16, borderRadius: 4, borderWidth: 1.5,
+        borderColor: active ? t.accent : t.tertiary,
+        backgroundColor: active ? t.accent : "transparent",
+        alignItems: "center", justifyContent: "center",
+      }}>
+        {active ? <Feather name="check" size={10} color="#fff" /> : null}
+      </View>
+      <Text style={{ color: active ? t.accent : t.text, fontWeight: "700", fontSize: 13 }}>{label}</Text>
+    </Pressable>
+  );
 }
 
 function Chip({ active, label, onPress, icon }) {
@@ -238,6 +277,7 @@ export default function RecurringScreen() {
   const t = useTheme();
   const r = useRouter();
   const { t: tt } = useTranslation();
+  const params = useLocalSearchParams();
 
   const getRecurring = useStore((s) => s.getRecurring);
   const subs = useStore((s) => s.subs);
@@ -256,11 +296,12 @@ export default function RecurringScreen() {
 
   const [q, setQ] = useState("");
   const [kind, setKind] = useState("all");
-  const [trialOnly, setTrialOnly] = useState(false);
+  const [trialOnly, setTrialOnly] = useState(params?.filter === "trials");
   const [status, setStatus] = useState("all");
   const [celebration, setCelebration] = useState(null);
   const [conf, setConf] = useState("all");
   const [sort, setSort] = useState("amount");
+  const [filtersOpen, setFiltersOpen] = useState(params?.filter === "trials");
 
   const [proofOpen, setProofOpen] = useState(false);
   const [proofItem, setProofItem] = useState(null);
@@ -355,6 +396,14 @@ export default function RecurringScreen() {
     setConf("all");
     setSort("amount");
   }
+
+  const activeFilterCount = [
+    kind !== "all",
+    trialOnly,
+    status !== "all",
+    conf !== "all",
+    sort !== "amount",
+  ].filter(Boolean).length;
 
   // Shared row action handlers (used by both normal and drag render paths)
   function makeRowActions(x) {
@@ -479,51 +528,106 @@ export default function RecurringScreen() {
         )}
       </View>
 
-      {/* Filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingTop: 12, paddingBottom: 6 }}
-      >
-        <Chip active={kind === "all"} label={tt("recurring_screen.all")} onPress={() => setKind("all")} />
-        <Chip active={kind === "subscription"} label={tt("recurring_screen.subscriptions")} onPress={() => setKind("subscription")} />
-        <Chip active={kind === "bill"} label={tt("recurring_screen.bills")} onPress={() => setKind("bill")} />
-        <Chip active={trialOnly} label={tt("recurring_screen.trials")} onPress={() => setTrialOnly((v) => !v)} />
-        <Chip active={status === "active"} label={tt("recurring_screen.active")} onPress={() => setStatus(status === "active" ? "all" : "active")} />
-        <Chip active={status === "paused"} label={tt("recurring_screen.paused")} onPress={() => setStatus(status === "paused" ? "all" : "paused")} />
-        <Chip active={status === "cancelled"} label={tt("recurring_screen.cancelled")} onPress={() => setStatus(status === "cancelled" ? "all" : "cancelled")} />
-        <Chip active={conf === "high"} label={tt("recurring_screen.highConf")} onPress={() => setConf(conf === "high" ? "all" : "high")} />
-        <Chip active={conf === "low"} label={tt("recurring_screen.lowConf")} onPress={() => setConf(conf === "low" ? "all" : "low")} />
-        <Chip active={sort === "amount"} label={tt("recurring_screen.sortAmount")} onPress={() => setSort("amount")} />
-        <Chip active={sort === "next"} label={tt("recurring_screen.sortNext")} onPress={() => setSort("next")} />
-        <Chip active={sort === "name"} label={tt("recurring_screen.sortName")} onPress={() => setSort("name")} />
-        <Chip
-          active={sort === "custom"}
-          label={tt("recurring_screen.sortCustom")}
-          icon="menu"
-          onPress={() => {
-            if (sort !== "custom") {
-              // Seed sort order from current filtered list on first activation
-              if (sortOrder.length === 0) {
-                setSortOrder(filtered.map(itemKey));
-              }
-              setSort("custom");
-            } else {
-              setSort("amount");
-            }
-          }}
-        />
-      </ScrollView>
+      {/* Filter bar: count + toggle button */}
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 12 }}>
+        <Text style={{ color: t.subtext, fontWeight: "800" }}>
+          {filtered.length} {tt("recurring_screen.results").replace("{{n}} ", "")}
+        </Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {activeFilterCount > 0 && (
+            <Pressable
+              onPress={clearFilters}
+              style={{
+                paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999,
+                borderWidth: 1, borderColor: "#FF3B3055",
+                backgroundColor: "#FF3B3011",
+                flexDirection: "row", alignItems: "center", gap: 5,
+              }}
+            >
+              <Feather name="x" size={12} color="#FF3B30" />
+              <Text style={{ color: "#FF3B30", fontWeight: "800", fontSize: 12 }}>Clear ({activeFilterCount})</Text>
+            </Pressable>
+          )}
+          <Pressable
+            onPress={() => setFiltersOpen((v) => !v)}
+            style={{
+              paddingVertical: 7, paddingHorizontal: 12, borderRadius: 999,
+              borderWidth: 1,
+              borderColor: filtersOpen || activeFilterCount > 0 ? t.accent : t.hairline,
+              backgroundColor: filtersOpen || activeFilterCount > 0 ? t.accent + "18" : t.surface2,
+              flexDirection: "row", alignItems: "center", gap: 5,
+            }}
+          >
+            <Feather name="sliders" size={13} color={filtersOpen || activeFilterCount > 0 ? t.accent : t.text} />
+            <Text style={{ color: filtersOpen || activeFilterCount > 0 ? t.accent : t.text, fontWeight: "800", fontSize: 12 }}>
+              Filter{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Collapsible filter panel */}
+      {filtersOpen && (
+        <View style={{
+          marginTop: 10, padding: 14, borderRadius: 16,
+          backgroundColor: t.surface, borderWidth: 1, borderColor: t.hairline, gap: 14,
+        }}>
+
+          <FilterSection label="Type">
+            <FilterRow>
+              <FilterCheck t={t} active={kind === "all"} label="All" onPress={() => setKind("all")} />
+              <FilterCheck t={t} active={kind === "subscription"} label="Subscriptions" onPress={() => setKind(kind === "subscription" ? "all" : "subscription")} />
+              <FilterCheck t={t} active={kind === "bill"} label="Bills" onPress={() => setKind(kind === "bill" ? "all" : "bill")} />
+              <FilterCheck t={t} active={trialOnly} label="Trials only" onPress={() => setTrialOnly((v) => !v)} />
+            </FilterRow>
+          </FilterSection>
+
+          <FilterSection label="Status">
+            <FilterRow>
+              <FilterCheck t={t} active={status === "all"} label="All" onPress={() => setStatus("all")} />
+              <FilterCheck t={t} active={status === "active"} label="Active" onPress={() => setStatus(status === "active" ? "all" : "active")} />
+              <FilterCheck t={t} active={status === "paused"} label="Paused" onPress={() => setStatus(status === "paused" ? "all" : "paused")} />
+              <FilterCheck t={t} active={status === "cancelled"} label="Cancelled" onPress={() => setStatus(status === "cancelled" ? "all" : "cancelled")} />
+            </FilterRow>
+          </FilterSection>
+
+          <FilterSection label="Sort by">
+            <FilterRow>
+              <FilterCheck t={t} active={sort === "amount"} label="Amount" onPress={() => setSort("amount")} />
+              <FilterCheck t={t} active={sort === "next"} label="Next date" onPress={() => setSort("next")} />
+              <FilterCheck t={t} active={sort === "name"} label="Name" onPress={() => setSort("name")} />
+              <FilterCheck
+                t={t}
+                active={sort === "custom"}
+                label="Custom order"
+                onPress={() => {
+                  if (sort !== "custom") {
+                    if (sortOrder.length === 0) setSortOrder(filtered.map(itemKey));
+                    setSort("custom");
+                  } else {
+                    setSort("amount");
+                  }
+                }}
+              />
+            </FilterRow>
+          </FilterSection>
+
+          <FilterSection label="Confidence">
+            <FilterRow>
+              <FilterCheck t={t} active={conf === "all"} label="All" onPress={() => setConf("all")} />
+              <FilterCheck t={t} active={conf === "high"} label="High" onPress={() => setConf(conf === "high" ? "all" : "high")} />
+              <FilterCheck t={t} active={conf === "low"} label="Low" onPress={() => setConf(conf === "low" ? "all" : "low")} />
+            </FilterRow>
+          </FilterSection>
+
+        </View>
+      )}
 
       {isDragMode && (
         <Text style={{ color: t.accent, fontWeight: "700", fontSize: 12, marginTop: 4, marginLeft: 2 }}>
           {tt("recurring_screen.dragHint")}
         </Text>
       )}
-
-      <Text style={{ color: t.subtext, fontWeight: "800", marginTop: 6 }}>
-        {filtered.length} {tt("recurring_screen.results").replace("{{n}} ", "")}
-      </Text>
     </View>
   );
 
@@ -540,7 +644,7 @@ export default function RecurringScreen() {
       secondary={{
         title: tt("recurring_screen.connectInbox"),
         icon: "link",
-        onPress: () => r.push("/(onboarding)/connect"),
+        onPress: () => r.push("/account/connect-email"),
       }}
     />
   ) : filtered.length === 0 ? (

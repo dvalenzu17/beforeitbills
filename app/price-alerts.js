@@ -26,7 +26,7 @@ function pickName(x) {
   return x?.brand || x?.merchant || x?.name || x?.title || x?.fromName || "Unknown";
 }
 function safeDate(d) {
-  if (!d) return "—";
+  if (!d) return "-";
   try {
     const dt = typeof d === "string" ? new Date(d) : d;
     return dt.toISOString().slice(0, 10);
@@ -173,7 +173,7 @@ export default function PriceAlerts() {
             Price-change alerts
           </Text>
           <Text style={{ fontSize: 15, color: t.subtext, textAlign: "center", lineHeight: 22, marginBottom: 32 }}>
-            Know the moment any subscription quietly increases its price — before it hits your card.
+            Know the moment any subscription quietly increases its price - before it hits your card.
           </Text>
 
           <Pressable
@@ -302,13 +302,13 @@ export default function PriceAlerts() {
                 <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: 12 }}>
                   <Text style={{ color: t.subtext, fontWeight: "900" }}>Before</Text>
                   <Text style={{ color: t.text, fontWeight: "900" }}>
-                    {a.oldAmount != null ? (formatMoney?.(a.oldAmount, a.currency) ?? `${a.oldAmount} ${a.currency}`) : "—"}
+                    {a.oldAmount != null ? (formatMoney?.(a.oldAmount, a.currency) ?? `${a.oldAmount} ${a.currency}`) : "-"}
                   </Text>
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: 6 }}>
                   <Text style={{ color: t.subtext, fontWeight: "900" }}>After</Text>
                   <Text style={{ color: t.text, fontWeight: "900" }}>
-                    {a.newAmount != null ? (formatMoney?.(a.newAmount, a.currency) ?? `${a.newAmount} ${a.currency}`) : "—"}
+                    {a.newAmount != null ? (formatMoney?.(a.newAmount, a.currency) ?? `${a.newAmount} ${a.currency}`) : "-"}
                   </Text>
                 </View>
 

@@ -45,7 +45,7 @@ function pickPackage(packages, kind) {
   return null;
 }
 
-const priceStr = (pkg) => pkg?.product?.priceString ?? "—";
+const priceStr = (pkg) => pkg?.product?.priceString ?? "-";
 const hasTrial = (pkg)  => !!(pkg?.product?.introductoryPrice ?? pkg?.product?.intro_price);
 
 // Builds the 1–2 plan options to display, with a safe fallback if RC package
@@ -130,8 +130,9 @@ function PlanCard({ title, price, caption, badge, active, onPress, isDark }) {
 
 export default function PaywallSheet({ onClose }) {
   const t       = useTheme();
-  const isDark  = t.surface === "#161B24"; // DARK.surface — reliable sentinel
+  const isDark  = t.surface === "#161B24"; // DARK.surface - reliable sentinel
 
+  const isPro           = usePurchasesStore((s) => s.isPro);
   const offerings       = usePurchasesStore((s) => s.offerings);
   const loading         = usePurchasesStore((s) => s.loading);
   const loadOfferings   = usePurchasesStore((s) => s.loadOfferings);
@@ -146,7 +147,7 @@ export default function PaywallSheet({ onClose }) {
     track("paywall_seen");
     loadOfferings();
     if (!canUseNativePurchases()) {
-      setMsg("Purchases require a dev build — not available in Expo Go.");
+      setMsg("Purchases require a dev build - not available in Expo Go.");
     }
   }, []);
 
@@ -154,7 +155,7 @@ export default function PaywallSheet({ onClose }) {
 
   useEffect(() => {
     if (!loading && canUseNativePurchases() && packages.length === 0) {
-      setMsg("No plans found. Add products to your default offering in RevenueCat.");
+      setMsg("Unable to load plans. Check your connection and try again.");
     } else if (packages.length > 0) {
       setMsg("");
     }
@@ -195,9 +196,17 @@ export default function PaywallSheet({ onClose }) {
     try {
       const res = await purchasePackage(selectedPkg);
       if (!res.ok) {
-        if (!res.error?.toLowerCase().includes("cancel")) {
+        const errLower = (res.error || "").toLowerCase();
+        if (!errLower.includes("cancel")) {
           Haptics.notificationAsync?.(Haptics.NotificationFeedbackType.Error).catch(() => {});
-          setMsg(res.error || "Purchase failed. Please try again.");
+          const friendly = errLower.includes("network") || errLower.includes("connection")
+            ? "No connection. Check your internet and try again."
+            : errLower.includes("payment") || errLower.includes("billing")
+            ? "Payment failed. Check your payment method in App Store settings."
+            : errLower.includes("not_allowed") || errLower.includes("storekit")
+            ? "Purchases are restricted on this device."
+            : "Purchase failed. Please try again.";
+          setMsg(friendly);
         }
       } else {
         Haptics.notificationAsync?.(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -242,6 +251,178 @@ export default function PaywallSheet({ onClose }) {
   const closeIconBg       = isDark ? "rgba(255,255,255,0.08)"  : "rgba(0,0,0,0.06)";
   const closeIconColor    = isDark ? "rgba(255,255,255,0.55)"  : t.subtext;
   const proBadgeShadow    = isDark ? 0.65 : 0.35;
+
+  // ── Pro screen (already subscribed) ─────────────────────────────────────
+
+  if (isPro) {
+    return (
+      <LinearGradient
+        colors={bgGradient}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <SafeAreaView style={{ flex: 1 }}>
+          <Pressable
+            onPress={onClose}
+            hitSlop={16}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            style={{
+              position: "absolute",
+              top: Platform.OS === "android" ? 12 : 4,
+              right: 20,
+              zIndex: 20,
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              backgroundColor: closeIconBg,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Feather name="x" size={16} color={closeIconColor} />
+          </Pressable>
+
+          <View style={{ flex: 1, paddingHorizontal: 22, alignItems: "center", justifyContent: "center", gap: 16 }}>
+            <Animated.View entering={ZoomIn.duration(380)} style={{ alignItems: "center", gap: 12 }}>
+              <View
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: 22,
+                  overflow: "hidden",
+                  shadowColor: "#6366F1",
+                  shadowOpacity: 0.55,
+                  shadowRadius: 22,
+                  shadowOffset: { width: 0, height: 4 },
+                  elevation: 12,
+                }}
+              >
+                <Image
+                  source={require("../assets/BeforeItBillsLogo.png")}
+                  style={{ width: 72, height: 72 }}
+                  resizeMode="cover"
+                />
+              </View>
+
+              <View
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 8,
+                  backgroundColor: "#6366F1",
+                  shadowColor: "#6366F1",
+                  shadowOpacity: proBadgeShadow,
+                  shadowRadius: 10,
+                  shadowOffset: { width: 0, height: 0 },
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "900", fontSize: 11, letterSpacing: 1.2 }}>
+                  PRO ACTIVE
+                </Text>
+              </View>
+
+              <Text
+                style={{
+                  fontSize: 28,
+                  fontWeight: "900",
+                  color: headlineColor,
+                  textAlign: "center",
+                  letterSpacing: -0.5,
+                  lineHeight: 34,
+                }}
+              >
+                You're all set.
+              </Text>
+
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: "500",
+                  color: subheadlineColor,
+                  textAlign: "center",
+                  lineHeight: 20,
+                  maxWidth: 280,
+                }}
+              >
+                BeforeItBills Pro is active. All features are unlocked.
+              </Text>
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(200).duration(380)} style={{ width: "100%", gap: 10, marginTop: 8 }}>
+              {FEATURES.map((f) => (
+                <View
+                  key={f.label}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      backgroundColor: f.color + (isDark ? "30" : "18"),
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Feather name={f.icon} size={13} color={f.color} />
+                  </View>
+                  <Text style={{ color: featureTextColor, fontWeight: "700", fontSize: 14, flex: 1 }}>
+                    {f.label}
+                  </Text>
+                  <Feather name="check-circle" size={15} color="#30D158" />
+                </View>
+              ))}
+            </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(380).duration(380)} style={{ width: "100%", marginTop: 8 }}>
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                style={{
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  shadowColor: "#6366F1",
+                  shadowOpacity: isDark ? 0.45 : 0.3,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 5 },
+                  elevation: 10,
+                }}
+              >
+                <LinearGradient
+                  colors={["#6366F1", "#8B5CF6"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ paddingVertical: 17, alignItems: "center" }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16, letterSpacing: 0.2 }}>
+                    Continue
+                  </Text>
+                </LinearGradient>
+              </Pressable>
+
+              <Pressable
+                onPress={handleRestore}
+                hitSlop={12}
+                accessibilityRole="button"
+                style={{ alignItems: "center", marginTop: 14 }}
+              >
+                <Text style={{ color: footerTextColor, fontWeight: "700", fontSize: 12 }}>
+                  Manage subscription
+                </Text>
+              </Pressable>
+            </Animated.View>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -349,7 +530,7 @@ export default function PaywallSheet({ onClose }) {
             </Text>
           </Animated.View>
 
-          {/* ── Features — flex:1 fills the middle ── */}
+          {/* ── Features - flex:1 fills the middle ── */}
           <Animated.View
             entering={FadeInDown.delay(80).duration(380)}
             style={{ flex: 1, justifyContent: "center", minHeight: 0 }}

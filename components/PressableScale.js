@@ -30,7 +30,7 @@ export default function PressableScale({
       onLongPress={onLongPress}
       onPress={() => {
         if (disabled) return;
-        // Fire haptic without awaiting — handler must not be blocked
+        // Fire haptic without awaiting - handler must not be blocked
         try {
           if (haptic === "selection") Haptics.selectionAsync();
           if (haptic === "impactLight")

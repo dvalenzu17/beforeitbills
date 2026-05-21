@@ -60,10 +60,10 @@ function SubSummary({ sub, label, isWinner, t, tt }) {
  * Shows one conflict at a time.
  *
  * Props:
- *   conflicts       — array of { id, local, remote }
- *   onKeepLocal(id) — user chose their version
- *   onKeepRemote(id) — user chose the other device's version
- *   onSkip(id)      — dismiss without resolving (comes back next sync)
+ *   conflicts       - array of { id, local, remote }
+ *   onKeepLocal(id) - user chose their version
+ *   onKeepRemote(id) - user chose the other device's version
+ *   onSkip(id)      - dismiss without resolving (comes back next sync)
  */
 export default function ConflictResolutionSheet({ conflicts, onKeepLocal, onKeepRemote, onSkip }) {
   const t = useTheme();

@@ -50,9 +50,7 @@ export default function AddRecurring() {
         setNlText('');
         setFormKey((k) => k + 1);
       })
-      .catch(() => {
-        // Parse failed — leave text in the input so user can edit it manually
-      })
+      .catch(() => { /* parse failed - user fills in manually */ })
       .finally(() => setNlParsing(false));
   }, []);
 
@@ -102,7 +100,7 @@ export default function AddRecurring() {
       setNlText("");
       setFormKey((k) => k + 1); // re-mount form with new initialValues
     } catch (e) {
-      Alert.alert("Couldn't parse", e?.message || "Fill in the fields below manually.");
+      Alert.alert("Couldn't parse", "Fill in the fields below manually.");
     } finally {
       setNlParsing(false);
     }

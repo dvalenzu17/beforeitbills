@@ -84,8 +84,12 @@ export default function RecapSheet({ visible, onClose }) {
     },
   })).current;
 
-  const subs = useStore((s) => s.subs);
+  const allSubs = useStore((s) => s.subs);
   const recap = useStore((s) => s.recap);
+  const subs = useMemo(
+    () => (allSubs || []).filter((s) => s?.active !== false && !!s?.nextRenewal),
+    [allSubs]
+  );
   const saveRecapAnswer = useStore((s) => s.saveRecapAnswer);
   const completeRecap = useStore((s) => s.completeRecap);
   const getRecapRecommendations = useStore((s) => s.getRecapRecommendations);
@@ -127,7 +131,7 @@ export default function RecapSheet({ visible, onClose }) {
 
   async function handleShare() {
     const lines = [
-      `📊 My ${mk} subscription recap — BeforeItBills`,
+      `📊 My ${mk} subscription recap - BeforeItBills`,
       ``,
       `💸 Total monthly spend: ${formatMoney(totalMonthly, 'USD')}`,
       `✂️  Cancel: ${buckets.cancel}  |  ⬇️ Downgrade: ${buckets.downgrade}  |  ✅ Keep: ${buckets.keep}`,
@@ -142,7 +146,7 @@ export default function RecapSheet({ visible, onClose }) {
       lines.push('Top decisions:');
       recs.slice(0, 4).forEach((x) => {
         const icon = x.decision === 'Cancel' ? '❌' : x.decision === 'Downgrade/Pause' ? '⬇️' : '✅';
-        lines.push(`${icon} ${x.sub.merchant} — ${x.decision}`);
+        lines.push(`${icon} ${x.sub.merchant} - ${x.decision}`);
       });
     }
 
@@ -153,7 +157,7 @@ export default function RecapSheet({ visible, onClose }) {
       track('recap_shared');
       await Share.share({ message: lines.join('\n') });
     } catch (e) {
-      // user dismissed — no-op
+      // user dismissed - no-op
     }
   }
 
@@ -259,7 +263,7 @@ export default function RecapSheet({ visible, onClose }) {
             {subs.length === 0 ? (
               <SectionCard t={t}>
                 <Text style={{ color: t.subtext, lineHeight: 19 }}>
-                  Add subscriptions first — then Recap becomes your savings cheat code.
+                  Add subscriptions first - then Recap becomes your savings cheat code.
                 </Text>
               </SectionCard>
             ) : null}
@@ -343,7 +347,7 @@ export default function RecapSheet({ visible, onClose }) {
             <SectionCard t={t}>
               <Text style={{ color: t.text, fontWeight: '900', fontSize: 16 }}>Recommendations</Text>
               <Text style={{ color: t.subtext, marginTop: 4, lineHeight: 19 }}>
-                Based on your answers — not financial advice, just operational excellence.
+                Based on your answers - not financial advice, just operational excellence.
               </Text>
 
               {recs.length === 0 ? (

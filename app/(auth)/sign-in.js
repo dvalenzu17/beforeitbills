@@ -164,7 +164,7 @@ export default function LoginScreen() {
     try {
       await GoogleSignin.hasPlayServices();
       const { raw, hashed } = await generateNonce();
-      const response = await GoogleSignin.signIn({ nonce: raw });
+      const response = await GoogleSignin.signIn({ nonce: hashed });
       const idToken = response?.data?.idToken;
       if (!idToken) throw new Error("No ID token returned from Google");
 

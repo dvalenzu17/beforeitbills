@@ -354,7 +354,20 @@
       "connect": "Connecter Gmail",
       "connecting": "Connexion...",
       "skip": "Ignorer pour l'instant"
-    }
+    },
+    "scanningTitle": "Analyse de votre boîte mail",
+    "scanningSub": "Recherche sur les derniers {{range}}",
+    "range90": "90 jours",
+    "rangeAll": "toute la période",
+    "rangeYear": "1 an",
+    "emailsScanned": "{{n}} e-mails analysés",
+    "receiptsFound": "{{n}} reçus trouvés",
+    "subsDetected": "{{n}} abonnements détectés",
+    "scanningHint": "Cela peut prendre une minute. Les résultats apparaissent au fur et à mesure.",
+    "scanError": "Une erreur s'est produite. Vos résultats peuvent être partiels.",
+    "viewResults": "Voir les résultats",
+    "keepScanning": "Continuer l'analyse",
+    "stop": "Arrêter"
   },
   "scanActivity": {
     "title": "Activité des analyses",

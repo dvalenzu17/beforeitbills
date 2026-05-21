@@ -14,8 +14,8 @@
  * We inject an iOS ≥ 26 early-return into the @catch block so the
  * Hermes heap is never touched from a GCD thread on iOS 26.
  *
- * This runs in the Podfile post_install hook — after `pod install`
- * downloads the source — so the file is compiled with the patch applied.
+ * This runs in the Podfile post_install hook - after `pod install`
+ * downloads the source - so the file is compiled with the patch applied.
  */
 
 const { withDangerousMod } = require('@expo/config-plugins');

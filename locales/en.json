@@ -402,7 +402,20 @@
       "connect": "Connect Gmail",
       "connecting": "Connecting...",
       "skip": "Skip for now"
-    }
+    },
+    "scanningTitle": "Scanning your inbox",
+    "scanningSub": "Looking through the last {{range}}",
+    "range90": "90 days",
+    "rangeAll": "all time",
+    "rangeYear": "1 year",
+    "emailsScanned": "{{n}} emails scanned",
+    "receiptsFound": "{{n}} receipts found",
+    "subsDetected": "{{n}} subscriptions detected",
+    "scanningHint": "This may take a minute. Results appear as we find them.",
+    "scanError": "Something went wrong. Your results may be partial.",
+    "viewResults": "View results",
+    "keepScanning": "Keep scanning",
+    "stop": "Stop"
   },
   "lang": {
     "title": "Language"

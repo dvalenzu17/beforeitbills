@@ -48,6 +48,7 @@
     "i18next": "^25.8.0",
     "mitt": "^3.0.1",
     "moti": "^0.30.0",
+    "posthog-react-native": "^4.45.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-i18next": "^16.5.3",
