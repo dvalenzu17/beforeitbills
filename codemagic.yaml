@@ -7,10 +7,12 @@ workflows:
   unit-tests:
     name: Unit Tests & Quality Gates
     max_build_duration: 15
-    instance_type: linux
+    instance_type: mac_mini_m2
 
     environment:
       node: 20
+      xcode: 26.0.1
+      cocoapods: default
 
     scripts:
       - name: Install JS dependencies
