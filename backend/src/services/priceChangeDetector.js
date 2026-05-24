@@ -6,7 +6,7 @@
  */
 
 import pg from 'pg';
-import { sendPushToUser } from './pushService.js';
+import { dispatchImmediate, dispatchDigest } from './notificationDispatcher.js';
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
@@ -31,16 +31,10 @@ export async function recordPriceHistory(subscriptionId, userId, amount, currenc
  * Compare current amount against latest stored history for a merchant.
  * Returns null if no change (or no prior history).
  * Returns { direction, oldAmount, newAmount, delta, subscriptionId } on change.
- *
- * @param {string} userId
- * @param {string} merchant
- * @param {number|null} newAmount
- * @param {string} currency
  */
 export async function detectPriceChange(userId, merchant, newAmount, currency = 'USD') {
   if (newAmount == null) return null;
 
-  // Look up subscription id
   const { rows: subs } = await pool.query(
     `SELECT id FROM subscriptions WHERE user_id = $1 AND merchant = $2 LIMIT 1`,
     [userId, merchant]
@@ -48,7 +42,6 @@ export async function detectPriceChange(userId, merchant, newAmount, currency = 
   if (!subs.length) return null;
   const subscriptionId = subs[0].id;
 
-  // Latest history entry for this subscription
   const { rows: history } = await pool.query(
     `SELECT amount FROM subscription_price_history
      WHERE subscription_id = $1
@@ -58,7 +51,6 @@ export async function detectPriceChange(userId, merchant, newAmount, currency = 
   );
 
   if (!history.length) {
-    // First time we see this merchant — establish baseline, no alert
     await recordPriceHistory(subscriptionId, userId, newAmount, currency);
     return null;
   }
@@ -66,10 +58,8 @@ export async function detectPriceChange(userId, merchant, newAmount, currency = 
   const oldAmount = Number(history[0].amount);
   const current   = Number(newAmount);
 
-  // No meaningful change (within 1 cent tolerance)
   if (Math.abs(current - oldAmount) < 0.01) return null;
 
-  // Record new price
   await recordPriceHistory(subscriptionId, userId, current, currency);
 
   return {
@@ -82,13 +72,29 @@ export async function detectPriceChange(userId, merchant, newAmount, currency = 
 }
 
 /**
+ * Record an event in subscription_events with application-level dedup.
+ * Replaces the ON CONFLICT approach (not possible with timestamptz in index).
+ */
+async function recordEventIfNew(subscriptionId, userId, eventType, metadata, windowDays = 30) {
+  const { rows } = await pool.query(
+    `SELECT id FROM subscription_events
+     WHERE subscription_id = $1 AND event_type = $2
+       AND created_at > now() - ($3 || ' days')::interval
+     LIMIT 1`,
+    [subscriptionId, eventType, windowDays]
+  );
+  if (rows.length) return false; // already recorded
+
+  await pool.query(
+    `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata, created_at)
+     VALUES ($1, $2, $3, $4, now())`,
+    [subscriptionId, userId, eventType, JSON.stringify(metadata)]
+  );
+  return true;
+}
+
+/**
  * Run price change detection for all detected subscriptions from a scan.
- * Fires push notification on price increases.
- * Decreases are recorded silently (surfaced in annual digest).
- *
- * @param {string}   userId
- * @param {Array}    detectedSubs  - Array of subscription objects from detectRecurringSubscriptions
- * @param {object}   logger
  */
 export async function processPriceChanges(userId, detectedSubs, logger = console) {
   const results = [];
@@ -102,50 +108,29 @@ export async function processPriceChanges(userId, detectedSubs, logger = console
 
       results.push({ merchant: sub.merchant, ...change });
 
+      const payload = {
+        subscriptionId: change.subscriptionId,
+        merchant: sub.merchant,
+        oldAmount: change.oldAmount,
+        newAmount: change.newAmount,
+        currency: sub.currency || 'USD',
+      };
+
       if (change.direction === 'increase') {
-        const sym = currencySymbol(sub.currency);
-        const title = `Price increase: ${sub.merchant}`;
-        const body  = `Went from ${sym}${change.oldAmount.toFixed(2)} to ${sym}${change.newAmount.toFixed(2)}`;
-
-        await sendPushToUser(userId, title, body, {
-          type: 'price_increase',
-          merchant: sub.merchant,
-          oldAmount: change.oldAmount,
-          newAmount: change.newAmount,
-        }, logger);
-
-        // Record event for deduplication / digest
-        await pool.query(
-          `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata)
-           VALUES ($1, $2, 'price_increase', $3)
-           ON CONFLICT DO NOTHING`,
-          [change.subscriptionId, userId, JSON.stringify({ old: change.oldAmount, new: change.newAmount })]
-        ).catch(() => {});
-      }
-
-      if (change.direction === 'decrease') {
-        // Record for digest — no push
-        await pool.query(
-          `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata)
-           VALUES ($1, $2, 'price_decrease', $3)
-           ON CONFLICT DO NOTHING`,
-          [change.subscriptionId, userId, JSON.stringify({ old: change.oldAmount, new: change.newAmount })]
-        ).catch(() => {});
+        const isNew = await recordEventIfNew(change.subscriptionId, userId, 'price_increase', payload, 30);
+        if (isNew) {
+          await dispatchImmediate(userId, 'price_increase', payload, logger);
+        }
+      } else {
+        const isNew = await recordEventIfNew(change.subscriptionId, userId, 'price_decrease', payload, 30);
+        if (isNew) {
+          await dispatchDigest(userId, 'price_decrease', payload);
+        }
       }
     } catch (err) {
-      logger.warn?.({ err, merchant: sub.merchant }, '[price-change] error processing merchant');
+      logger.warn?.({ err, merchant: sub.merchant }, '[price-change] error');
     }
   }
 
   return results;
-}
-
-function currencySymbol(currency) {
-  switch ((currency || 'USD').toUpperCase()) {
-    case 'USD': return '$';
-    case 'EUR': return '€';
-    case 'GBP': return '£';
-    case 'CAD': return 'CA$';
-    default:    return `${currency} `;
-  }
 }

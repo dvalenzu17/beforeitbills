@@ -10,7 +10,13 @@
  *   - Trial email detection (Feature 3)
  *   - Annual renewal warnings (Feature 4)
  *   - Re-billing detection (Feature 5)
+ *   - Dormancy scoring (Feature D)
+ *   - Shared subscription detection (Feature C) — daily
  *   - Creep score update (Feature 6)
+ *   - Streak update (Feature G)
+ *   - Weekly digest (Feature F) — Mondays
+ *   - Anniversary digests (Feature 7) — daily
+ *   - Trial notifications (Feature 3) — daily
  */
 
 import cron from 'node-cron';
@@ -26,7 +32,7 @@ import {
   markStaleSubscriptions,
   saveScanMetadata,
 } from '../db/index.js';
-import { sendPushToUser } from './pushService.js';
+import { dispatchImmediate } from './notificationDispatcher.js';
 import { processPriceChanges } from './priceChangeDetector.js';
 import { processTrialEmails, checkTrialNotifications } from './trialDetector.js';
 import { updateCreepScore } from './creepScore.js';
@@ -51,18 +57,35 @@ function daysBetween(dateA, dateB) {
   return Math.ceil(Math.abs(dateB - dateA) / (1000 * 60 * 60 * 24));
 }
 
+/**
+ * Check whether a subscription_events record exists for this type within a window.
+ * Used for application-level dedup (no unique DB index on timestamptz truncation).
+ */
+async function hasRecentEvent(subscriptionId, userId, eventType, windowDays = 30) {
+  const { rows } = await pool.query(
+    `SELECT id FROM subscription_events
+     WHERE subscription_id = $1 AND user_id = $2 AND event_type = $3
+       AND created_at > now() - ($4 || ' days')::interval
+     LIMIT 1`,
+    [subscriptionId, userId, eventType, windowDays]
+  );
+  return rows.length > 0;
+}
+
+async function recordEvent(subscriptionId, userId, eventType, metadata) {
+  await pool.query(
+    `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata, created_at)
+     VALUES ($1, $2, $3, $4, now())`,
+    [subscriptionId, userId, eventType, JSON.stringify(metadata || {})]
+  );
+}
+
 // ── Per-user scan ─────────────────────────────────────────────────────────────
 
-/**
- * Run a background scan for a single user.
- * Safe to call concurrently for different users.
- * Never throws — catches and logs all errors.
- */
 export async function runBackgroundScanForUser(userId, logger = console) {
   const started = Date.now();
 
   try {
-    // Determine how many days back to scan (since last scan, max 7 days, min 1)
     const { rows: profileRows } = await pool.query(
       `SELECT last_background_scan_at FROM profiles WHERE id = $1`,
       [userId]
@@ -73,19 +96,18 @@ export async function runBackgroundScanForUser(userId, logger = console) {
 
     const daysBack = lastScan
       ? Math.max(1, Math.min(7, daysBetween(lastScan, new Date()) + 1))
-      : 7; // first background scan — look back 7 days
+      : 7;
 
-    // Snapshot currently inactive merchants BEFORE upsert (for re-billing detection)
+    // Snapshot inactive merchants before upsert (for re-billing detection)
     const { rows: inactiveRows } = await pool.query(
-      `SELECT merchant, last_seen_at FROM subscriptions
-       WHERE user_id = $1 AND is_active = false`,
+      `SELECT merchant, last_seen_at FROM subscriptions WHERE user_id = $1 AND is_active = false`,
       [userId]
     );
     const inactiveMerchants = new Map(
       inactiveRows.map(r => [r.merchant, new Date(r.last_seen_at || 0)])
     );
 
-    // Snapshot existing merchants BEFORE upsert (for new-subscription detection)
+    // Snapshot existing merchants before upsert (for new-subscription detection)
     const { rows: existingRows } = await pool.query(
       `SELECT merchant FROM subscriptions WHERE user_id = $1`,
       [userId]
@@ -93,6 +115,7 @@ export async function runBackgroundScanForUser(userId, logger = console) {
     const existingMerchants = new Set(existingRows.map(r => r.merchant));
 
     let allDetected = [];
+    let allRawEmails = [];
 
     // ── Gmail scan ────────────────────────────────────────────────────────────
     const { rows: gmailRows } = await pool.query(
@@ -106,15 +129,14 @@ export async function runBackgroundScanForUser(userId, logger = console) {
         const messageRefs = await listMessages(accessToken, { daysBack });
 
         if (messageRefs.length) {
-          const limit   = pLimit(25);
-          const emails  = (
+          const limit  = pLimit(25);
+          const emails = (
             await Promise.all(messageRefs.map(({ id }) => limit(() => fetchMessage(accessToken, id))))
           ).filter(Boolean);
 
+          allRawEmails = allRawEmails.concat(emails);
           const detected = await detectRecurringSubscriptions(emails, 'background_gmail');
           allDetected = allDetected.concat(detected);
-
-          // Trial detection uses the raw email objects (with subject/snippet)
           await processTrialEmails(userId, emails, logger).catch(() => {});
         }
       } catch (err) {
@@ -122,7 +144,7 @@ export async function runBackgroundScanForUser(userId, logger = console) {
       }
     }
 
-    // ── IMAP scan (all stored providers) ─────────────────────────────────────
+    // ── IMAP scan ─────────────────────────────────────────────────────────────
     const { rows: imapRows } = await pool.query(
       `SELECT provider, imap_user, imap_pass FROM imap_credentials WHERE user_id = $1`,
       [userId]
@@ -131,11 +153,7 @@ export async function runBackgroundScanForUser(userId, logger = console) {
     for (const cred of imapRows) {
       try {
         let pass;
-        try {
-          pass = decryptCredential(cred.imap_pass);
-        } catch {
-          continue; // stale/invalid creds — skip silently
-        }
+        try { pass = decryptCredential(cred.imap_pass); } catch { continue; }
 
         const { rawEmails } = await scanImapInbox({
           provider: cred.provider,
@@ -144,10 +162,10 @@ export async function runBackgroundScanForUser(userId, logger = console) {
           daysBack,
         });
 
-        const detected = await detectRecurringSubscriptions(rawEmails, `background_imap_${cred.provider}`);
+        allRawEmails = allRawEmails.concat(rawEmails || []);
+        const detected = await detectRecurringSubscriptions(rawEmails || [], `background_imap_${cred.provider}`);
         allDetected = allDetected.concat(detected);
-
-        await processTrialEmails(userId, rawEmails, logger).catch(() => {});
+        await processTrialEmails(userId, rawEmails || [], logger).catch(() => {});
       } catch (err) {
         logger.warn?.({ err, userId, provider: cred.provider }, '[bg-scan] IMAP scan failed');
       }
@@ -163,10 +181,10 @@ export async function runBackgroundScanForUser(userId, logger = console) {
 
     // ── Post-scan hooks ───────────────────────────────────────────────────────
 
-    // 1. Push for newly detected subscriptions (not seen before)
+    // 1. New subscription notifications
     for (const sub of allDetected) {
       if (!existingMerchants.has(sub.merchant)) {
-        await sendNewSubscriptionPush(userId, sub, logger);
+        await notifyNewSubscription(userId, sub, logger);
       }
     }
 
@@ -179,10 +197,22 @@ export async function runBackgroundScanForUser(userId, logger = console) {
     // 4. Re-billing detection
     await checkRebilling(userId, inactiveMerchants, logger).catch(() => {});
 
-    // 5. Creep score
+    // 5. Dormancy scoring (Gmail only — needs email query)
+    if (gmailRows.length) {
+      import('./dormancyScorer.js')
+        .then(m => m.scoreDormancyForUser(userId, logger))
+        .catch(() => {});
+    }
+
+    // 6. Creep score
     await updateCreepScore(userId, logger).catch(() => {});
 
-    // ── Update last_background_scan_at ────────────────────────────────────────
+    // 7. Streak
+    import('./streakService.js')
+      .then(m => m.updateStreak(userId, logger))
+      .catch(() => {});
+
+    // Update last_background_scan_at
     await pool.query(
       `UPDATE profiles SET last_background_scan_at = now() WHERE id = $1`,
       [userId]
@@ -190,22 +220,21 @@ export async function runBackgroundScanForUser(userId, logger = console) {
 
     const executionTimeMs = Date.now() - started;
     await saveScanMetadata(userId, {
-      scannedMessages: 0,
+      scannedMessages: allRawEmails.length,
       detectedCharges: allDetected.length,
       executionTimeMs,
     }).catch(() => {});
 
-    logger.info?.({ userId, detected: allDetected.length, ms: executionTimeMs }, '[bg-scan] user scan complete');
+    logger.info?.({ userId, detected: allDetected.length, ms: executionTimeMs }, '[bg-scan] complete');
   } catch (err) {
-    logger.error?.({ err, userId }, '[bg-scan] unhandled error for user');
+    logger.error?.({ err, userId }, '[bg-scan] unhandled error');
   }
 }
 
-// ── Push helpers ──────────────────────────────────────────────────────────────
+// ── New subscription notification ─────────────────────────────────────────────
 
-async function sendNewSubscriptionPush(userId, sub, logger) {
+async function notifyNewSubscription(userId, sub, logger) {
   try {
-    // Idempotency: check subscription_events for 'new_subscription' this month
     const { rows: subRows } = await pool.query(
       `SELECT id FROM subscriptions WHERE user_id = $1 AND merchant = $2 LIMIT 1`,
       [userId, sub.merchant]
@@ -213,49 +242,38 @@ async function sendNewSubscriptionPush(userId, sub, logger) {
     if (!subRows.length) return;
     const subscriptionId = subRows[0].id;
 
-    const { rowCount } = await pool.query(
-      `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata)
-       VALUES ($1, $2, 'new_subscription', $3)
-       ON CONFLICT DO NOTHING`,
-      [subscriptionId, userId, JSON.stringify({ merchant: sub.merchant, amount: sub.amount })]
-    );
-    if (rowCount === 0) return; // already notified this month
+    const alreadyFired = await hasRecentEvent(subscriptionId, userId, 'new_subscription', 30);
+    if (alreadyFired) return;
 
-    const sym   = currencySymbol(sub.currency);
-    const amt   = sub.amount != null ? ` · ${sym}${Number(sub.amount).toFixed(2)}` : '';
-    const cadence = sub.cadence ? `/${shortCadence(sub.cadence)}` : '';
+    await recordEvent(subscriptionId, userId, 'new_subscription', { merchant: sub.merchant, amount: sub.amount });
 
-    await sendPushToUser(userId,
-      `New subscription found`,
-      `${sub.merchant}${amt}${cadence}`,
-      { type: 'new_subscription', merchant: sub.merchant, amount: sub.amount },
-      logger
-    );
+    await dispatchImmediate(userId, 'new_subscription', {
+      subscriptionId,
+      merchant: sub.merchant,
+      amount: sub.amount,
+      cadence: sub.cadence,
+      currency: sub.currency,
+    }, logger);
   } catch {}
 }
 
 // ── Annual renewal warnings (Feature 4) ──────────────────────────────────────
 
 async function checkAnnualRenewalWarnings(userId, logger) {
-  // First update annual_renewal_date for all yearly subs
   await pool.query(
     `UPDATE subscriptions
      SET annual_renewal_date = (
-       -- Next occurrence of the stored renewal_date within the next 12 months
        CASE
-         WHEN renewal_date IS NOT NULL THEN
-           CASE
-             WHEN (renewal_date + (
-               CEIL(DATE_PART('day', now()::date - renewal_date::date) / 365.0) * INTERVAL '1 year'
-             ))::date >= now()::date THEN
-               (renewal_date + (
-                 CEIL(DATE_PART('day', now()::date - renewal_date::date) / 365.0) * INTERVAL '1 year'
-               ))::date
-             ELSE
-               (renewal_date + (
-                 (CEIL(DATE_PART('day', now()::date - renewal_date::date) / 365.0) + 1) * INTERVAL '1 year'
-               ))::date
-           END
+         WHEN renewal_date IS NOT NULL THEN (
+           SELECT d::date FROM generate_series(
+             renewal_date::date,
+             (now() + interval '400 days')::date,
+             interval '1 year'
+           ) d
+           WHERE d::date >= now()::date
+           ORDER BY d
+           LIMIT 1
+         )
          ELSE NULL
        END
      )
@@ -263,7 +281,6 @@ async function checkAnnualRenewalWarnings(userId, logger) {
     [userId]
   ).catch(() => {});
 
-  // Find yearly subs renewing within 14 days
   const { rows: renewals } = await pool.query(
     `SELECT id, merchant, renewal_amount, currency, annual_renewal_date
      FROM subscriptions
@@ -277,25 +294,32 @@ async function checkAnnualRenewalWarnings(userId, logger) {
 
   for (const sub of renewals) {
     try {
-      // Dedup: only once per subscription per calendar month
-      const { rowCount } = await pool.query(
-        `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata)
-         VALUES ($1, $2, 'annual_warning', $3)
-         ON CONFLICT DO NOTHING`,
-        [sub.id, userId, JSON.stringify({ renewal_date: sub.annual_renewal_date, amount: sub.renewal_amount })]
-      );
-      if (rowCount === 0) continue;
+      const daysOut = Math.ceil((new Date(sub.annual_renewal_date) - new Date()) / 86400000);
+      const eventType = daysOut <= 7 ? 'annual_renewal_7day' : 'annual_renewal_14day';
+      const notifType = daysOut <= 7 ? 'annual_renewal_7day' : 'annual_renewal_14day';
 
-      const sym      = currencySymbol(sub.currency);
-      const dateStr  = new Date(sub.annual_renewal_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-      const amtStr   = sub.renewal_amount != null ? ` — ${sym}${Number(sub.renewal_amount).toFixed(2)}` : '';
+      const alreadyFired = await hasRecentEvent(sub.id, userId, eventType, 14);
+      if (alreadyFired) continue;
 
-      await sendPushToUser(userId,
-        `Annual renewal: ${sub.merchant}`,
-        `Renews on ${dateStr}${amtStr}. Still using it?`,
-        { type: 'annual_warning', merchant: sub.merchant, renewalDate: sub.annual_renewal_date },
-        logger
-      );
+      await recordEvent(sub.id, userId, eventType, {
+        daysOut, renewal_date: sub.annual_renewal_date, amount: sub.renewal_amount,
+      });
+
+      const payload = {
+        subscriptionId: sub.id,
+        merchant: sub.merchant,
+        amount: sub.renewal_amount,
+        currency: sub.currency,
+        renewalDate: new Date(sub.annual_renewal_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
+        daysOut,
+      };
+
+      if (daysOut <= 7) {
+        await dispatchImmediate(userId, notifType, payload, logger);
+      } else {
+        const { dispatchDigest } = await import('./notificationDispatcher.js');
+        await dispatchDigest(userId, notifType, payload);
+      }
     } catch (err) {
       logger.warn?.({ err, merchant: sub.merchant }, '[annual] warning failed');
     }
@@ -307,123 +331,86 @@ async function checkAnnualRenewalWarnings(userId, logger) {
 async function checkRebilling(userId, inactiveMerchants, logger) {
   if (!inactiveMerchants.size) return;
 
-  // Find merchants that were inactive and are now active again
   const merchantList = [...inactiveMerchants.keys()];
   const { rows: reactivated } = await pool.query(
     `SELECT id, merchant, last_seen_at FROM subscriptions
-     WHERE user_id = $1
-       AND merchant = ANY($2)
-       AND is_active = true`,
+     WHERE user_id = $1 AND merchant = ANY($2) AND is_active = true`,
     [userId, merchantList]
   );
 
   for (const sub of reactivated) {
     const lastInactive = inactiveMerchants.get(sub.merchant);
     if (!lastInactive) continue;
-
-    // Only fire if inactive for 60+ days
-    const daysSinceInactive = daysBetween(lastInactive, new Date());
-    if (daysSinceInactive < 60) continue;
+    if (daysBetween(lastInactive, new Date()) < 60) continue;
 
     try {
-      const { rowCount } = await pool.query(
-        `INSERT INTO subscription_events (subscription_id, user_id, event_type, metadata)
-         VALUES ($1, $2, 'rebilling', $3)
-         ON CONFLICT DO NOTHING`,
-        [sub.id, userId, JSON.stringify({ daysSinceInactive, merchant: sub.merchant })]
-      );
-      if (rowCount === 0) continue;
+      const alreadyFired = await hasRecentEvent(sub.id, userId, 'rebilling', 30);
+      if (alreadyFired) continue;
 
-      await sendPushToUser(userId,
-        `Charge detected: ${sub.merchant}`,
-        `You're being charged by ${sub.merchant} again — you may have forgotten to cancel.`,
-        { type: 'rebilling', merchant: sub.merchant },
-        logger
-      );
+      await recordEvent(sub.id, userId, 'rebilling', { merchant: sub.merchant });
+
+      await dispatchImmediate(userId, 'rebilling', {
+        subscriptionId: sub.id,
+        merchant: sub.merchant,
+      }, logger);
     } catch (err) {
-      logger.warn?.({ err, merchant: sub.merchant }, '[rebilling] notification failed');
+      logger.warn?.({ err, merchant: sub.merchant }, '[rebilling] failed');
     }
   }
 }
 
 // ── Scheduler ─────────────────────────────────────────────────────────────────
 
-/**
- * Start the background scan cron and daily notification checks.
- * Called once from server.js on startup.
- */
 export function scheduleBackgroundScans(logger = console) {
   // Every 6 hours — background email scan for all connected users
   cron.schedule('0 */6 * * *', async () => {
-    logger.info('[bg-scan] Starting scheduled background scan for all users');
+    logger.info('[bg-scan] Starting scheduled background scan');
     await runAllUsers(logger);
   });
 
-  // Daily at 09:00 — trial countdown notifications + anniversary digests
+  // Daily at 09:00 UTC — trial countdowns + anniversary digests
   cron.schedule('0 9 * * *', async () => {
-    logger.info('[bg-scan] Running daily notification checks');
-    try {
-      await checkTrialNotifications(logger);
-    } catch (err) {
-      logger.error?.({ err }, '[bg-scan] checkTrialNotifications failed');
-    }
-    try {
-      const { checkAnniversaryDigests } = await import('./anniversaryDigest.js');
-      await checkAnniversaryDigests(logger);
-    } catch (err) {
-      logger.error?.({ err }, '[bg-scan] checkAnniversaryDigests failed');
-    }
+    logger.info('[bg-scan] Running daily checks');
+    await checkTrialNotifications(logger).catch(err =>
+      logger.error?.({ err }, '[bg-scan] trial check failed')
+    );
+    const { checkAnniversaryDigests } = await import('./anniversaryDigest.js');
+    await checkAnniversaryDigests(logger).catch(err =>
+      logger.error?.({ err }, '[bg-scan] anniversary check failed')
+    );
+    // Shared subscription detection — runs daily after scans settle
+    const { processLinkedPairs } = await import('./sharedSubscriptionDetector.js');
+    await processLinkedPairs(logger).catch(err =>
+      logger.error?.({ err }, '[bg-scan] shared-sub check failed')
+    );
   });
 
-  logger.info('[bg-scan] Scheduled: background scans every 6h, daily checks at 09:00');
+  // Every Monday at 09:00 UTC — weekly digest
+  cron.schedule('0 9 * * 1', async () => {
+    logger.info('[bg-scan] Sending weekly digests');
+    const { sendWeeklyDigests } = await import('./notificationDispatcher.js');
+    await sendWeeklyDigests(logger).catch(err =>
+      logger.error?.({ err }, '[bg-scan] weekly digest failed')
+    );
+  });
+
+  logger.info('[bg-scan] Scheduled: 6h scans, daily checks 09:00, Monday digest 09:00');
 }
 
-/**
- * Run a background scan for ALL connected users.
- * Max 5 concurrent users to avoid overwhelming the DB/Gmail API.
- */
 async function runAllUsers(logger) {
   try {
-    // Get all users with at least one email connection
     const { rows: users } = await pool.query(
-      `SELECT DISTINCT p.id
-       FROM profiles p
+      `SELECT DISTINCT p.id FROM profiles p
        WHERE p.id IN (
          SELECT supabase_user_id FROM gmail_connections
          UNION
          SELECT user_id FROM imap_credentials
        )`
     );
-
     logger.info?.({ count: users.length }, '[bg-scan] users to scan');
-
     const limit = pLimit(5);
-    await Promise.all(
-      users.map(({ id }) => limit(() => runBackgroundScanForUser(id, logger)))
-    );
+    await Promise.all(users.map(({ id }) => limit(() => runBackgroundScanForUser(id, logger))));
   } catch (err) {
     logger.error?.({ err }, '[bg-scan] runAllUsers failed');
-  }
-}
-
-// ── Utility ───────────────────────────────────────────────────────────────────
-
-function currencySymbol(currency) {
-  switch ((currency || 'USD').toUpperCase()) {
-    case 'USD': return '$';
-    case 'EUR': return '€';
-    case 'GBP': return '£';
-    case 'CAD': return 'CA$';
-    default:    return `${currency} `;
-  }
-}
-
-function shortCadence(cadence) {
-  switch (cadence) {
-    case 'weekly':    return 'wk';
-    case 'monthly':   return 'mo';
-    case 'quarterly': return 'qtr';
-    case 'yearly':    return 'yr';
-    default:          return cadence;
   }
 }
