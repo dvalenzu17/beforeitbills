@@ -392,6 +392,8 @@ export async function deleteAccount(userId) {
     const tables = [
       'subscription_feedback',
       'subscription_events',
+      'subscription_price_history',
+      'subscription_trials',
       'scan_events',
       'scan_candidates',
       'scan_chunk_logs',

@@ -24,6 +24,7 @@ import TrialRadarCard from "../../components/TrialRadarCard";
 import EmptyStateCard from "../../components/EmptyStateCard";
 import HomeSection from "../../components/HomeSection";
 import { scheduleTrialReminder } from "../../lib/notifications";
+import { getCreepScore } from "../../lib/emailImportClient";
 import { useStore } from "../../lib/store";
 import { useTheme } from "../../lib/theme";
 import { useEmailImportStore } from "../../lib/emailImportStore";
@@ -271,6 +272,72 @@ function UpcomingTabs({ t, subs, bills, onPressItem, onLongPressItem, tt }) {
 }
 
 // ── Main screen ───────────────────────────────────────────────────────────────
+// ── Creep Score Card ──────────────────────────────────────────────────────────
+function CreepScoreCard({ score, t, tt }) {
+  const s = score?.score ?? 100;
+  const pct = Math.abs(s - 100);
+
+  let bgColors, borderColor, dotColor, labelText;
+  if (s <= 100) {
+    bgColors    = ["#064E3B", "#065F46"];
+    borderColor = "#34D39944";
+    dotColor    = "#34D399";
+    labelText   = tt("home.creepScore.onTrack");
+  } else if (s <= 120) {
+    bgColors    = ["#78350F", "#92400E"];
+    borderColor = "#F59E0B44";
+    dotColor    = "#F59E0B";
+    labelText   = tt("home.creepScore.growing", { pct });
+  } else {
+    bgColors    = ["#7F1D1D", "#991B1B"];
+    borderColor = "#EF444444";
+    dotColor    = "#EF4444";
+    labelText   = tt("home.creepScore.high", { pct });
+  }
+
+  return (
+    <View style={{ borderRadius: 18, overflow: "hidden" }}>
+      <LinearGradient
+        colors={bgColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 16,
+          paddingHorizontal: 18,
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor,
+          gap: 12,
+        }}
+      >
+        <View style={{
+          width: 36, height: 36, borderRadius: 11,
+          backgroundColor: "rgba(0,0,0,0.2)",
+          alignItems: "center", justifyContent: "center",
+        }}>
+          <Feather name="trending-up" size={16} color={dotColor} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: "#fff", fontWeight: "900", fontSize: 15 }}>
+            {tt("home.creepScore.label")}
+          </Text>
+          <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 }}>
+            {labelText}
+          </Text>
+        </View>
+        <View style={{
+          paddingHorizontal: 10, paddingVertical: 4,
+          backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 999,
+        }}>
+          <Text style={{ color: dotColor, fontWeight: "900", fontSize: 13 }}>{s}</Text>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
 export default function Home() {
   const t = useTheme();
   const r = useRouter();
@@ -309,6 +376,7 @@ export default function Home() {
 
   const [now, setNow] = useState(() => new Date());
   const [savingsDismissed, setSavingsDismissed] = useState(false);
+  const [creepScore, setCreepScore] = useState(null);
   const [proofOpen, setProofOpen] = useState(false);
   const [proofItem, setProofItem] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -335,6 +403,9 @@ export default function Home() {
       await loadProfile?.();
       if (user) await fetchSubs?.();
       else await loadSubsLocal?.();
+      if (user) {
+        getCreepScore().then(setCreepScore).catch(() => {});
+      }
     } catch (e) {
       if (__DEV__) console.warn("[home] refresh failed:", e?.message);
       setRefreshError(true);
@@ -367,6 +438,7 @@ export default function Home() {
           fetchSubs?.().catch((e) => {
             if (__DEV__) console.warn("[home] background sync failed:", e?.message);
           });
+          getCreepScore().then(setCreepScore).catch(() => {});
         });
       }
     })();
@@ -627,6 +699,17 @@ export default function Home() {
                 </Pressable>
               </LinearGradient>
             </View>
+          </MotiView>
+        )}
+
+        {/* ── SUBSCRIPTION CREEP SCORE ── */}
+        {creepScore?.score != null && creepScore?.firstScanAt && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 100 }}
+          >
+            <CreepScoreCard score={creepScore} t={t} tt={tt} />
           </MotiView>
         )}
 

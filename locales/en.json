@@ -136,7 +136,13 @@
     "cancelledCount": "From {{count}} cancelled subscription",
     "cancelledCountPlural": "From {{count}} cancelled subscriptions",
     "connectEmail": "Connect your email",
-    "checkEmails": "Check your emails"
+    "checkEmails": "Check your emails",
+    "creepScore": {
+      "onTrack": "Your subscription spend is stable",
+      "growing": "Your subscription spend is {{pct}}% higher than when you started",
+      "high": "Your subscription spend is {{pct}}% higher than when you started",
+      "label": "Spend tracker"
+    }
   },
   "streak": {
     "day": "day",
