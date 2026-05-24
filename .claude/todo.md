@@ -1,160 +1,273 @@
-# BIB — Sprint Board
+# BIB — Retention Feature Suite
 
-## Sprint Levels 62→100: Complete ✓
-_All previous sprint tasks done. Entering post-launch feature phase._
-
----
-
-## TIER 1 — Kills retention without these
-
-> These are the gaps that cost downloads, cause uninstalls, and block App Store top charts.
-> Build in order.
-
-- [x] **Multi-email account support** — `lib/emailImportStore.js`, `app/account/connect-email/`
-      Connect multiple inboxes (Gmail + Yahoo/Outlook/iCloud/IMAP). Each account scannable independently.
-      IMAP creds stored in `expo-secure-store`. Migration for existing single-account users on hydrate.
-      _commit fdb54e3_
-
-- [x] **Biometric app lock** — `lib/biometricLock.js`, `app/_layout.js`, `app/account/biometric-lock.js`, `app/account/settings.js`
-      Face ID / Touch ID on app open. AppState listener locks on background.
-      Lock overlay uses Feather icon (fixed from emoji). Settings row → `/account/biometric-lock`.
-      Requires successful auth before enabling to prove user can unlock. Fails open on error.
-      _audit fix: replaced 🔒 emoji with Feather "lock" icon in overlay_
-
-- [x] **Home screen + lock screen widgets** — `modules/widget-bridge/`, `android/`, `ios-widget/`, `plugins/withIosWidget.js`
-      Android: AppWidgetProvider reads widget_data.json from filesDir. XML layout, 4×2 cells.
-      iOS: WidgetKit extension (Small/Medium/Large) reads from App Group UserDefaults.
-      Config plugin adds WidgetKit target during `expo prebuild`. Data pushed after every syncNow.
-      ⚠️ REQUIRES `expo prebuild` + native rebuild to appear — won't show in Expo Go.
-
-- [x] **Swipe actions on list rows** — `app/recurring.js`
-      Swipe left → Edit (blue). Swipe right → Archive (amber) + Delete (red, confirm alert).
-      Haptic feedback on open. Archive triggers CelebrationSheet when savedEntry returned.
-
-- [x] **Pull-to-refresh** — `app/(tabs)/index.js`, `app/(tabs)/insights.js`, `app/recurring.js`
-      Custom BiBRefreshControl + BiBRefreshBanner (rotating dashed ring + credit-card icon).
-      Brand-colored native RefreshControl + animated 58dp banner slides in above content.
-
-- [x] **Natural language add** — `app/add-recurring.js`, `lib/parseSubscription.js`, `backend/src/routes/parseRoutes.js`
-      "Quick add" input at top of the main add-recurring screen (all entry points).
-      Auth-protected POST /parse-subscription on backend. Uses OpenAI gpt-4.1-mini.
-      Pre-fills form via RecurringForm `headerContent` + `key` re-mount pattern.
-      "Clear" button resets to blank form. Green "✓ Fields pre-filled" confirmation.
-      ⚠️ Requires OPENAI_API_KEY set on Render backend. Returns 503 gracefully if not set.
-      _audit fix: was only on /manual-add (unreachable from main flow), moved to /add-recurring_
-
-- [x] **Rich push notifications with actions** — `lib/notificationsEngine.js`, `app/_layout.js`, `lib/store.js`
-      3-button category: View (navigates to sub/bill), Snooze 1 day, Done (marks handled).
-      Copy: "Netflix — renewing tomorrow · $15.99 · Jan 15"
-      Android: HIGH channel + brand color. Scheduled on every syncNow.
-
-- [x] **Custom reminder time picker** — `app/account/notifications.js`
-      Inline spinner on iOS (expands below row), system dialog on Android.
-      Time shown as "9:00 AM" with chevron. Saved to store `timeOfDay`. All hardcoded "9 AM" removed.
+## Status: IN PROGRESS — Feature 1 (Background Monitoring)
 
 ---
 
-## TIER 2 — What separates good apps from great ones
+## Architecture Overview
 
-- [x] **Spend forecasting** — `app/(tabs)/insights.js`
-      12-month forward projection bar chart. Annual total shown: "At this rate: $X/yr".
-      `computeSpendForMonth()` correctly handles monthly/weekly (always), quarterly (every 3 months),
-      yearly (once/year) by checking renewal month alignment. `ForecastCard` with tap-to-inspect bars.
-
-- [x] **Month-over-month comparison** — `app/(tabs)/insights.js`
-      6-month history bar chart. Delta badge: "+12% vs last month" / red-green coloring.
-      `MonthTrendCard` uses same `computeSpendForMonth()` with negative offsets for past months.
-      Current month highlighted; tapping any bar shows month name + spend.
-
-- [x] **Savings tracker** — `lib/store.js`, `app/(tabs)/index.js`
-      `savings: { totalSaved, entries[] }` persisted to AsyncStorage. `recordSaving()` auto-called
-      when `updateSub/Bill({ active: false })`. Monthly-equivalent stored (yearly÷12, quarterly÷3, weekly×52÷12).
-      Home screen green card only shown when totalSaved > 0.
-
-- [x] **Confetti / celebration moments** — `components/CelebrationSheet.js`
-      60-particle moti confetti + spring bottom sheet: "You just saved $14.99/mo · $179.88/yr".
-      Fires on: swipe-archive in recurring.js, archive/delete in recurring/[kind]/[id].js.
-      _audit fixes: removed double updateSub call in onSubmit (was recording savings twice);
-      confirmDelete now archives first (captures savedEntry) then hard-deletes so celebration fires_
-
-- [x] **Global search** — `app/search.js`
-      Full-screen search (autofocus) reachable via search icon in home hero + recurring header.
-      Searches subs + bills via `getRecurring()`. Results show brand avatar, kind badge, amount.
-      Tap → navigates to `/recurring/[kind]/[id]`. Empty state + no-results state both handled.
-
-- [x] **Long-press context menus** — `components/ContextMenuSheet.js`
-      Bottom sheet triggered by long press (400ms delay) across home screen upcoming list + recurring list.
-      Actions: Edit, Archive, Cancel subscription (subs only), Share (native), Delete (recurring only).
-      Archive triggers CelebrationSheet if savedEntry returned. Haptic on open.
-
-- [x] **Conflict resolution UI** — `lib/store.js`, `components/ConflictResolutionSheet.js`, `app/_layout.js`
-      `mergeSubsLWW` now returns `{ merged, conflicts }`. A conflict is detected when remote wins LWW
-      but local `updatedAt > lastSyncedAt` AND key fields (amount/merchant/cadence) differ.
-      `ConflictResolutionSheet` shows side-by-side: "This device" vs "Other device" with amount + relative time.
-      "Keep mine" re-upserts local version to cloud. "Use theirs" accepts remote (already applied). "Skip" dismisses.
-      Sheet lives in `_layout.js` behind auth+lock guard. All 4 locales. Conflicts deduplicated across syncs.
+- **Background jobs**: `node-cron` on the Fastify backend (no BullMQ dependency — stays lightweight)
+- **Push delivery**: Expo Push HTTP API (`https://exp.host/--/api/v2/push/send`) via `fetch` — no extra SDK
+- **Push tokens**: already stored in `push_tokens` (Supabase) by `lib/push.js`
+- **DB**: direct pg pool, all queries scoped by `user_id`
+- **New services**: `pushService.js`, `backgroundScanner.js`, `priceChangeDetector.js`, `trialDetector.js`
+- **Frontend additions**: creep score card on home screen only (Feature 6); all other features are backend-only
 
 ---
 
-## TIER 3 — Platform-level polish
+## Feature 1 — Background Email Monitoring (FOUNDATION)
 
-- [x] **Apple Sign In** — `app/(auth)/sign-in.js`
-      **App Store requirement** — required when any third-party OAuth is offered.
-      `expo-apple-authentication` (already installed). SHA-256 nonce via `expo-crypto`.
-      Button uses `AppleAuthenticationButton` (App Store compliant). iOS-only, hidden on Android.
-      Persists display name from first sign-in (Apple omits it after). Dark/light button style follows theme.
-      `ERR_REQUEST_CANCELED` silently ignored (user dismissed sheet). Plugin added to `app.config.js`.
-      ⚠️ REQUIRES `expo prebuild` + native rebuild — entitlement must be enabled in Apple Developer portal.
+### DB migrations (new file: `20260523_retention.sql`)
+- [ ] Add `last_background_scan_at TIMESTAMPTZ` to `profiles` table
+- [ ] Add `first_scan_at TIMESTAMPTZ` to `profiles` table (used by Feature 7)
+- [ ] Ensure `push_tokens` table has: `id`, `user_id`, `token`, `device`, `created_at` — check & add if missing
+- [ ] Create index: `profiles(last_background_scan_at)` for efficient job queries
 
-- [x] **Siri / Google Assistant shortcuts** — `lib/shortcuts.js`, `app/_layout.js`, `app/account/settings.js`
-      Home-screen quick actions (iOS 3D Touch / Android long-press): Add Subscription, View Spending, Scan Inbox.
-      `expo-quick-actions` with try/catch fallback. Listener + cold-start handler wired in `_layout.js`.
-      Settings shows green dot when active. All 4 locales. Add `expo-quick-actions` to plugins in `app.config.js`.
-      ⚠️ REQUIRES `expo prebuild` + native rebuild to appear — won't show in Expo Go.
+### Backend: `src/services/pushService.js` (new)
+- [ ] `sendPush(tokens[], title, body, data)` — POST to Expo Push API, batch up to 100
+- [ ] `getUserPushTokens(userId)` — fetch all tokens for a user from push_tokens
+- [ ] `sendPushToUser(userId, title, body, data)` — convenience wrapper
+- [ ] Handle `DeviceNotRegistered` receipts by deleting stale tokens
+- [ ] Never throw — log errors, return `{sent, failed}` counts
 
-- [x] **Share sheet extension** — `ios-share-extension/`, `plugins/withShareExtension.js`, `modules/widget-bridge/`, `app/_layout.js`, `app/add-recurring.js`
-      iOS Share Extension appears in share sheet for text, URLs, and web pages.
-      `ShareViewController.swift`: minimal branded overlay → extracts text/URL → writes JSON to
-      App Group UserDefaults (`bib_pending_share`) → auto-dismisses.
-      `WidgetBridgeModule.swift`: added `getPendingShare()` + `clearPendingShare()` (reuses existing App Group).
-      `_layout.js`: AppState listener checks for pending share on foreground + cold-start → navigates to
-      `/add-recurring?shareText=...`.
-      `add-recurring.js`: `shareText` param auto-triggers NL parse on mount (reuses `/parse-subscription` endpoint).
-      ⚠️ REQUIRES `expo prebuild` + native rebuild. App Group must be enabled in Apple Developer portal.
+### Backend: `src/services/backgroundScanner.js` (new)
+- [ ] `runBackgroundScanForUser(userId, logger)` — re-uses existing Gmail + IMAP scan logic
+  - Fetch user's gmail_connections + imap_credentials
+  - For Gmail: call `getValidAccessToken` then scan only emails newer than `last_background_scan_at`
+  - For IMAP: use stored encrypted creds, scan with `daysBack` = days since last scan (max 7)
+  - Call `batchUpsertSubscriptions` + `markStaleSubscriptions`
+  - Update `profiles.last_background_scan_at = now()`
+  - Save scan metadata
+- [ ] `scheduleBackgroundScans(logger)` — node-cron every 6 hours (`0 */6 * * *`)
+  - Query all users from profiles where connected (have gmail_connections OR imap_credentials)
+  - Run `runBackgroundScanForUser` for each, catch per-user errors (don't abort batch)
+  - After scan: call price change detection, trial detection, renewal warnings, rebilling detection
+- [ ] Export `scheduleBackgroundScans` — called from `server.js` on startup
 
-- [ ] **iPad / tablet layout**
-      Currently renders as stretched single-column on iPad.
-      Two-column master/detail with `useWindowDimensions`.
+### Backend: wire into `server.js`
+- [ ] Import and call `scheduleBackgroundScans(server.log)` on startup (unconditional, no flag needed)
+- [ ] Keep QUEUE_ENABLED path unchanged
 
-- [x] **Drag to reorder** — `app/recurring.js`, `lib/store.js`
-      "Reorder" chip (≡) in filter bar activates drag mode. In drag mode: `DraggableFlatList` replaces
-      `ScrollView`, each row shows ≡ handle (long-press activates drag), swipe disabled for clean gestures.
-      `ScaleDecorator` for lift animation. `sortOrder: []` in store, persisted to AsyncStorage via `setSortOrder`.
-      First activation seeds order from current filtered list. `onDragEnd` saves new key order.
-      Non-drag sorts (amount/next/name) unaffected. All 4 locales.
+### New push notifications (triggered from background scanner)
+- [ ] On new subscription detected (not in DB before): push "New subscription found — {merchant} ${amount}/mo"
+- [ ] Idempotency: only push once per new merchant per user (check if merchant existed before upsert)
 
----
+### Test checklist
+- [ ] Manual trigger: `POST /scan/background` (admin-only or dev-only endpoint) to test without waiting 6h
+- [ ] Confirm running twice on same emails doesn't duplicate subscriptions (upsert key is user_id+merchant)
+- [ ] Confirm `last_background_scan_at` advances each run
 
-## TIER 4 — Growth and monetization
-
-- [ ] **Annual plan "Save X%" badge** — `components/PaywallSheet.js`
-- [ ] **Family plan**
-- [ ] **Referral program** — `components/ReferralSheet.js` (exists — is logic live?)
-- [ ] **Winback flow** — `lib/notify.js`, backend (zero winback on trial expiry)
-- [ ] **Free tier ad monetization** — `components/AdSlotCard.js` (exists but unused)
-- [ ] **Spend benchmarking** — `app/(tabs)/insights.js`, backend
+### Commit: `feat(monitoring): background email scanning + push infrastructure`
 
 ---
 
-## TIER 5 — Security and trust
+## Feature 2 — Price Change Detection
 
-- [ ] **Apple privacy nutrition label** (App Store requirement)
-- [ ] **Certificate pinning** — `lib/supabase.js` (`react-native-ssl-pinning`)
-- [ ] **App lock timeout** — `app/_layout.js` (lock after N min background, separate from biometric)
-- [ ] **Data deletion end-to-end** — `app/account/settings.js`, backend (GDPR/CCPA)
+### DB migrations (same file: `20260523_retention.sql`)
+- [ ] Create `subscription_price_history` table:
+  ```sql
+  id BIGSERIAL PRIMARY KEY,
+  subscription_id UUID NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
+  amount NUMERIC,
+  currency TEXT DEFAULT 'USD',
+  detected_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  ```
+- [ ] Index: `(subscription_id, detected_at DESC)`
+
+### Backend: `src/services/priceChangeDetector.js` (new)
+- [ ] `recordPriceHistory(subscriptionId, userId, amount, currency)` — insert row
+- [ ] `detectPriceChange(userId, merchant, newAmount, currency)`:
+  - Lookup subscription id from `subscriptions` by (user_id, merchant)
+  - Fetch latest row from `subscription_price_history` for this subscription
+  - If no history: insert baseline, return null
+  - If amount changed: insert new row, return `{direction: 'increase'|'decrease', oldAmount, newAmount, delta}`
+  - If no change: return null
+- [ ] `processPriceChanges(userId, detectedSubs, logger)` — called after each background scan
+  - For each detected sub: call `detectPriceChange`
+  - On increase: push notification "📈 {merchant} increased from ${old} to ${new}"
+  - On decrease: record silently (surfaced in digest — Feature 7)
+
+### Test checklist
+- [ ] Insert a sub with $9.99, simulate re-scan at $11.99 → confirm push fires
+- [ ] Re-scan at $11.99 again → confirm no duplicate push (history row already at $11.99)
+- [ ] Decrease: no push, but new history row recorded
+
+### Commit: `feat(price-change): price change detection and alerts`
 
 ---
 
-## Completed
-_Previous sprint items (levels 62→100) — all done._
-_See git log for commit hashes._
+## Feature 3 — Free Trial Countdown
+
+### DB migrations (same file)
+- [ ] Create `subscription_trials` table:
+  ```sql
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  merchant TEXT NOT NULL,
+  trial_end_date DATE NOT NULL,
+  amount_after_trial NUMERIC,
+  currency TEXT DEFAULT 'USD',
+  notified_3day BOOLEAN DEFAULT false,
+  notified_1day BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, merchant, trial_end_date)
+  ```
+
+### Backend: `src/services/trialDetector.js` (new)
+- [ ] `classifyTrialEmail(subject, body)` — rule-based, returns `{isTrial, trialEndDate, amountAfterTrial}` or null
+  - Subject/body patterns: "free trial", "trial ends", "won't be charged until", "trial period", "your trial"
+  - Date extraction: look for patterns like "June 3", "03/06/2026", "in 14 days", "on May 30"
+  - Amount extraction: reuse `parseAmount` from subscriptionEngine
+  - Return null if confidence is low (no date found)
+- [ ] `processTrialEmails(userId, emails, logger)` — called from background scanner
+  - Filter emails by trial signals first (cheap check)
+  - For matching emails: call `classifyTrialEmail`
+  - Upsert into `subscription_trials` (conflict: user_id+merchant+trial_end_date → ignore)
+  - Do not create a trial record if user already has an active confirmed subscription for this merchant
+- [ ] `checkTrialNotifications(logger)` — called from daily cron (node-cron `0 9 * * *`)
+  - Query trials where `trial_end_date = today + 3` AND `notified_3day = false`
+  - Send push: "Your {merchant} trial ends in 3 days. You'll be charged ${amount}/mo."
+  - Mark `notified_3day = true`
+  - Same for 1 day remaining
+
+### Test checklist
+- [ ] Email with "free trial ends June 3" → trial record created with correct date
+- [ ] Trial already paying (has confirmed sub) → no trial record
+- [ ] 3 days before end → push fires; run again → no duplicate
+
+### Commit: `feat(trials): free trial detection and countdown notifications`
+
+---
+
+## Feature 4 — Annual Renewal Early Warning
+
+### DB migrations (same file)
+- [ ] Add `annual_renewal_date DATE` column to `subscriptions`
+
+### Backend: extend `backgroundScanner.js` / `priceChangeDetector.js`
+- [ ] In `batchUpsertSubscriptions` or post-scan hook: detect yearly cadence (billing_interval = 'yearly')
+- [ ] `computeNextAnnualRenewal(lastSeenAt, renewalDate)` — returns next occurrence within 12 months
+- [ ] After background scan: update `annual_renewal_date` for all yearly subscriptions
+- [ ] `checkAnnualRenewalWarnings(logger)` — node-cron `0 9 * * *`
+  - Query `subscriptions` where `billing_interval = 'yearly'`
+    AND `annual_renewal_date BETWEEN now() AND now() + 14 days`
+    AND `is_active = true`
+  - Push: "Adobe Creative Cloud renews annually on {date} — ${amount}. Still using it?"
+  - Deduplicate: track sent warnings per subscription per renewal cycle (use `subscription_events` table)
+
+### `subscription_events` table (new, for dedup tracking)
+- [ ] Add to migration:
+  ```sql
+  id BIGSERIAL PRIMARY KEY,
+  subscription_id UUID NOT NULL REFERENCES subscriptions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
+  event_type TEXT NOT NULL,  -- 'annual_warning', 'rebilling', 'price_increase', etc.
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(subscription_id, event_type, DATE_TRUNC('month', created_at))
+  ```
+
+### Test checklist
+- [ ] Yearly sub with renewal 10 days out → push fires
+- [ ] Run again same day → no duplicate (subscription_events dedup)
+- [ ] Monthly sub → not affected
+
+### Commit: `feat(annual-renewal): annual subscription renewal warnings`
+
+---
+
+## Feature 5 — Cancelled but Re-billed Detection
+
+### Logic (no new tables — uses existing `subscriptions.is_active`)
+- [ ] In `backgroundScanner.js` post-scan: before calling `batchUpsertSubscriptions`, snapshot which merchants are currently `is_active = false` for this user
+- [ ] After upsert: check if any previously-inactive merchant now has `is_active = true` again
+- [ ] If yes AND the subscription has been inactive for 60+ days (check `last_seen_at`): fire push
+  - Push: "You're being charged by {merchant} again — you may have forgotten to cancel."
+  - Record in `subscription_events` with event_type = 'rebilling'
+
+### Test checklist
+- [ ] Merchant inactive 65+ days, re-detected in scan → push fires
+- [ ] Merchant inactive 30 days, re-detected → no push (under 60-day threshold)
+- [ ] Same re-billing event → no duplicate push (subscription_events dedup)
+
+### Commit: `feat(rebilling): cancelled but re-billed subscription detection`
+
+---
+
+## Feature 6 — Subscription Creep Score
+
+### DB migrations (same file)
+- [ ] Add `baseline_monthly_spend NUMERIC` to `profiles` table
+- [ ] Add `current_creep_score NUMERIC` to `profiles` table (cached, recomputed each scan)
+
+### Backend: `src/services/creepScore.js` (new)
+- [ ] `computeMonthlyTotal(userId)` — sum of active confirmed subscriptions normalized to monthly
+  - monthly: amount × 1
+  - weekly: amount × 52 / 12
+  - quarterly: amount / 3
+  - yearly: amount / 12
+- [ ] `updateCreepScore(userId, logger)` — called after every background scan
+  - If `baseline_monthly_spend` is null: set it to current total (first scan)
+  - Compute score = (current / baseline) × 100, round to integer
+  - Update `profiles.current_creep_score`
+- [ ] `GET /creep-score` route — returns `{score, baseline, current, label}`
+  - label: "On track" (≤100), "Growing" (101–120), "High" (>120)
+
+### Frontend: `app/(tabs)/index.js`
+- [ ] Fetch `GET /creep-score` after syncNow
+- [ ] Show creep score card below hero section (only when `first_scan_at` is set)
+  - Green card (≤100): "Your subscription spend is stable"
+  - Amber card (101–120): "Your subscription spend is X% higher than when you started"
+  - Red card (>120): "Your subscription spend is X% higher than when you started"
+- [ ] Guard array methods per lessons.md: always `(val || []).method()`
+
+### Test checklist
+- [ ] First scan: baseline set, score = 100
+- [ ] Add subscription: score increases
+- [ ] Cancel subscription: score decreases
+- [ ] Score displayed correctly in all 3 tiers
+
+### Commit: `feat(creep-score): subscription creep score tracking and home screen indicator`
+
+---
+
+## Feature 7 — Yearly Subscription Audit Notification
+
+### Logic
+- [ ] `checkAnniversaryDigests(logger)` — node-cron `0 9 * * *`
+  - Query profiles where `DATE_TRUNC('day', first_scan_at) = DATE_TRUNC('day', now() - interval '1 year')`
+  - For each: aggregate from last 12 months:
+    - Total spend: sum from `subscription_price_history` detected in last year
+    - Price increases: count from `subscription_events` where event_type = 'price_increase'
+    - Cancelled: count subscriptions with user_status = 'cancelled' updated in last year
+  - Send push: "Your BIB year in review: you paid ${total} in subscriptions. {n} prices increased. You cancelled {m} services."
+  - Record in `subscription_events` (event_type = 'anniversary_digest', dedup by year)
+
+### Test checklist
+- [ ] User with `first_scan_at` = exactly 1 year ago → digest fires
+- [ ] Run again same day → no duplicate
+
+### Commit: `feat(anniversary): yearly subscription audit digest notification`
+
+---
+
+## Implementation Checklist (ordered)
+
+- [ ] Write single migration file `supabase/migrations/20260523_retention.sql`
+- [ ] Apply migration to Supabase
+- [ ] Feature 1: pushService.js + backgroundScanner.js + server.js wiring + dev trigger endpoint
+- [ ] Feature 2: priceChangeDetector.js + integration into background scanner
+- [ ] Feature 3: trialDetector.js + daily cron
+- [ ] Feature 4: annual renewal logic + subscription_events dedup
+- [ ] Feature 5: rebilling detection in background scanner
+- [ ] Feature 6: creepScore.js + backend route + frontend card
+- [ ] Feature 7: anniversary digest cron
+
+---
+
+## Lessons to follow (from .claude/lessons.md)
+1. `>= 2 occurrences` before flagging recurring (already in engine — maintain this)
+2. No non-ASCII quote chars in JS strings after edits
+3. Always init state as `[]` not `null` for arrays in frontend; guard all `.some()/.filter()/.map()/.reduce()` with `?.` or `(val || []).method()`
