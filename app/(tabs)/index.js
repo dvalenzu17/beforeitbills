@@ -24,7 +24,10 @@ import TrialRadarCard from "../../components/TrialRadarCard";
 import EmptyStateCard from "../../components/EmptyStateCard";
 import HomeSection from "../../components/HomeSection";
 import { scheduleTrialReminder } from "../../lib/notifications";
-import { getCreepScore } from "../../lib/emailImportClient";
+import { getCreepScore, getGuardianStreak, getOnThisDay } from "../../lib/emailImportClient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import OnThisDayCard from "../../components/OnThisDayCard";
+import GuardianStreakCard from "../../components/GuardianStreakCard";
 import { useStore } from "../../lib/store";
 import { useTheme } from "../../lib/theme";
 import { useEmailImportStore } from "../../lib/emailImportStore";
@@ -377,6 +380,9 @@ export default function Home() {
   const [now, setNow] = useState(() => new Date());
   const [savingsDismissed, setSavingsDismissed] = useState(false);
   const [creepScore, setCreepScore] = useState(null);
+  const [guardianStreak, setGuardianStreak] = useState(null);
+  const [onThisDay, setOnThisDay] = useState(null);
+  const [onThisDayDismissed, setOnThisDayDismissed] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
   const [proofItem, setProofItem] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -405,6 +411,7 @@ export default function Home() {
       else await loadSubsLocal?.();
       if (user) {
         getCreepScore().then(setCreepScore).catch(() => {});
+        getGuardianStreak().then(setGuardianStreak).catch(() => {});
       }
     } catch (e) {
       if (__DEV__) console.warn("[home] refresh failed:", e?.message);
@@ -432,13 +439,19 @@ export default function Home() {
       }
 
       // Phase 2: cloud sync deferred until after animations settle
-      // so the navigation transition isn't competing with network I/O
       if (user) {
         InteractionManager.runAfterInteractions(() => {
           fetchSubs?.().catch((e) => {
             if (__DEV__) console.warn("[home] background sync failed:", e?.message);
           });
           getCreepScore().then(setCreepScore).catch(() => {});
+          getGuardianStreak().then(setGuardianStreak).catch(() => {});
+          getOnThisDay().then(async (data) => {
+            if (!data) return;
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const dismissed = await AsyncStorage.getItem("@bib_onthisday_dismissed_v1").catch(() => null);
+            if (dismissed !== todayStr) setOnThisDay(data);
+          }).catch(() => {});
         });
       }
     })();
@@ -702,6 +715,25 @@ export default function Home() {
           </MotiView>
         )}
 
+        {/* ── ON THIS DAY ── */}
+        {onThisDay && !onThisDayDismissed && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 95 }}
+          >
+            <OnThisDayCard
+              data={onThisDay}
+              tt={tt}
+              onDismiss={async () => {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                await AsyncStorage.setItem("@bib_onthisday_dismissed_v1", todayStr).catch(() => {});
+                setOnThisDayDismissed(true);
+              }}
+            />
+          </MotiView>
+        )}
+
         {/* ── SUBSCRIPTION CREEP SCORE ── */}
         {creepScore?.score != null && creepScore?.firstScanAt && (
           <MotiView
@@ -710,6 +742,40 @@ export default function Home() {
             transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 100 }}
           >
             <CreepScoreCard score={creepScore} t={t} tt={tt} />
+          </MotiView>
+        )}
+
+        {/* ── GUARDIAN STREAK ── */}
+        {guardianStreak != null && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 105 }}
+          >
+            <GuardianStreakCard streak={guardianStreak} tt={tt} />
+          </MotiView>
+        )}
+
+        {/* ── DIGEST LINK ── */}
+        {user && (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 18, mass: 0.35, stiffness: 220, delay: 108 }}
+          >
+            <Pressable
+              onPress={() => r.push("/digest")}
+              style={{
+                flexDirection: "row", alignItems: "center", gap: 8,
+                paddingVertical: 10, paddingHorizontal: 4,
+              }}
+            >
+              <Feather name="inbox" size={14} color={t.subtext} />
+              <Text style={{ color: t.subtext, fontSize: 13, fontWeight: "600" }}>
+                {tt("digest.title")}
+              </Text>
+              <Feather name="chevron-right" size={13} color={t.subtext} />
+            </Pressable>
           </MotiView>
         )}
 

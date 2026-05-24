@@ -76,7 +76,36 @@
   },
   "digest": {
     "title": "Resumen semanal (en app)",
-    "body": "Ahorraste / pagarás / qué cambió + destacados para compartir."
+    "body": "Ahorraste / pagarás / qué cambió + destacados para compartir.",
+    "screen": {
+      "heading": "Esta semana",
+      "empty": "Nada que revisar esta semana",
+      "emptyBody": "Aquí aparecerán cambios de precio, suscripciones inactivas y planes compartidos.",
+      "typeLabels": {
+        "price_decrease": "Bajada de precio",
+        "dormant": "Sin usar",
+        "shared_subscription": "Plan compartido",
+        "annual_renewal_14day": "Renovación anual",
+        "price_increase": "Subida de precio"
+      }
+    }
+  },
+  "guardian": {
+    "weekStreak": "{{n}} semana de protección",
+    "weekStreakPlural": "{{n}} semanas de protección",
+    "lapsed": "Tu protección ha caducado",
+    "lapsedBody": "Reconecta tu correo para reiniciar",
+    "milestone4": "4 semanas de protección",
+    "milestone12": "12 semanas de protección",
+    "milestone52": "Un año de protección"
+  },
+  "onThisDay": {
+    "title": "Hace un año",
+    "spendThen": "Pagabas {{amount}}/mes",
+    "spendNow": "Ahora pagas {{amount}}/mes",
+    "decreased": "Has ahorrado {{delta}}/mes desde entonces",
+    "increased": "Tu gasto ha crecido {{delta}}/mes desde entonces",
+    "unchanged": "Tu gasto en suscripciones no ha cambiado"
   },
   "search": {
     "placeholder": "Buscar suscripciones y gastos…",

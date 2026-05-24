@@ -76,7 +76,36 @@
   },
   "digest": {
     "title": "Weekly digest (in-app)",
-    "body": "You saved / you’ll pay / what changed + shareable highlights."
+    "body": "You saved / you’ll pay / what changed + shareable highlights.",
+    "screen": {
+      "heading": "This week",
+      "empty": "Nothing to review this week",
+      "emptyBody": "We’ll surface price changes, dormant subscriptions, and shared plans here.",
+      "typeLabels": {
+        "price_decrease": "Price drop",
+        "dormant": "Unused",
+        "shared_subscription": "Shared plan",
+        "annual_renewal_14day": "Annual renewal",
+        "price_increase": "Price increase"
+      }
+    }
+  },
+  "guardian": {
+    "weekStreak": "{{n}} week streak",
+    "weekStreakPlural": "{{n}} week streak",
+    "lapsed": "Your protection lapsed",
+    "lapsedBody": "Reconnect your email to restart",
+    "milestone4": "4 weeks of protection",
+    "milestone12": "12 weeks of protection",
+    "milestone52": "One year of protection"
+  },
+  "onThisDay": {
+    "title": "One year ago",
+    "spendThen": "You were paying {{amount}}/mo",
+    "spendNow": "You’re now paying {{amount}}/mo",
+    "decreased": "You’ve saved {{delta}}/mo since then",
+    "increased": "Your spend has grown by {{delta}}/mo since then",
+    "unchanged": "Your subscription spend is unchanged"
   },
   "search": {
     "placeholder": "Search subscriptions & bills…",
