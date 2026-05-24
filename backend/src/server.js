@@ -67,6 +67,7 @@ import { registerImapScanRoutes }     from './routes/imapScanRoutes.js';
 import { registerSubscriptionRoutes } from './routes/subscriptionRoutes.js';
 import { registerAccountRoutes }      from './routes/accountRoutes.js';
 import { registerParseRoutes }        from './routes/parseRoutes.js';
+import { registerRetentionRoutes }    from './routes/retentionRoutes.js';
 
 registerOAuthRoutes(server);
 registerScanRoutes(server);
@@ -74,6 +75,7 @@ registerImapScanRoutes(server);
 registerSubscriptionRoutes(server);
 registerAccountRoutes(server);
 registerParseRoutes(server);
+registerRetentionRoutes(server);
 
 server.get('/', async () => ({ status: 'ok' }));
 server.get('/health', async () => ({ ok: true }));
@@ -86,6 +88,10 @@ const start = async () => {
       startWorker(server.log);
       server.log.info('BullMQ Worker started');
     }
+
+    // Background email monitoring + retention feature crons
+    const { scheduleBackgroundScans } = await import('./services/backgroundScanner.js');
+    scheduleBackgroundScans(server.log);
 
     await server.listen({ port: PORT, host: '0.0.0.0' });
     server.log.info(`Server running on :${PORT} [queue=${QUEUE_ENABLED}]`);
