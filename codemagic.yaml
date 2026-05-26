@@ -22,7 +22,7 @@ workflows:
         script: node scripts/dateMath.test.mjs
 
       - name: Placebo UI gate
-        script: bash scripts/ci-no-placebo.sh .
+        script: bash scripts/ci-no-placebo.sh . bvh nn nb    
 
   # ── Dev Client Build ─────────────────────────────────────────────────────────
   ios-dev-client:
