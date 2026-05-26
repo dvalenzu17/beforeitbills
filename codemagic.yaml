@@ -24,9 +24,9 @@ workflows:
       - name: Placebo UI gate
         script: bash scripts/ci-no-placebo.sh . bvh nn nb    
 
-  # ── Dev Client Build ─────────────────────────────────────────────────────────
+  # ── Dev Build (development-signed IPA, no TestFlight) ────────────────────────
   ios-dev-client:
-    name: iOS Dev Client → App Store
+    name: iOS Development Build
     max_build_duration: 90
     instance_type: mac_mini_m2
 
@@ -44,7 +44,6 @@ workflows:
       - name: Install JS dependencies
         script: npm ci --legacy-peer-deps
 
-      # 🔑 THIS is the missing piece
       - name: Generate iOS project (Expo prebuild on macOS)
         script: npx expo prebuild --platform ios --clean
 
@@ -62,10 +61,9 @@ workflows:
             com.beforeitbills.app.ShareExtension \
             com.beforeitbills.app.SubsWidget; do
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_STORE \
+              --type IOS_APP_DEVELOPMENT \
               --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
-              --create \
-              --delete-stale-profiles
+              --create
           done
           keychain add-certificates
           cd ios && xcode-project use-profiles
