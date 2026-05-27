@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -21,11 +22,11 @@ import { track } from "../lib/analytics";
 // ─── Features ─────────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: "clock",    color: "#6366F1", label: "Full spend history"    },
-  { icon: "mail",     color: "#8B5CF6", label: "Unlimited inbox scans" },
-  { icon: "bell",     color: "#F59E0B", label: "Price-change alerts"   },
-  { icon: "download", color: "#10B981", label: "CSV & PDF export"      },
-  { icon: "zap",      color: "#EF4444", label: "Priority support"      },
+  { icon: "clock",    color: "#6366F1", labelKey: "paywall.feature1" },
+  { icon: "mail",     color: "#8B5CF6", labelKey: "paywall.feature2" },
+  { icon: "bell",     color: "#F59E0B", labelKey: "paywall.feature3" },
+  { icon: "download", color: "#10B981", labelKey: "paywall.feature4" },
+  { icon: "zap",      color: "#EF4444", labelKey: "paywall.feature5" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -53,17 +54,17 @@ const hasTrial = (pkg)  => !!(pkg?.product?.introductoryPrice ?? pkg?.product?.i
 function buildDisplayPlans(packages, annual, monthly) {
   if (!packages.length) return [];
   if (annual && monthly) return [
-    { id: "annual",  pkg: annual,  badge: "BEST VALUE", caption: "per year"  },
-    { id: "monthly", pkg: monthly, badge: null,         caption: "per month" },
+    { id: "annual",  pkg: annual,  badgeKey: "paywall.badgeBestValue", captionKey: "paywall.captionPerYear"  },
+    { id: "monthly", pkg: monthly, badgeKey: null,                     captionKey: "paywall.captionPerMonth" },
   ];
-  if (annual)  return [{ id: "annual",  pkg: annual,  badge: "BEST VALUE", caption: "per year"  }];
-  if (monthly) return [{ id: "monthly", pkg: monthly, badge: null,         caption: "per month" }];
+  if (annual)  return [{ id: "annual",  pkg: annual,  badgeKey: "paywall.badgeBestValue", captionKey: "paywall.captionPerYear"  }];
+  if (monthly) return [{ id: "monthly", pkg: monthly, badgeKey: null,                     captionKey: "paywall.captionPerMonth" }];
   // Fallback: show first 2 packages regardless of type
   return packages.slice(0, 2).map((pkg, i) => ({
-    id:      `pkg_${i}`,
+    id:         `pkg_${i}`,
     pkg,
-    badge:   i === 0 ? "BEST VALUE" : null,
-    caption: i === 0 ? "per year"   : "per month",
+    badgeKey:   i === 0 ? "paywall.badgeBestValue" : null,
+    captionKey: i === 0 ? "paywall.captionPerYear" : "paywall.captionPerMonth",
   }));
 }
 
@@ -129,6 +130,7 @@ function PlanCard({ title, price, caption, badge, active, onPress, isDark }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function PaywallSheet({ onClose }) {
+  const { t: i18n } = useTranslation();
   const t       = useTheme();
   const isDark  = t.surface === "#161B24"; // DARK.surface - reliable sentinel
 
@@ -147,7 +149,7 @@ export default function PaywallSheet({ onClose }) {
     track("paywall_seen");
     loadOfferings();
     if (!canUseNativePurchases()) {
-      setMsg("Purchases require a dev build - not available in Expo Go.");
+      setMsg(i18n("paywall.errExpoGo"));
     }
   }, []);
 
@@ -155,7 +157,7 @@ export default function PaywallSheet({ onClose }) {
 
   useEffect(() => {
     if (!loading && canUseNativePurchases() && packages.length === 0) {
-      setMsg("Unable to load plans. Check your connection and try again.");
+      setMsg(i18n("paywall.errNoPlans"));
     } else if (packages.length > 0) {
       setMsg("");
     }
@@ -188,7 +190,7 @@ export default function PaywallSheet({ onClose }) {
 
   async function handleBuy() {
     if (!selectedPkg) {
-      setMsg("No plan available. Configure products in your RevenueCat dashboard.");
+      setMsg(i18n("paywall.errNoPlan"));
       return;
     }
     setBuying(true);
@@ -200,12 +202,12 @@ export default function PaywallSheet({ onClose }) {
         if (!errLower.includes("cancel")) {
           Haptics.notificationAsync?.(Haptics.NotificationFeedbackType.Error).catch(() => {});
           const friendly = errLower.includes("network") || errLower.includes("connection")
-            ? "No connection. Check your internet and try again."
+            ? i18n("paywall.errNoConnection")
             : errLower.includes("payment") || errLower.includes("billing")
-            ? "Payment failed. Check your payment method in App Store settings."
+            ? i18n("paywall.errPaymentFailed")
             : errLower.includes("not_allowed") || errLower.includes("storekit")
-            ? "Purchases are restricted on this device."
-            : "Purchase failed. Please try again.";
+            ? i18n("paywall.errRestricted")
+            : i18n("paywall.errPurchaseFailed");
           setMsg(friendly);
         }
       } else {
@@ -221,7 +223,7 @@ export default function PaywallSheet({ onClose }) {
   async function handleRestore() {
     const res = await restore();
     if (res?.ok) onClose?.();
-    else if (res?.reason === "expo_go") setMsg("Restore requires a dev build.");
+    else if (res?.reason === "expo_go") setMsg(i18n("paywall.errRestoreExpoGo"));
   }
 
   function handleDevUnlock() {
@@ -354,7 +356,7 @@ export default function PaywallSheet({ onClose }) {
             <Animated.View entering={FadeInDown.delay(200).duration(380)} style={{ width: "100%", gap: 10, marginTop: 8 }}>
               {FEATURES.map((f) => (
                 <View
-                  key={f.label}
+                  key={f.labelKey}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -374,7 +376,7 @@ export default function PaywallSheet({ onClose }) {
                     <Feather name={f.icon} size={13} color={f.color} />
                   </View>
                   <Text style={{ color: featureTextColor, fontWeight: "700", fontSize: 14, flex: 1 }}>
-                    {f.label}
+                    {i18n(f.labelKey)}
                   </Text>
                   <Feather name="check-circle" size={15} color="#30D158" />
                 </View>
@@ -557,7 +559,7 @@ export default function PaywallSheet({ onClose }) {
             >
               {FEATURES.map((f, i) => (
                 <Animated.View
-                  key={f.label}
+                  key={f.labelKey}
                   entering={FadeInDown.delay(100 + i * 50).duration(320)}
                   style={{
                     flexDirection: "row",
@@ -587,7 +589,7 @@ export default function PaywallSheet({ onClose }) {
                     <Feather name={f.icon} size={16} color={f.color} />
                   </View>
                   <Text style={{ flex: 1, color: featureTextColor, fontWeight: "700", fontSize: 14 }}>
-                    {f.label}
+                    {i18n(f.labelKey)}
                   </Text>
                   <Feather name="check-circle" size={15} color={f.color} style={{ opacity: 0.8 }} />
                 </Animated.View>
@@ -613,10 +615,10 @@ export default function PaywallSheet({ onClose }) {
                 {displayPlans.map((plan) => (
                   <PlanCard
                     key={plan.id}
-                    title={plan.badge === "BEST VALUE" ? "Annual" : "Monthly"}
+                    title={plan.badgeKey ? i18n("common.annual") : i18n("common.monthly")}
                     price={priceStr(plan.pkg)}
-                    caption={plan.caption}
-                    badge={plan.badge}
+                    caption={plan.captionKey ? i18n(plan.captionKey) : ""}
+                    badge={plan.badgeKey ? i18n(plan.badgeKey) : null}
                     active={selected === plan.id}
                     isDark={isDark}
                     onPress={() => {
