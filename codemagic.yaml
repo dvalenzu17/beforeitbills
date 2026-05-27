@@ -1,18 +1,13 @@
 workflows:
   # ── Unit Tests & Quality Gates ───────────────────────────────────────────────
-  # Lightweight Linux runner — no iOS build needed.
-  # Runs:
-  #   1. dateMath unit tests  (node:assert, scripts/dateMath.test.mjs)
-  #   2. Placebo UI gate      (scripts/ci-no-placebo.sh)
+  # Linux runner — no Xcode required. Cheaper and faster than mac_mini.
   unit-tests:
     name: Unit Tests & Quality Gates
     max_build_duration: 15
-    instance_type: mac_mini_m2
+    instance_type: linux_x2
 
     environment:
-      node: 20
-      xcode: 26.0.1
-      cocoapods: default
+      node: "20"
 
     scripts:
       - name: Install JS dependencies
@@ -22,9 +17,10 @@ workflows:
         script: node scripts/dateMath.test.mjs
 
       - name: Placebo UI gate
-        script: bash scripts/ci-no-placebo.sh . bvh nn nb    
+        script: bash scripts/ci-no-placebo.sh . bvh nn nb
 
-  # ── Dev Build (development-signed IPA, no TestFlight) ────────────────────────
+
+  # ── Dev Build (development-signed IPA, internal distribution only) ───────────
   ios-dev-client:
     name: iOS Development Build
     max_build_duration: 90
@@ -34,7 +30,7 @@ workflows:
       app_store_connect: AppStoreConnect
 
     environment:
-      node: 20
+      node: "20"
       xcode: 26.0.1
       cocoapods: default
       groups:
@@ -44,15 +40,13 @@ workflows:
       - name: Install JS dependencies
         script: npm ci --legacy-peer-deps
 
-      - name: Generate iOS project (Expo prebuild on macOS)
+      - name: Generate iOS project
         script: npx expo prebuild --platform ios --clean
 
       - name: Install CocoaPods
-        script: |
-          cd ios
-          pod install
+        script: cd ios && pod install
 
-      - name: Set up signing
+      - name: Set up signing (development)
         script: |
           set -e
           keychain initialize
@@ -78,6 +72,7 @@ workflows:
       - build/ios/ipa/*.ipa
 
 
+  # ── Production Build → TestFlight ────────────────────────────────────────────
   ios-release:
     name: iOS Release → TestFlight
     max_build_duration: 90
@@ -87,25 +82,45 @@ workflows:
       app_store_connect: AppStoreConnect
 
     environment:
-      node: 20
+      node: "20"
       xcode: 26.0.1
       cocoapods: default
+      vars:
+        # Production transport — must be "backend" for real scans
+        EXPO_PUBLIC_SCAN_TRANSPORT: "backend"
       groups:
+        # Must contain: EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY,
+        # EXPO_PUBLIC_BACKEND_URL, EXPO_PUBLIC_LOGO_DEV_TOKEN,
+        # EXPO_PUBLIC_BRANDFETCH_API_KEY, EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+        # EXPO_PUBLIC_REVENUECAT_IOS_KEY, EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
+        # CERTIFICATE_PRIVATE_KEY
         - bib_env
 
     scripts:
       - name: Install JS dependencies
         script: npm ci --legacy-peer-deps
 
-      - name: Generate iOS project (Expo prebuild on macOS)
+      - name: Quality gate
+        script: bash scripts/ci-no-placebo.sh . bvh nn nb
+
+      - name: Generate iOS project
         script: npx expo prebuild --platform ios --clean
 
       - name: Install CocoaPods
-        script: |
-          cd ios
-          pod install
+        script: cd ios && pod install
 
-      - name: Set up signing
+      - name: Auto-increment build number from latest TestFlight
+        # Fetches the highest build number already on TestFlight and adds 1.
+        # Runs after expo prebuild so agvtool updates the generated Xcode project.
+        # App Store Connect app ID: 6760515650 (from eas.json submit config).
+        script: |
+          set -e
+          LATEST=$(app-store-connect get-latest-testflight-build-number 6760515650)
+          NEW=$(($LATEST + 1))
+          echo "Latest TestFlight build: $LATEST — setting build number to $NEW"
+          cd ios && agvtool new-version -all $NEW
+
+      - name: Set up signing (App Store distribution)
         script: |
           set -e
           keychain initialize
@@ -130,6 +145,7 @@ workflows:
 
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
