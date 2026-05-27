@@ -19,6 +19,17 @@ import { SPACING } from "@/lib/ui/tokens";
 import { VStack } from "@/components/ui/Stack";
 import * as T from "@/components/ui/Text";
 
+function toMonthly(amount, cadence) {
+  const n = Number(amount || 0);
+  switch (cadence) {
+    case "weekly":      return (n * 52) / 12;
+    case "quarterly":   return n / 3;
+    case "semi-annual": return n / 6;
+    case "yearly":      return n / 12;
+    default:            return n; // monthly or unknown
+  }
+}
+
 export default function ReviewQueue() {
 
   const router = useRouter();
@@ -26,30 +37,35 @@ export default function ReviewQueue() {
   const theme = useTheme();
 
   const candidates = useEmailImportStore((x) => x.candidates);
-  const connectedProvider = useEmailImportStore((x) => x.connectedProvider);
-  const lastScanAt = useEmailImportStore((x) => x.lastScanAt);
-
   const markHandled = useEmailImportStore((x) => x.markHandled);
   const restoreCandidate = useEmailImportStore((x) => x.restoreCandidate);
   const deleteRecurring = useStore((s) => s.deleteRecurring);
 
+  // Confirmed email subscriptions from the main store.
+  // Shown in the "Already tracking" section so the user sees the full picture.
+  // Manual subscriptions are excluded — they belong on the subscriptions list only.
+  const allSubscriptions = useStore((s) => s.subscriptions);
+  const alreadyTracking = useMemo(() =>
+    (allSubscriptions || []).filter(
+      (s) => s.active && !s.isSuggested && s.source !== "manual"
+    ),
+    [allSubscriptions]
+  );
+
   const empty = useMemo(() => !candidates || candidates.length === 0, [candidates]);
 
+  // Total monthly equivalent: confirmed active non-manual subs + new candidates.
   const totalMonthly = useMemo(() => {
-
-    if (!candidates) return 0;
-
-    return candidates.reduce((sum, c) => {
-
-      if (c?.cadenceGuess === "monthly") {
-        return sum + Number(c.amount || 0);
-      }
-
-      return sum;
-
-    }, 0);
-
-  }, [candidates]);
+    const confirmedSpend = alreadyTracking.reduce(
+      (sum, s) => sum + toMonthly(s.amount, s.cadence),
+      0
+    );
+    const candidatesSpend = (candidates || []).reduce(
+      (sum, c) => sum + toMonthly(c.amount, c.cadenceGuess),
+      0
+    );
+    return confirmedSpend + candidatesSpend;
+  }, [alreadyTracking, candidates]);
 
   const [undo, setUndo] = useState(null);
   const [undoOpen, setUndoOpen] = useState(false);
@@ -68,8 +84,6 @@ export default function ReviewQueue() {
     track("email_candidate_confirmed", { merchant: c.merchant });
     await markHandled(c.fingerprint);
 
-    // Navigate to the edit screen immediately so the user can
-    // review/correct the detected details before they're final.
     if (createdId) {
       router.push(`/recurring/${createdKind}/${createdId}`);
     }
@@ -83,11 +97,8 @@ export default function ReviewQueue() {
   }
 
   async function rejectCandidate(c) {
-
     track("email_candidate_rejected", { merchant: c.merchant });
-
     await markHandled(c.fingerprint);
-
     showUndo({
       message: `Removed ${c.merchant || "candidate"}`,
       candidate: c,
@@ -95,9 +106,7 @@ export default function ReviewQueue() {
   }
 
   async function onUndo() {
-
     if (!undo) return;
-
     if (undo.createdKind && undo.createdId) {
       try {
         await deleteRecurring?.(undo.createdKind, undo.createdId);
@@ -105,9 +114,7 @@ export default function ReviewQueue() {
         if (__DEV__) console.warn("[review] undo deleteRecurring failed:", e?.message);
       }
     }
-
     await restoreCandidate?.(undo.candidate);
-
     setUndoOpen(false);
     setUndo(null);
   }
@@ -130,8 +137,8 @@ export default function ReviewQueue() {
         }}
       >
 
+        {/* Sticky summary bar — only shown when there are candidates to swipe */}
         {!empty && (
-
           <View
             style={{
               backgroundColor: theme.bg,
@@ -160,7 +167,6 @@ export default function ReviewQueue() {
               <Text style={{ color: theme.tertiary, fontSize: 12 }}>
                 {t("reviewQueue.rejectLabel")}
               </Text>
-
               <Text style={{ color: theme.tertiary, fontSize: 12 }}>
                 {t("reviewQueue.confirmLabel")}
               </Text>
@@ -180,38 +186,26 @@ export default function ReviewQueue() {
             </Text>
 
           </View>
-
         )}
 
-        {empty ? (
-
-          <Card style={{ padding: SPACING.screen }}>
-
-            <T.H2>{t("reviewQueue.allDismissedTitle")}</T.H2>
-
-            <T.Sub style={{ marginTop: 6 }}>
-              {t("reviewQueue.allDismissedBody")}
-            </T.Sub>
+        {/* ── Section 1: New detections ──────────────────────────────────── */}
+        {!empty && (
+          <VStack gap={10}>
 
             <Text
               style={{
-                marginTop: 10,
-                textAlign: "center",
+                fontSize: 11,
+                fontWeight: "700",
                 color: theme.subtext,
-                fontSize: 13
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+                paddingHorizontal: 4,
               }}
             >
-              {t("reviewQueue.addManuallyHint")}
+              {t("reviewQueue.newDetectionsTitle", { count: candidates.length })}
             </Text>
 
-          </Card>
-
-        ) : (
-
-          <VStack gap={10}>
-
             {candidates.map((c) => (
-
               <CandidateCard
                 key={c.fingerprint}
                 c={c}
@@ -225,11 +219,79 @@ export default function ReviewQueue() {
                   )
                 }
               />
-
             ))}
 
           </VStack>
+        )}
 
+        {/* Empty state — all new detections handled */}
+        {empty && (
+          <Card style={{ padding: SPACING.screen }}>
+            <T.H2>{t("reviewQueue.allDismissedTitle")}</T.H2>
+            <T.Sub style={{ marginTop: 6 }}>
+              {t("reviewQueue.allDismissedBody")}
+            </T.Sub>
+            <Text
+              style={{
+                marginTop: 10,
+                textAlign: "center",
+                color: theme.subtext,
+                fontSize: 13
+              }}
+            >
+              {t("reviewQueue.addManuallyHint")}
+            </Text>
+          </Card>
+        )}
+
+        {/* ── Section 2: Already tracking ────────────────────────────────── */}
+        {alreadyTracking.length > 0 && (
+          <VStack gap={6}>
+
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "700",
+                color: theme.subtext,
+                textTransform: "uppercase",
+                letterSpacing: 0.6,
+                paddingHorizontal: 4,
+                marginTop: 8,
+              }}
+            >
+              {t("reviewQueue.alreadyTrackingTitle", { count: alreadyTracking.length })}
+            </Text>
+
+            {alreadyTracking.map((s) => (
+              <View key={s.id} style={{ opacity: 0.55 }}>
+                <Card style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.subtext,
+                        fontSize: 14,
+                        fontWeight: "600",
+                        flex: 1,
+                      }}
+                      numberOfLines={1}
+                    >
+                      {s.merchant}
+                    </Text>
+                    <Text style={{ color: theme.tertiary, fontSize: 13 }}>
+                      {Number(s.amount || 0).toFixed(2)}
+                    </Text>
+                  </View>
+                </Card>
+              </View>
+            ))}
+
+          </VStack>
         )}
 
         <Text
