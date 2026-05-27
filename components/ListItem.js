@@ -11,6 +11,7 @@ import { SPACING } from "../lib/ui/tokens";
 export default function ListItem({
   merchant,
   subtitle,
+  overdue,
   amount,
   currency,
   onPress,
@@ -48,7 +49,10 @@ export default function ListItem({
           {merchant}
         </Text>
         {!!subtitle ? (
-          <Text style={{ color: t.subtext, marginTop: 3, fontWeight: "700" }} numberOfLines={1}>
+          <Text
+            style={{ color: overdue ? "#FF3B30" : t.subtext, marginTop: 3, fontWeight: "700" }}
+            numberOfLines={1}
+          >
             {subtitle}
           </Text>
         ) : null}
