@@ -9,7 +9,7 @@
 //   7. Quick Win    – add one subscription in 5 seconds
 //   8. CTA          – free trial offer
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   SafeAreaView,
   View,
@@ -32,6 +32,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { MotiView } from "moti";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 import { useTheme } from "../../lib/theme";
@@ -1090,6 +1091,7 @@ function SuccessOverlay({ t, tt, visible, onGetStarted }) {
 export default function Expectations() {
   const t = useTheme();
   const { t: tt } = useTranslation();
+  const router = useRouter();
   const markStep = useOnboardingStore((s) => s.markStep);
   const loadOfferings  = usePurchasesStore((s) => s.loadOfferings);
   const purchasePkg    = usePurchasesStore((s) => s.purchasePackage);
@@ -1213,6 +1215,9 @@ export default function Expectations() {
   async function goNotNow() {
     track("onboarding_not_now");
     await setOnboardingDone(true);
+    // Navigate explicitly — don't rely solely on the _layout.js auth listener
+    // which depends on Supabase USER_UPDATED propagating back in time.
+    router.replace("/(tabs)");
   }
 
   async function goRestore() {
@@ -1266,6 +1271,7 @@ export default function Expectations() {
     }
 
     await setOnboardingDone(true);
+    router.replace("/(tabs)");
   }
 
   const isCTA = index === TOTAL - 1;
