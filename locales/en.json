@@ -21,6 +21,7 @@
   "auth": {
     "title": "Welcome back",
     "subtitle": "Sign in to sync across devices. You can skip for now.",
+    "tagline": "Know every subscription before it charges.",
     "emailLabel": "Email",
     "emailPlaceholder": "you@domain.com",
     "emailTitle": "Email",
@@ -290,6 +291,8 @@
     "forecast": "Spending forecast",
     "forecastSub": "12-month projection · tap to inspect",
     "forecastAnnual": "At this rate: {{amount}}/yr",
+    "forecastPreview": "3-month preview",
+    "unlockForecast": "Unlock 12-month forecast — Go Pro",
     "monthTrend": "Month over month",
     "monthTrendSub": "Past 6 months",
     "flatVsLastMonth": "Stable vs last month",
@@ -298,6 +301,8 @@
   "account": {
     "freePill": "FREE",
     "proActiveTitle": "Pro active",
+    "freePlanBadge": "Free Plan",
+    "upgradeToProCta": "Upgrade to Pro",
     "goProTitle": "Go Pro",
     "proActiveBody": "Unlimited recurring items + premium tools unlocked.",
     "goProBody": "Unlimited recurring items, export, advanced scan, IMAP import, and the insights heatmap.",
@@ -320,7 +325,8 @@
       },
       "upgrade": {
         "label": "Upgrade",
-        "subtextPro": "You’re already Pro",
+        "labelPro": "Manage subscription",
+        "subtextPro": "Cancel or change your plan",
         "subtextFree": "Unlock premium features"
       },
       "personal": {
@@ -433,9 +439,13 @@
       "title": "Start seeing everything",
       "subtitle": "You found your first subscription in seconds. Wait until we scan your whole inbox.",
       "trial": "Start free 7-day trial",
-      "trialSub": "Then $4.99/month. Cancel anytime.",
-      "noThanks": "Continue with basic features",
-      "notNow": "Not now",
+      "trialSub": "Auto-renews. Cancel anytime in App Store Settings.",
+      "trialSubGeneric": "Auto-renews. Cancel anytime in App Store Settings.",
+      "trialTerms": "7-day free trial, then {{price}}. Auto-renews. Cancel anytime in App Store Settings.",
+      "autoRenewTerms": "Auto-renews. Cancel anytime in App Store Settings.",
+      "restore": "Restore purchases",
+      "noThanks": "Continue with free features",
+      "notNow": "Continue with free features",
       "loading": "Processing…",
       "trialPill": "· 7-day free trial",
       "unlockedLabel": "WHAT YOU UNLOCK",
@@ -754,7 +764,11 @@
     "gmailAuthExpiredTitle": "Gmail disconnected",
     "gmailAuthExpiredBody": "Your Gmail connection expired. Reconnect to resume scanning.",
     "gmailReconnect": "Reconnect Gmail",
+    "gmailOAuthDesc": "Google OAuth read-only",
+    "gmailConnectFailedTitle": "Could not connect Gmail",
+    "gmailConnectFailedBody": "Please try again.",
     "scanRateLimited": "Too many scans. Please wait 15 minutes before trying again.",
+    "scanLimitReached": "You've used all {{limit}} free scans. Upgrade to Pro for unlimited scans.",
     "disconnect": "Disconnect",
     "disconnectConfirmTitle": "Disconnect {{provider}}?",
     "disconnectConfirmBody": "You'll stop auto-detection. Your saved recurring items stay.",
@@ -864,6 +878,14 @@
     "errExpoGo": "Purchases require a dev build — not available in Expo Go.",
     "errRestoreExpoGo": "Restore requires a dev build."
   },
+  "upgradeNag": {
+    "title": "Get more from BeforeItBills",
+    "bullet1": "Unlimited inbox scans and recurring items",
+    "bullet2": "Price increase alerts before you get charged",
+    "bullet3": "Full spend history and CSV export",
+    "startTrial": "Start Free Trial",
+    "maybeLater": "Maybe Later"
+  },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "network": "No connection. Check your internet and try again.",
@@ -871,6 +893,10 @@
     "serviceUnavailable": "Service temporarily unavailable. Try again in a moment.",
     "imapAuthFailed": "Incorrect email or password. Check your credentials.",
     "updateFailed": "Could not save changes. Please try again."
+  },
+  "legal": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   },
   "personal": {
     "title": "Personal information",
@@ -906,5 +932,19 @@
     "resendFailedBody": "Try again in a moment.",
     "uploadFailedTitle": "Upload failed",
     "uploadFailedBody": "Your photo was saved locally but couldn't sync."
+  },
+  "manageSub": {
+    "title": "Manage subscription",
+    "subtitle": "All Pro features are unlocked and active.",
+    "planDetails": "PLAN DETAILS",
+    "plan": "Plan",
+    "status": "Status",
+    "active": "Active",
+    "cancelled": "Cancelled",
+    "renewsOn": "Renews on",
+    "expiresOn": "Expires on",
+    "included": "WHAT'S INCLUDED",
+    "cancelOrChange": "Cancel or change plan",
+    "cancelNote": "You'll be redirected to the App Store to manage your subscription."
   }
 }

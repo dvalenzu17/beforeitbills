@@ -21,6 +21,7 @@
   "auth": {
     "title": "Bienvenido de vuelta",
     "subtitle": "Inicia sesión para sincronizar entre dispositivos. Puedes omitirlo por ahora.",
+    "tagline": "Conoce cada suscripción antes de que te cobren.",
     "emailLabel": "Correo",
     "emailPlaceholder": "tu@dominio.com",
     "emailTitle": "Correo electrónico",
@@ -290,6 +291,8 @@
     "forecast": "Pronóstico de gasto",
     "forecastSub": "Proyección a 12 meses · toca para inspeccionar",
     "forecastAnnual": "A este ritmo: {{amount}}/año",
+    "forecastPreview": "Vista previa de 3 meses",
+    "unlockForecast": "Desbloquear pronóstico de 12 meses — Hazte Pro",
     "monthTrend": "Mes a mes",
     "monthTrendSub": "Últimos 6 meses",
     "flatVsLastMonth": "Estable respecto al mes pasado",
@@ -298,6 +301,8 @@
   "account": {
     "freePill": "GRATIS",
     "proActiveTitle": "Pro activo",
+    "freePlanBadge": "Plan Gratuito",
+    "upgradeToProCta": "Mejorar a Pro",
     "goProTitle": "Hazte Pro",
     "proActiveBody": "Items recurrentes ilimitados + herramientas premium desbloqueadas.",
     "goProBody": "Items recurrentes ilimitados, exportación, escaneo avanzado, importación IMAP y el mapa de calor de análisis.",
@@ -321,7 +326,8 @@
       },
       "upgrade": {
         "label": "Mejorar plan",
-        "subtextPro": "Ya tienes Pro",
+        "labelPro": "Gestionar suscripción",
+        "subtextPro": "Cancelar o cambiar tu plan",
         "subtextFree": "Desbloquea funciones premium"
       },
       "personal": {
@@ -434,9 +440,13 @@
       "title": "Empieza a ver todo",
       "subtitle": "Encontraste tu primera suscripción en segundos. Espera hasta que escaneemos toda tu bandeja.",
       "trial": "Prueba gratis por 7 días",
-      "trialSub": "Luego $4.99/mes. Cancela cuando quieras.",
-      "noThanks": "Continuar con funciones básicas",
-      "notNow": "Ahora no",
+      "trialSub": "Se renueva automáticamente. Cancela en cualquier momento en Ajustes de App Store.",
+      "trialSubGeneric": "Se renueva automáticamente. Cancela en cualquier momento en Ajustes de App Store.",
+      "trialTerms": "7 días gratis, luego {{price}}. Se renueva automáticamente. Cancela en cualquier momento en Ajustes de App Store.",
+      "autoRenewTerms": "Se renueva automáticamente. Cancela en cualquier momento en Ajustes de App Store.",
+      "restore": "Restaurar compras",
+      "noThanks": "Continuar con funciones gratuitas",
+      "notNow": "Continuar con funciones gratuitas",
       "loading": "Procesando…",
       "trialPill": "· 7 días gratis",
       "unlockedLabel": "QUÉ DESBLOQUEAS",
@@ -755,7 +765,11 @@
     "gmailAuthExpiredTitle": "Gmail desconectado",
     "gmailAuthExpiredBody": "Tu conexión de Gmail expiró. Vuelve a conectar para continuar.",
     "gmailReconnect": "Reconectar Gmail",
+    "gmailOAuthDesc": "OAuth de Google de solo lectura",
+    "gmailConnectFailedTitle": "No se pudo conectar Gmail",
+    "gmailConnectFailedBody": "Inténtalo de nuevo.",
     "scanRateLimited": "Demasiados escaneos. Espera 15 minutos antes de intentar de nuevo.",
+    "scanLimitReached": "Has usado los {{limit}} escaneos gratuitos. Actualiza a Pro para escaneos ilimitados.",
     "disconnect": "Desconectar",
     "disconnectConfirmTitle": "¿Desconectar {{provider}}?",
     "disconnectConfirmBody": "Detendrás la detección automática. Tus elementos guardados se mantienen.",
@@ -865,6 +879,14 @@
     "errExpoGo": "Las compras requieren una compilación de desarrollo — no disponible en Expo Go.",
     "errRestoreExpoGo": "La restauración requiere una compilación de desarrollo."
   },
+  "upgradeNag": {
+    "title": "Saca mas provecho de BeforeItBills",
+    "bullet1": "Escaneos de bandeja y elementos recurrentes ilimitados",
+    "bullet2": "Alertas de aumento de precio antes de que te cobren",
+    "bullet3": "Historial completo de gastos y exportar CSV",
+    "startTrial": "Iniciar prueba gratuita",
+    "maybeLater": "Tal vez despues"
+  },
   "errors": {
     "generic": "Algo salió mal. Por favor intenta de nuevo.",
     "network": "Sin conexión. Verifica tu internet e intenta de nuevo.",
@@ -872,6 +894,10 @@
     "serviceUnavailable": "Servicio temporalmente no disponible. Intenta en un momento.",
     "imapAuthFailed": "Correo o contraseña incorrectos. Verifica tus credenciales.",
     "updateFailed": "No se pudieron guardar los cambios. Por favor intenta de nuevo."
+  },
+  "legal": {
+    "privacyPolicy": "Política de Privacidad",
+    "termsOfService": "Términos de Servicio"
   },
   "personal": {
     "title": "Información personal",
@@ -907,5 +933,19 @@
     "resendFailedBody": "Inténtalo en un momento.",
     "uploadFailedTitle": "Error al subir",
     "uploadFailedBody": "Tu foto se guardó localmente pero no se pudo sincronizar."
+  },
+  "manageSub": {
+    "title": "Gestionar suscripción",
+    "subtitle": "Todas las funciones Pro están desbloqueadas y activas.",
+    "planDetails": "DETALLES DEL PLAN",
+    "plan": "Plan",
+    "status": "Estado",
+    "active": "Activo",
+    "cancelled": "Cancelado",
+    "renewsOn": "Se renueva el",
+    "expiresOn": "Expira el",
+    "included": "QUÉ INCLUYE",
+    "cancelOrChange": "Cancelar o cambiar plan",
+    "cancelNote": "Serás redirigido a la App Store para gestionar tu suscripción."
   }
 }

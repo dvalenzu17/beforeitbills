@@ -776,7 +776,7 @@ function GmailConnectSlide({ t, tt, connected, connecting, onConnect, onSkip }) 
 
 // ─── Slide 9: CTA ─────────────────────────────────────────────────────────────
 
-function CTASlide({ t, tt, onConnect, onNotNow, loading }) {
+function CTASlide({ t, tt, onConnect, onNotNow, onRestore, loading, priceLabel }) {
   return (
     <View style={{ width: W, flex: 1, paddingHorizontal: 24, paddingTop: 8 }}>
       {/* Brand header */}
@@ -904,8 +904,9 @@ function CTASlide({ t, tt, onConnect, onNotNow, loading }) {
           </LinearGradient>
         </TouchableOpacity>
 
-        <Text style={{ textAlign: "center", color: t.tertiary ?? t.subtext, fontSize: 12, fontWeight: "600" }}>
-          {tt("ob.cta.trialSub") || "Then $4.99/month. Cancel anytime."}
+        {/* Subscription terms — dynamic price from RevenueCat */}
+        <Text style={{ textAlign: "center", color: t.tertiary ?? t.subtext, fontSize: 11, fontWeight: "500", lineHeight: 16 }}>
+          {priceLabel}
         </Text>
 
         <Pressable
@@ -918,7 +919,23 @@ function CTASlide({ t, tt, onConnect, onNotNow, loading }) {
           })}
         >
           <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 15 }}>
-            {tt("ob.cta.notNow") || "Not now"}
+            {tt("ob.cta.notNow") || "Continue with free features"}
+          </Text>
+        </Pressable>
+
+        {/* Restore purchases — required by Apple */}
+        <Pressable
+          onPress={onRestore}
+          disabled={loading}
+          hitSlop={12}
+          style={({ pressed }) => ({
+            alignItems: "center",
+            paddingVertical: 4,
+            opacity: pressed || loading ? 0.5 : 1,
+          })}
+        >
+          <Text style={{ color: t.subtext, fontWeight: "600", fontSize: 12 }}>
+            {tt("ob.cta.restore") || "Restore purchases"}
           </Text>
         </Pressable>
       </Animated.View>
@@ -1076,6 +1093,7 @@ export default function Expectations() {
   const markStep = useOnboardingStore((s) => s.markStep);
   const loadOfferings  = usePurchasesStore((s) => s.loadOfferings);
   const purchasePkg    = usePurchasesStore((s) => s.purchasePackage);
+  const restorePurchases = usePurchasesStore((s) => s.restore);
   const addSub         = useStore((s) => s.addSub);
   const connectedProvider = useEmailImportStore((s) => s.connectedProvider);
   const addAccount     = useEmailImportStore((s) => s.addAccount);
@@ -1089,8 +1107,36 @@ export default function Expectations() {
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [gmailConnected, setGmailConnected] = useState(false);
   const [gmailConnecting, setGmailConnecting] = useState(false);
+  const [ctaPackage, setCtaPackage]         = useState(null);
 
   const emailAlreadyConnected = !!connectedProvider || gmailConnected;
+
+  useEffect(() => {
+    track("onboarding_started");
+  }, []);
+
+  // Pre-load RevenueCat offerings when user reaches slide 7+ so CTA has real prices
+  useEffect(() => {
+    if (index >= TOTAL - 2 && !ctaPackage) {
+      loadOfferings().then((offerings) => {
+        const pkg = offerings?.current?.availablePackages?.[0] ?? null;
+        if (pkg) setCtaPackage(pkg);
+      }).catch(() => {});
+    }
+  }, [index]);
+
+  // Build dynamic price label from the fetched package
+  const ctaPriceLabel = (() => {
+    if (!ctaPackage) {
+      return tt("ob.cta.trialSubGeneric") || "Auto-renews. Cancel anytime in App Store Settings.";
+    }
+    const price = ctaPackage.product?.priceString ?? "";
+    const hasTr = !!(ctaPackage.product?.introductoryPrice ?? ctaPackage.product?.intro_price);
+    if (hasTr) {
+      return `${tt("ob.cta.trialTerms", { price }) || `7-day free trial, then ${price}. Auto-renews. Cancel anytime in App Store Settings.`}`;
+    }
+    return `${price}. ${tt("ob.cta.autoRenewTerms") || "Auto-renews. Cancel anytime in App Store Settings."}`;
+  })();
 
   function scrollTo(i) {
     scrollRef.current?.scrollTo({ x: i * W, animated: true });
@@ -1139,8 +1185,13 @@ export default function Expectations() {
     track("onboarding_start_trial", { pickedProblem, quickWin: quickWinPicked?.id });
     setPurchasing(true);
     try {
-      const offerings = await loadOfferings();
-      const pkg = offerings?.current?.availablePackages?.[0] ?? null;
+      // Use pre-loaded package if available, otherwise fetch
+      let pkg = ctaPackage;
+      if (!pkg) {
+        const offerings = await loadOfferings();
+        pkg = offerings?.current?.availablePackages?.[0] ?? null;
+        if (pkg) setCtaPackage(pkg);
+      }
       if (!pkg) {
         // No native module (Expo Go) or no offerings - show success anyway for demo
         setPurchaseSuccess(true);
@@ -1164,20 +1215,45 @@ export default function Expectations() {
     await setOnboardingDone(true);
   }
 
+  async function goRestore() {
+    track("onboarding_restore_purchases");
+    setPurchasing(true);
+    try {
+      const result = await restorePurchases();
+      if (result?.ok) {
+        const isPro = usePurchasesStore.getState().isPro;
+        if (isPro) {
+          setPurchaseSuccess(true);
+        }
+      }
+    } catch {
+      // silent
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
   async function goGetStarted() {
     track("onboarding_trial_get_started");
 
     // Add BeforeItBills Pro as a trial subscription in recurring expenses
+    // Use actual product price from RevenueCat, not hardcoded
     try {
       const trialEnd = new Date();
       trialEnd.setDate(trialEnd.getDate() + 7);
       const trialEndISO = trialEnd.toISOString().split("T")[0];
 
+      const productPrice = ctaPackage?.product?.price ?? 0;
+      const productCurrency = ctaPackage?.product?.currencyCode ?? "USD";
+      // Determine cadence from package type/identifier
+      const id = (ctaPackage?.identifier || ctaPackage?.product?.identifier || "").toLowerCase();
+      const cadence = (id.includes("year") || id.includes("annual")) ? "yearly" : "monthly";
+
       await addSub({
         merchant: "BeforeItBills",
-        amount: 4.99,
-        currency: "USD",
-        cadence: "monthly",
+        amount: productPrice,
+        currency: productCurrency,
+        cadence,
         nextRenewal: trialEndISO,
         is_trial: true,
         trial_end: trialEndISO,
@@ -1282,7 +1358,7 @@ export default function Expectations() {
           />
         </View>
         <View style={{ width: W, flex: 1 }}>
-          <CTASlide t={t} tt={tt} onConnect={goTrial} onNotNow={goNotNow} loading={purchasing} />
+          <CTASlide t={t} tt={tt} onConnect={goTrial} onNotNow={goNotNow} onRestore={goRestore} loading={purchasing} priceLabel={ctaPriceLabel} />
         </View>
       </ScrollView>
 
