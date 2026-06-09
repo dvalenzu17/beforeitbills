@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -20,7 +21,7 @@ import { Feather } from "@expo/vector-icons";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
 import Svg, { Path } from "react-native-svg";
-import { GoogleSignin, statusCodes as GoogleStatusCodes } from "@react-native-google-signin/google-signin";
+import { GoogleSignin, statusCodes as GoogleStatusCodes } from "../../lib/googleSignIn";
 import { supabase } from "../../lib/supabase";
 import { useStore } from "../../lib/store";
 import { useAuthState } from "../../lib/authState";
@@ -162,9 +163,11 @@ export default function LoginScreen() {
     if (googleLoading || loading || appleLoading) return;
     setGoogleLoading(true);
     try {
-      await GoogleSignin.hasPlayServices();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
       const { raw, hashed } = await generateNonce();
       const response = await GoogleSignin.signIn({ nonce: hashed });
+      if (response?.type === "cancelled") return;
       const idToken = response?.data?.idToken;
       if (!idToken) throw new Error("No ID token returned from Google");
 
@@ -241,11 +244,22 @@ export default function LoginScreen() {
         >
           <View style={s.container}>
 
-            {/* Header blobs */}
+            {/* App branding */}
             <View style={s.hero}>
               <View style={s.heroBlobA} />
               <View style={s.heroBlobB} />
               <View style={s.heroBlobC} />
+              <View style={s.heroBrand}>
+                <Image
+                  source={require("../../assets/BeforeItBillsLogo.png")}
+                  style={{ width: 48, height: 48, borderRadius: 12 }}
+                  resizeMode="contain"
+                />
+                <View>
+                  <Text style={s.heroTitle}>BeforeItBills</Text>
+                  <Text style={s.heroSub}>{tt("auth.tagline") || "Know every subscription before it charges."}</Text>
+                </View>
+              </View>
             </View>
 
             {/* Mode toggle */}
@@ -469,7 +483,13 @@ function makeStyles(t) {
     kb: { flex: 1 },
     container: { flex: 1, paddingHorizontal: 18, paddingTop: 16 },
 
-    hero: { height: 130, marginBottom: 10, overflow: "hidden", borderRadius: 24 },
+    hero: { height: 130, marginBottom: 10, overflow: "hidden", borderRadius: 24, justifyContent: "center" },
+    heroBrand: {
+      position: "absolute", bottom: 16, left: 20, right: 20,
+      flexDirection: "row", alignItems: "center", gap: 12, zIndex: 1,
+    },
+    heroTitle: { fontSize: 18, fontWeight: "900", color: t.text },
+    heroSub: { fontSize: 12, fontWeight: "600", color: t.subtext, marginTop: 2 },
     heroBlobA: {
       position: "absolute", top: -90, left: -60,
       width: 220, height: 220, borderRadius: 999,
