@@ -27,7 +27,7 @@ import { useStore } from "../../lib/store";
 import { useAuthState } from "../../lib/authState";
 import { useTheme } from "../../lib/theme";
 import { track, identify } from "../../lib/analytics";
-import { TERMS_URL, PRIVACY_URL, GOOGLE_IOS_CLIENT_ID } from "../../lib/config";
+import { TERMS_URL, PRIVACY_URL, GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from "../../lib/config";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -62,7 +62,13 @@ export default function LoginScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   useEffect(() => {
-    GoogleSignin.configure({ iosClientId: GOOGLE_IOS_CLIENT_ID });
+    // webClientId is required on Android to receive an idToken; iosClientId
+    // configures the iOS native sign-in. Empty values are omitted so the SDK
+    // doesn't reject a blank string.
+    GoogleSignin.configure({
+      iosClientId: GOOGLE_IOS_CLIENT_ID || undefined,
+      webClientId: GOOGLE_WEB_CLIENT_ID || undefined,
+    });
   }, []);
 
   const cleanEmail = useMemo(() => email.trim().toLowerCase(), [email]);

@@ -23,7 +23,6 @@ module.exports = {
         NSFaceIDUsageDescription: "BeforeItBills uses Face ID to keep your financial data private.",
         NSCameraUsageDescription: "BeforeItBills uses your camera to update your profile photo.",
         NSPhotoLibraryUsageDescription: "BeforeItBills accesses your photo library to let you choose a profile photo.",
-        NSUserTrackingUsageDescription: "We use tracking data to improve the app experience and show relevant content.",
       },
 
       entitlements: {
@@ -34,6 +33,10 @@ module.exports = {
 
     android: {
       package: "com.beforeitbills.app",
+      adaptiveIcon: {
+        foregroundImage: "./assets/BeforeItBillsLogo.png",
+        backgroundColor: "#FFFFFF",
+      },
       intentFilters: [
         {
           action: "VIEW",
@@ -78,10 +81,11 @@ module.exports = {
       ],
       "expo-font",
       "expo-router",
-      "./plugins/withIosWidget",
+      "expo-background-fetch",
+      // "./plugins/withIosWidget",       // TODO: re-enable when widget is prod-ready
       "expo-quick-actions",
       "expo-apple-authentication",
-      "./plugins/withShareExtension",
+      // "./plugins/withShareExtension",  // TODO: re-enable when share extension is prod-ready
       "./plugins/withPodfileDeploymentTarget",
       "./plugins/withTurboModuleIOS26Patch",
       "./plugins/withPrivacyManifest",
@@ -95,20 +99,21 @@ module.exports = {
           experimental: {
             ios: {
               appExtensions: [
-                {
-                  targetName: "ShareExtension",
-                  bundleIdentifier: "com.beforeitbills.app.ShareExtension",
-                  entitlements: {
-                    "com.apple.security.application-groups": ["group.com.beforeitbills.app"]
-                  }
-                },
-                {
-                  targetName: "SubsWidget",
-                  bundleIdentifier: "com.beforeitbills.app.SubsWidget",
-                  entitlements: {
-                    "com.apple.security.application-groups": ["group.com.beforeitbills.app"]
-                  }
-                }
+                // Widget & share extension disabled until prod-ready
+                // {
+                //   targetName: "ShareExtension",
+                //   bundleIdentifier: "com.beforeitbills.app.ShareExtension",
+                //   entitlements: {
+                //     "com.apple.security.application-groups": ["group.com.beforeitbills.app"]
+                //   }
+                // },
+                // {
+                //   targetName: "SubsWidget",
+                //   bundleIdentifier: "com.beforeitbills.app.SubsWidget",
+                //   entitlements: {
+                //     "com.apple.security.application-groups": ["group.com.beforeitbills.app"]
+                //   }
+                // }
               ]
             }
           }
@@ -121,6 +126,8 @@ module.exports = {
       EXPO_PUBLIC_LOGO_DEV_TOKEN: process.env.EXPO_PUBLIC_LOGO_DEV_TOKEN,
       EXPO_PUBLIC_BRANDFETCH_API_KEY: process.env.EXPO_PUBLIC_BRANDFETCH_API_KEY,
       EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
       revenuecatIosApiKey: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY,
       revenuecatAndroidApiKey: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY,
     },
