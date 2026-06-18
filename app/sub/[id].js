@@ -244,46 +244,36 @@ color:t.text
 </Card>
 
 
-{/* CANCEL PLAYBOOK */}
+{/* CANCEL */}
 
 <Card>
 
-<Text style={{color:t.subtext,fontWeight:"700"}}>
-Cancel playbook
+<View style={{flexDirection:"row",alignItems:"center",marginBottom:10}}>
+<Feather name="x-circle" size={18} color={t.subtext}/>
+<Text style={{color:t.text,fontWeight:"700",marginLeft:8}}>
+Cancel this subscription
 </Text>
-
-<Text style={{color:t.text,fontWeight:"800",marginTop:8}}>
-{merchant}
-</Text>
-
-<Text style={{color:t.subtext,marginTop:8,lineHeight:20}}>
-Visit your {merchant} account → Subscription.
-</Text>
-
-<Text style={{color:t.subtext,marginTop:4,lineHeight:20}}>
-Click “Manage plan” → “Cancel”.
-</Text>
-
-<View style={{flexDirection:"row",gap:10,marginTop:14}}>
-
-<Button
-title="Open cancel page"
-variant="secondary"
-onPress={()=>{
-  const url = sub.domain
-    ? `https://${sub.domain}`
-    : `https://www.google.com/search?q=${encodeURIComponent(merchant + " cancel subscription")}`
-  Linking.openURL(url)
-}}
-/>
-
-<Button
-title="Support"
-variant="secondary"
-onPress={()=>Linking.openURL("mailto:support@beforeitbills.com")}
-/>
-
 </View>
+
+<Text style={{color:t.subtext,lineHeight:20}}>
+Get exact steps for {merchant} — a direct cancel link, copy-paste email/chat templates, and a confirmation tracker.
+</Text>
+
+<View style={{height:14}}/>
+
+<Button
+title="Open Cancel Center"
+onPress={()=>r.push({
+  pathname:"/cancel-center",
+  params:{
+    name: merchant,
+    domain: sub.domain || "",
+    price: String(sub.amount ?? sub.price ?? ""),
+    cadence: sub.cadence || sub.cycle || "monthly",
+  },
+})}
+left={<Feather name="x-circle" size={16} color="#fff" />}
+/>
 
 </Card>
 
