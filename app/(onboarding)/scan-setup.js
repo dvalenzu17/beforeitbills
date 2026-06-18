@@ -202,46 +202,19 @@ export default function ScanSetup() {
 
         <View style={{ height: 14 }} />
 
-        {!isPro && (
-          <Card>
-            <Text style={{ color: t.text, fontWeight: "900" }}>Preview mode</Text>
-            <Text style={{ color: t.subtext, marginTop: 6, lineHeight: 18 }}>
-              You get {EMAIL_SCAN_FREE_CAP} free email scans to preview results.
+        {/* Trust first — limits/upgrade come after the user has seen value. */}
+        <Card>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Feather name="lock" size={16} color={t.accent} />
+            <Text style={{ color: t.text, fontWeight: "900" }}>
+              {tt("ob.trustTitle") || "Private & read-only"}
             </Text>
-
-            <View style={{ height: 12 }} />
-
-            <View
-              style={{
-                height: 8,
-                borderRadius: 999,
-                backgroundColor: t.surface2,
-                overflow: "hidden",
-                borderWidth: 1,
-                borderColor: t.hairline,
-              }}
-            >
-              <View
-                style={{
-                  width: `${barPct}%`,
-                  height: "100%",
-                  backgroundColor: t.accent,
-                  opacity: 0.6,
-                }}
-              />
-            </View>
-
-            <Text style={{ color: t.subtext, marginTop: 10 }}>
-              {remaining} remaining · {used}/{EMAIL_SCAN_FREE_CAP} used
-            </Text>
-
-            <View style={{ height: 10 }} />
-
-            <Text style={{ color: t.tertiary, fontWeight: "600" }}>
-              What we look for: receipts, invoices, renewal dates, and subscription keywords.
-            </Text>
-          </Card>
-        )}
+          </View>
+          <Text style={{ color: t.subtext, marginTop: 8, lineHeight: 19, fontWeight: "600" }}>
+            {tt("ob.trustBody") ||
+              "We scan only billing emails — receipts, invoices and renewals — and save just the subscriptions we find. We never store the contents of your emails, and access is read-only."}
+          </Text>
+        </Card>
 
         <View style={{ height: 12 }} />
 
@@ -303,12 +276,18 @@ export default function ScanSetup() {
           </Pressable>
         </Card>
 
-        <View style={{ marginTop: "auto" }}>
+        <View style={{ marginTop: "auto", gap: 10 }}>
           <Button
             title={tt("ob.startScan")}
             onPress={start}
             haptic="selection"
             left={<Feather name="search" size={16} color="#fff" />}
+          />
+          <Button
+            title={tt("ob.seeSample") || "See a sample first"}
+            variant="ghost"
+            onPress={() => r.push("/(onboarding)/results?demo=1")}
+            left={<Feather name="eye" size={16} color={t.text} />}
           />
         </View>
       </Screen>

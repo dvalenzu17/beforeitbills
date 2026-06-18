@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, Pressable, Share } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 
@@ -25,6 +25,17 @@ function toMonthly(amount, cadence) {
   if (c.includes("week")) return n * 4.345;
   return n;
 }
+
+// Sample data for the "see a sample first" demo (no email connection needed).
+// Clearly labeled in-UI so it's never mistaken for the user's real results.
+const SAMPLE_ITEMS = [
+  { id: "s1", merchant: "Netflix", amount: 15.49, currency: "USD", cadence: "monthly" },
+  { id: "s2", merchant: "Spotify", amount: 11.99, currency: "USD", cadence: "monthly" },
+  { id: "s3", merchant: "ChatGPT Plus", amount: 20.0, currency: "USD", cadence: "monthly" },
+  { id: "s4", merchant: "iCloud+", amount: 2.99, currency: "USD", cadence: "monthly" },
+  { id: "s5", merchant: "Amazon Prime", amount: 14.99, currency: "USD", cadence: "monthly" },
+  { id: "s6", merchant: "Adobe Creative Cloud", amount: 263.88, currency: "USD", cadence: "yearly" },
+];
 
 // Eased count-up so the headline number animates in (the "gut-punch" moment).
 function useCountUp(target, duration = 900) {
@@ -51,6 +62,9 @@ export default function Results() {
   const r = useRouter();
   const { t: tt } = useTranslation();
 
+  const params = useLocalSearchParams();
+  const isDemo = String(params?.demo || "") === "1";
+
   const recordingActive = useRecordingStore((s) => s.active);
   const recordingPersona = useRecordingStore((s) => s.persona);
 
@@ -58,6 +72,7 @@ export default function Results() {
 
   // In recording mode, display the persona's subs as if they were scan results
   const items = useMemo(() => {
+    if (isDemo) return SAMPLE_ITEMS;
     if (recordingActive && recordingPersona) {
       return recordingPersona.subs.map((s) => ({
         id: s.id,
@@ -74,7 +89,7 @@ export default function Results() {
       cadence: s.cadence || s.cadenceGuess || "monthly",
       nextRenewal: s.nextRenewal || s.nextDateGuess || null,
     }));
-  }, [recordingActive, recordingPersona, realItems]);
+  }, [isDemo, recordingActive, recordingPersona, realItems]);
 
   const count = items.length;
   const currency = items[0]?.currency || "USD";
@@ -95,6 +110,7 @@ export default function Results() {
   const animatedMonthly = useCountUp(monthlyTotal);
 
   useEffect(() => {
+    if (isDemo) { track("sample_viewed"); return; }
     if (recordingActive) return;
     track("scan_completed", { count });
     if (count > 0) {
@@ -157,6 +173,13 @@ export default function Results() {
                 ...t.shadowMd,
               }}
             >
+              {isDemo ? (
+                <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: t.accent + "22", borderWidth: 1, borderColor: t.accent + "55", marginBottom: 10 }}>
+                  <Text style={{ color: t.accent, fontWeight: "900", fontSize: 10, letterSpacing: 1 }}>
+                    {tt("ob.sampleBadge") || "SAMPLE — NOT YOUR DATA"}
+                  </Text>
+                </View>
+              ) : null}
               <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 12, letterSpacing: 1, textTransform: "uppercase" }}>
                 {tt("ob.resultsMonthlyLabel") || "You're spending"}
               </Text>
@@ -241,12 +264,27 @@ export default function Results() {
         )}
 
         <View style={{ marginTop: "auto", gap: 10 }}>
+          {isDemo ? (
+            <>
+              <Button
+                title={tt("ob.connectInbox") || "Scan my real inbox"}
+                onPress={() => r.replace("/(onboarding)/scan-setup")}
+                left={<Feather name="mail" size={16} color="#fff" />}
+              />
+              <Button
+                title={tt("back") || "Back"}
+                variant="ghost"
+                onPress={() => (r.canGoBack?.() ? r.back() : r.replace("/(onboarding)/scan-setup"))}
+              />
+            </>
+          ) : (
           <Button
             title={recordingActive ? "Continue to App" : (tt("Review & confirm") || "Review & confirm")}
             onPress={goReview}
             left={<Feather name="check" size={16} color="#fff" />}
           />
-          {!recordingActive && (
+          )}
+          {!recordingActive && !isDemo && (
             <>
               <Button
                 title={tt("Manual add") || "Manual add"}
