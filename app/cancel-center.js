@@ -11,6 +11,7 @@ import { useTheme } from "../lib/theme";
 import BrandAvatar from "../components/BrandAvatar";
 import Button from "../components/Button";
 import EmptyStateCard from "../components/EmptyStateCard";
+import { findPlaybook } from "../lib/playbooks";
 
 function norm(s) {
   return String(s || "").trim();
@@ -142,9 +143,15 @@ export default function CancelCenter() {
   const [reason, setReason] = useState("");
 
   const [ticketStatus, setTicketStatus] = useState("Not started"); // Not started | Submitted | Waiting | Confirmed
-  const supportUrl = useMemo(() => domainToSupportUrl(domain), [domain]);
+
+  // Match a vendor-specific cancellation playbook (precise steps + a direct
+  // cancel link). findPlaybook falls back to a generic playbook when unknown.
+  const pb = useMemo(() => findPlaybook(brand || domain), [brand, domain]);
+  const supportUrl = useMemo(() => pb?.supportUrl || domainToSupportUrl(domain), [pb, domain]);
+  const cancelUrl = pb?.webUrl || null;
 
   const steps = useMemo(() => {
+    if (pb?.steps?.length) return pb.steps;
     const b = brand || domain || "this service";
     return [
       `Open ${b} account settings (usually “Settings” → “Subscription” or “Billing”).`,
@@ -152,7 +159,7 @@ export default function CancelCenter() {
       `Take a screenshot of the cancellation confirmation page/email.`,
       `Verify you received a confirmation email. If not, contact support.`,
     ];
-  }, [brand, domain]);
+  }, [pb, brand, domain]);
 
   const templates = useMemo(
     () => ({
@@ -269,24 +276,42 @@ export default function CancelCenter() {
                 <Step key={i} idx={i + 1} text={s} />
               ))}
 
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 6 }}>
-                <View style={{ flex: 1 }}>
+              <View style={{ gap: 10, marginTop: 6 }}>
+                {cancelUrl ? (
                   <Button
-                    title="Open help page"
+                    title={`Open ${brand || "the"} cancel page`}
                     onPress={async () => {
-                      if (!supportUrl) {
-                        return Alert.alert("Missing domain", "We need a domain to open the help page.");
-                      }
                       try {
-                        await Linking.openURL(supportUrl);
+                        await Linking.openURL(cancelUrl);
                       } catch (e) {
-                        Alert.alert("Couldn’t open link", e?.message || "Try again.");
+                        Alert.alert("Couldn't open link", e?.message || "Try again.");
                       }
                     }}
                     left={<Feather name="external-link" size={16} color="#fff" />}
                   />
-                </View>
+                ) : null}
+                <Button
+                  title="Open help page"
+                  variant={cancelUrl ? "secondary" : undefined}
+                  onPress={async () => {
+                    if (!supportUrl) {
+                      return Alert.alert("Missing domain", "We need a domain to open the help page.");
+                    }
+                    try {
+                      await Linking.openURL(supportUrl);
+                    } catch (e) {
+                      Alert.alert("Couldn’t open link", e?.message || "Try again.");
+                    }
+                  }}
+                  left={<Feather name="external-link" size={16} color={cancelUrl ? t.text : "#fff"} />}
+                />
               </View>
+
+              {pb?.notes ? (
+                <Text style={{ color: t.tertiary, fontSize: 12, lineHeight: 17, marginTop: 8 }}>
+                  Note: {pb.notes}
+                </Text>
+              ) : null}
             </View>
 
             <EmptyStateCard
