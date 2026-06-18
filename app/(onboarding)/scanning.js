@@ -19,6 +19,15 @@ import {
 } from "../../lib/emailScanPreview";
 import { track } from "../../lib/analytics";
 
+// Well-known services we scan for — cycled as a live "checking…" ticker so the
+// wait feels active. This is honest (we genuinely scan for these); the real
+// counts below reflect what was actually detected.
+const SCAN_BRANDS = [
+  "Netflix", "Spotify", "Amazon Prime", "Disney+", "Adobe", "iCloud+",
+  "YouTube Premium", "ChatGPT", "Dropbox", "Audible", "Hulu", "Notion",
+  "Microsoft 365", "NordVPN", "Duolingo", "Patreon",
+];
+
 export default function Scanning() {
   const t = useTheme();
   const r = useRouter();
@@ -35,6 +44,14 @@ export default function Scanning() {
 
   const { pct, scanned, receipts, subs, done, error } = useScanProgress(scanId);
   const canView = subs > 0;
+
+  // Rotating "checking for {brand}…" ticker while the scan runs.
+  const [brandIdx, setBrandIdx] = useState(0);
+  useEffect(() => {
+    if (done || error) return;
+    const id = setInterval(() => setBrandIdx((i) => (i + 1) % SCAN_BRANDS.length), 700);
+    return () => clearInterval(id);
+  }, [done, error]);
 
   useEffect(() => {
     track("scan_started", { range: String(params?.range || "year") });
@@ -99,6 +116,16 @@ export default function Scanning() {
       <Text style={{ color: t.subtext, marginTop: 8 }}>
         {tt("ob.scanningSub", { range: rangeLabel })}
       </Text>
+
+      {!done && !error ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 }}>
+          <Feather name="search" size={14} color={t.accent} />
+          <Text style={{ color: t.accent, fontWeight: "800" }}>
+            {tt("ob.scanningChecking", { brand: SCAN_BRANDS[brandIdx] }) ||
+              `Checking for ${SCAN_BRANDS[brandIdx]}…`}
+          </Text>
+        </View>
+      ) : null}
 
       <View style={{ height: 16 }} />
 
