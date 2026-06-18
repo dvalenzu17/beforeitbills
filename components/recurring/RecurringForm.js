@@ -921,6 +921,7 @@ const CADENCE_OPTIONS = [
   { value: "monthly",   label: "Monthly"   },
   { value: "yearly",    label: "Yearly"    },
   { value: "weekly",    label: "Weekly"    },
+  { value: "biweekly",  label: "Biweekly"  },
   { value: "quarterly", label: "Quarterly" },
 ];
 
