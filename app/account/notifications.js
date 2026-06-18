@@ -210,6 +210,9 @@ export default function NotificationsScreen() {
   const [timeOfDay, setTimeOfDay] = useState(
     notificationSettings?.timeOfDay || "09:00"
   );
+  const [newSubAlerts, setNewSubAlerts] = useState(
+    notificationSettings?.newSubAlertsEnabled !== false
+  );
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -228,6 +231,7 @@ export default function NotificationsScreen() {
         renewalsEnabled,
         daysBefore: daysBefore.length ? daysBefore : [1],
         timeOfDay,
+        newSubAlertsEnabled: newSubAlerts,
       });
 
       Alert.alert(
@@ -274,6 +278,23 @@ export default function NotificationsScreen() {
               subtitle={tt("notif.masterSubtitle")}
               value={renewalsEnabled}
               onChange={setRenewalsEnabled}
+              isLast
+            />
+          </Group>
+        </View>
+
+        {/* New subscription alerts */}
+        <View>
+          <Text style={{ color: t.subtext, fontWeight: "700", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8, marginLeft: 4 }}>
+            {tt("notif.sectionDiscover")}
+          </Text>
+          <Group t={t}>
+            <ToggleRow
+              t={t}
+              label={tt("notif.newSubLabel")}
+              subtitle={tt("notif.newSubSubtitle")}
+              value={newSubAlerts}
+              onChange={setNewSubAlerts}
               isLast
             />
           </Group>
