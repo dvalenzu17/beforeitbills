@@ -7,6 +7,8 @@ import {
   TextInput, Animated,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
+import { buildUpcoming, scheduleAll } from "../../lib/notificationsEngine";
 import { useTheme, useThemeSettings } from "../../lib/theme";
 import { setOnboardingDone } from "../../lib/onboardingGate";
 import { useOnboardingStore } from "../../lib/onboardingStore";
@@ -201,6 +203,64 @@ export default function DevTools() {
     setTimeout(() => r.replace("/(tabs)/"), 400);
   }
 
+  async function previewNotifications() {
+    try {
+      const st = useStore.getState();
+      const ns = st.notificationSettings || {};
+      const upcoming = await buildUpcoming({
+        subs: st.subs ?? [],
+        bills: st.bills ?? [],
+        daysBefore: ns.daysBefore ?? [14, 7, 3, 1],
+        timeOfDay: ns.timeOfDay ?? "09:00",
+        quietEnabled: ns.quietEnabled ?? false,
+        quietStart: ns.quietStart ?? "22:00",
+        quietEnd: ns.quietEnd ?? "07:00",
+      });
+
+      let osCount = 0;
+      try {
+        const all = await Notifications.getAllScheduledNotificationsAsync();
+        osCount = (all || []).filter((n) => n?.content?.data?.app === "sublytics").length;
+      } catch {}
+
+      const lines = upcoming.slice(0, 12).map(
+        (x) => `${x.name} · ${x.kind} · ${x.window}d → ${new Date(x.when).toLocaleString()}`
+      );
+      const diag = st.notifyDiag;
+      const head = diag
+        ? `last run: scheduled=${diag.scheduled ?? "?"} failed=${diag.failed ?? 0}${diag.error ? ` err=${diag.error}` : ""}\n\n`
+        : "";
+      Alert.alert(
+        `Reminders: ${upcoming.length} computed · ${osCount} live`,
+        head + (lines.length ? lines.join("\n") : "Nothing upcoming. Check renewalsEnabled and that subs have a next date.")
+      );
+    } catch (e) {
+      Alert.alert("Preview failed", e?.message || String(e));
+    }
+  }
+
+  async function rescheduleNotifications() {
+    try {
+      const st = useStore.getState();
+      const ns = st.notificationSettings || {};
+      const res = await scheduleAll({
+        subs: st.subs ?? [],
+        bills: st.bills ?? [],
+        enabled: ns.renewalsEnabled,
+        daysBefore: ns.daysBefore,
+        timeOfDay: ns.timeOfDay,
+        quietEnabled: ns.quietEnabled ?? false,
+        quietStart: ns.quietStart ?? "22:00",
+        quietEnd: ns.quietEnd ?? "07:00",
+      });
+      showToast(
+        `Scheduled ${res?.scheduled ?? 0}${res?.failed ? `, ${res.failed} failed` : ""}${res?.error ? ` (${res.error})` : ""}`
+      );
+    } catch (e) {
+      showToast(`Reschedule failed: ${e?.message || e}`);
+    }
+  }
+
   async function seedFromPersona(personaOverride) {
     const persona = personaOverride || generatePersona();
     const now = new Date().toISOString().slice(0, 10);
@@ -349,6 +409,25 @@ export default function DevTools() {
               title="Heavy Account"
               subtitle="20+ subs + 8 bills - scroll, perf, layout testing"
               onPress={presetHeavyAccount}
+            />
+          </View>
+        </View>
+
+        {/* ── NOTIFICATIONS ── */}
+        <View>
+          <SectionLabel t={t}>Notifications</SectionLabel>
+          <View style={{ gap: 8 }}>
+            <DevItem
+              t={t} icon="bell" accent="#7DD3FC"
+              title="Preview Scheduled Reminders"
+              subtitle="Computed upcoming + live OS notifications + last run result"
+              onPress={previewNotifications}
+            />
+            <DevItem
+              t={t} icon="refresh-cw" accent="#10B981"
+              title="Reschedule Reminders Now"
+              subtitle="Force scheduleAll() with current store data"
+              onPress={rescheduleNotifications}
             />
           </View>
         </View>
