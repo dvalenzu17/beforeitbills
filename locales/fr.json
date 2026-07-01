@@ -483,7 +483,20 @@
     "scanError": "Une erreur s'est produite. Vos résultats peuvent être partiels.",
     "viewResults": "Voir les résultats",
     "keepScanning": "Continuer l'analyse",
-    "stop": "Arrêter"
+    "stop": "Arrêter",
+    "perYear": "par an",
+    "billsSoon": "prélevés sous 14 jours",
+    "preview": {
+      "eyebrow": "Ce qu’on détecte",
+      "sampleBadge": "EXEMPLE",
+      "trialBadge": "ESSAI BIENTÔT FACTURÉ",
+      "trialLine": "{{name}} → vous facture {{amount}} dans {{days}} jours",
+      "remind": "Rappel",
+      "perMonth": "/mois",
+      "summary": "sur {{count}} abonnements · {{forgotten}} oubliés",
+      "caption": "Connectez-vous ci-dessous pour voir vos vrais chiffres.",
+      "chooseProvider": "Choisissez votre fournisseur"
+    }
   },
   "lang": {
     "title": "Langue"
@@ -948,5 +961,7 @@
     "included": "CE QUI EST INCLUS",
     "cancelOrChange": "Annuler ou modifier le forfait",
     "cancelNote": "Vous serez redirigé vers l'App Store pour gérer votre abonnement."
-  }
+  },
+  "subscription": "abonnement",
+  "subscriptions": "abonnements"
 }

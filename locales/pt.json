@@ -495,7 +495,20 @@
     "scanError": "Algo deu errado. Seus resultados podem ser parciais.",
     "viewResults": "Ver resultados",
     "keepScanning": "Continuar verificando",
-    "stop": "Parar"
+    "stop": "Parar",
+    "perYear": "por ano",
+    "billsSoon": "serão cobrados em 14 dias",
+    "preview": {
+      "eyebrow": "O que detectamos",
+      "sampleBadge": "EXEMPLO",
+      "trialBadge": "TESTE A TERMINAR",
+      "trialLine": "{{name}} → cobra {{amount}} em {{days}} dias",
+      "remind": "Lembrar",
+      "perMonth": "/mês",
+      "summary": "em {{count}} assinaturas · {{forgotten}} esquecidas",
+      "caption": "Conecte abaixo para ver seus números reais.",
+      "chooseProvider": "Escolha seu provedor"
+    }
   },
   "lang": {
     "title": "Idioma"
@@ -960,5 +973,7 @@
     "included": "O QUE ESTÁ INCLUÍDO",
     "cancelOrChange": "Cancelar ou alterar plano",
     "cancelNote": "Você será redirecionado à App Store para gerenciar sua assinatura."
-  }
+  },
+  "subscription": "assinatura",
+  "subscriptions": "assinaturas"
 }

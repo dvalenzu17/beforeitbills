@@ -1,10 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { View, Text, Pressable, ScrollView, Animated } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, View, Text, Pressable, ScrollView, Animated } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { EMAIL_PROVIDERS } from "@/lib/emailImportClient";
 import { useTheme } from "@/lib/theme";
+import { connectGoogleGmail } from "@/lib/auth/googleGmailOAuth";
+import { useEmailImportStore } from "@/lib/emailImportStore";
+import { track } from "@/lib/analytics";
+import ConnectPreview from "@/components/ConnectPreview";
 
 const PROVIDER_META = {
   gmail:   { icon: "G", bg: "#EA4335", desc: "App Password · imap.gmail.com" },
@@ -23,10 +28,18 @@ const MAIN_PROVIDERS = ["gmail", "outlook", "icloud", "yahoo"];
 
 export default function ConnectEmailProviderPicker() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const t = useTheme();
+  const { t: tt } = useTranslation();
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(24)).current;
   const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const [gmailLoading, setGmailLoading] = useState(false);
+  const hydrate = useEmailImportStore((x) => x.hydrate);
+  const addAccount = useEmailImportStore((x) => x.addAccount);
+  const connectedAccounts = useEmailImportStore((x) => x.connectedAccounts);
+  const hasHydrated = useEmailImportStore((x) => x.hasHydrated);
+  const isAddingAnother = params?.add === "1";
 
   useEffect(() => {
     Animated.parallel([
@@ -34,6 +47,39 @@ export default function ConnectEmailProviderPicker() {
       Animated.timing(fadeAnim,  { toValue: 1,   duration: 380, useNativeDriver: true }),
     ]).start();
   }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) hydrate?.();
+  }, [hasHydrated, hydrate]);
+
+  useEffect(() => {
+    if (hasHydrated && !isAddingAnother && connectedAccounts.length > 0) {
+      router.replace("/account/connect-email/connected");
+    }
+  }, [hasHydrated, isAddingAnother, connectedAccounts.length, router]);
+
+  async function handleProviderPress(key) {
+    if (key !== "gmail") {
+      router.push(`/account/connect-email/verify?provider=${key}`);
+      return;
+    }
+
+    if (gmailLoading) return;
+    setGmailLoading(true);
+    try {
+      const result = await connectGoogleGmail();
+      if (result?.cancelled) return;
+      if (!result?.ok) throw new Error("gmail_connect_failed");
+      await addAccount({ provider: "gmail", email: result.email ?? null });
+      track("gmail_connected", { provider: "gmail", source: "settings" });
+      router.replace("/account/connect-email/connected");
+    } catch (e) {
+      if (__DEV__) console.warn("[connect-email] Gmail OAuth failed:", e?.message);
+      Alert.alert(tt("mailScan.gmailConnectFailedTitle"), tt("mailScan.gmailConnectFailedBody"));
+    } finally {
+      setGmailLoading(false);
+    }
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: t.bg }}>
@@ -89,25 +135,33 @@ export default function ConnectEmailProviderPicker() {
           </Text>
         </Animated.View>
 
+        {/* Proof before the ask: show what BIB catches, pre-emption first. */}
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <ConnectPreview />
+        </Animated.View>
+
         {/* Provider list */}
         <Animated.View style={{ opacity: fadeAnim }}>
           <Text style={{ fontSize: 11, fontWeight: "800", color: t.tertiary, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10, marginLeft: 4 }}>
-            Choose your provider
+            {tt("ob.preview.chooseProvider")}
           </Text>
 
           <View style={{ backgroundColor: t.surface, borderRadius: 18, borderWidth: 1, borderColor: t.hairline, overflow: "hidden", marginBottom: 12 }}>
             {MAIN_PROVIDERS.map((key, i) => {
               const meta = PROVIDER_META[key];
               const provider = EMAIL_PROVIDERS[key];
+              const providerDesc = key === "gmail" ? tt("mailScan.gmailOAuthDesc") : meta?.desc;
               if (!meta || !provider) return null;
               return (
                 <Pressable
                   key={key}
-                  onPress={() => router.push(`/account/connect-email/verify?provider=${key}`)}
+                  onPress={() => handleProviderPress(key)}
+                  disabled={gmailLoading && key === "gmail"}
                   style={({ pressed }) => ({
                     flexDirection: "row", alignItems: "center", gap: 14,
                     padding: 14, paddingHorizontal: 16,
                     backgroundColor: pressed ? t.surface2 : "transparent",
+                    opacity: gmailLoading && key === "gmail" ? 0.6 : 1,
                     borderBottomWidth: i < MAIN_PROVIDERS.length - 1 ? 1 : 0,
                     borderBottomColor: t.hairline,
                   })}
@@ -124,7 +178,7 @@ export default function ConnectEmailProviderPicker() {
 
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontSize: 15, fontWeight: "800", color: t.text }}>{provider.label}</Text>
-                    <Text style={{ fontSize: 11, fontWeight: "500", color: t.tertiary, marginTop: 2 }}>{meta.desc}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: "500", color: t.tertiary, marginTop: 2 }}>{providerDesc}</Text>
                   </View>
 
                   <Feather name="chevron-right" size={18} color={t.tertiary} />

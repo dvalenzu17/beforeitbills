@@ -487,7 +487,20 @@
     "scanError": "Something went wrong. Your results may be partial.",
     "viewResults": "View results",
     "keepScanning": "Keep scanning",
-    "stop": "Stop"
+    "stop": "Stop",
+    "perYear": "a year",
+    "billsSoon": "bills within 14 days",
+    "preview": {
+      "eyebrow": "What we’ll catch",
+      "sampleBadge": "SAMPLE",
+      "trialBadge": "TRIAL ENDING",
+      "trialLine": "{{name}} → bills {{amount}} in {{days}} days",
+      "remind": "Remind",
+      "perMonth": "/mo",
+      "summary": "across {{count}} subscriptions · {{forgotten}} you forgot",
+      "caption": "Connect below to see your real numbers.",
+      "chooseProvider": "Choose your provider"
+    }
   },
   "lang": {
     "title": "Language"
@@ -960,5 +973,7 @@
     "included": "WHAT'S INCLUDED",
     "cancelOrChange": "Cancel or change plan",
     "cancelNote": "You'll be redirected to the App Store to manage your subscription."
-  }
+  },
+  "subscription": "subscription",
+  "subscriptions": "subscriptions"
 }
